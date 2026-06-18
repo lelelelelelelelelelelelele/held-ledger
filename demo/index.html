@@ -307,6 +307,36 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 @keyframes stampin{0%{opacity:0;transform:rotate(-8deg) scale(1.32);}38%{opacity:1;transform:rotate(-8deg) scale(.96);}100%{opacity:1;transform:rotate(-8deg) scale(1);}}
 .stamp.out{transition:opacity .4s ease .5s;opacity:0;}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+
+/* ---------- Rich card view (卡片视图) ---------- */
+.view-toggle{display:flex;gap:4px;margin-left:auto;}
+.view-toggle button{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--slate);background:transparent;border:1px solid transparent;}
+.view-toggle button.on{background:var(--card);border-color:var(--hair);color:var(--ink);box-shadow:var(--shadow-soft);}
+.view-toggle button svg{width:16px;height:16px;}
+.rcard{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);box-shadow:var(--shadow);margin:0 18px 12px;padding:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.rcard:active{background:var(--card-2);}
+.rcard.faded{opacity:.6;}
+.rcard-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.rcard-top .ric{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;border:1px solid var(--hair-2);flex:none;}
+.rcard-top .ric svg{width:22px;height:22px;color:var(--ink-soft);opacity:.9;}
+.rcard-top .rinfo{flex:1;min-width:0;}
+.rcard-top .rname{font-family:var(--cn);font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.rcard-top .rtag{font-family:var(--cn);font-size:11px;padding:2px 8px;border-radius:99px;background:var(--card-2);color:var(--slate);border:1px solid var(--hair);}
+.rcard-metrics{display:flex;gap:0;margin-bottom:12px;}
+.rcard-metric{flex:1;padding:10px 14px;background:var(--green-tint);border:1px solid #CDE6D7;border-radius:var(--radius-sm);}
+.rcard-metric:first-child{border-right:none;border-radius:var(--radius-sm) 0 0 var(--radius-sm);}
+.rcard-metric:last-child{border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.rcard-metric .rk{font-family:var(--cn);font-size:11.5px;color:var(--slate);margin-bottom:4px;}
+.rcard-metric .rv{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--green);}
+.rcard-metric .rv .ru{font-size:11px;color:var(--slate);font-weight:400;font-family:var(--cn);margin-left:2px;}
+.rcard-story{font-family:var(--cn);font-size:12.5px;color:var(--slate);line-height:1.7;padding:10px 14px;background:var(--card-2);border-radius:var(--radius-sm);border:1px solid var(--hair-2);}
+.rcard-story b{color:var(--ink);font-weight:500;}
+.rcard-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+.rcard-bottom .rl{font-family:var(--mono);font-size:11px;color:var(--slate-2);}
+.rcard-bottom .rr{display:flex;gap:6px;}
+.rcard-bottom .rr button{font-family:var(--cn);font-size:11.5px;padding:4px 10px;border-radius:8px;background:var(--card);border:1px solid var(--hair);color:var(--slate);}
+.rcard-bottom .rr button:active{background:var(--card-2);}
+.rcard-bottom .rr button.primary{background:var(--green);color:#fff;border-color:var(--green);}
 </style>
 </head>
 <body>
@@ -372,6 +402,8 @@ const ICON={
   edit:'<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>',
   check:'<path d="M5 12.5 10 17l9-10"/>',
   store:'<path d="M5 8h14l-1 11H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+  list:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+  grid2:'<rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/>',
 };
 function svg(n){return '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+(ICON[n]||'')+'</svg>';}
 
@@ -467,7 +499,7 @@ function daysHeld(a){return a.bought?Math.max(1,daysBetween(a.bought,TODAY)):0;}
 function dailyCost(a){return (a.price&&a.bought)?a.price/daysHeld(a):0;}
 function heldText(a){const d=daysHeld(a);if(d>=365){return (d/365).toFixed(1)+' 年';}return d+' 天';}
 
-const S={screen:'overview',currentAsset:null,cat:'全部',status:'全部',valueMode:'all',edit:null,nl:null};
+const S={screen:'overview',currentAsset:null,cat:'全部',status:'全部',valueMode:'all',edit:null,nl:null,viewMode:'card'};
 let nlSeq=1;
 
 function liveAssets(){return ASSETS.filter(a=>a.status!=='sold'&&a.status!=='retired');}
@@ -578,7 +610,8 @@ function viewAssets(){
   const states=['全部','服役中','闲置','临期','已退役','已卖出'];
   const catTabs=cats.map(c=>'<button class="cat-tab'+(S.cat===c?' on':'')+'" data-act="cat" data-arg="'+c+'">'+c+'</button>').join('');
   const chips=states.map(s=>'<button class="chip'+(S.status===s?' on':'')+'" data-act="status" data-arg="'+s+'">'+s+'</button>').join('');
-  setScreen('<div class="cat-tabs">'+catTabs+'</div><div class="chips">'+chips+'</div><div id="itemList">'+itemsHTML()+'</div><div style="height:8px"></div>');
+  const toggle='<div class="view-toggle"><button class="'+(S.viewMode==='list'?'on':'')+'" data-act="viewmode" data-arg="list" aria-label="列表视图">'+svg('list')+'</button><button class="'+(S.viewMode==='card'?'on':'')+'" data-act="viewmode" data-arg="card" aria-label="卡片视图">'+svg('grid2')+'</button></div>';
+  setScreen('<div class="cat-tabs">'+catTabs+toggle+'</div><div class="chips">'+chips+'</div><div id="itemList">'+itemsHTML()+'</div><div style="height:8px"></div>');
 }
 function itemsHTML(){
   let list=ASSETS.slice();
@@ -589,6 +622,7 @@ function itemsHTML(){
   const rank={active:0,idle:1,retired:3,sold:4};
   list.sort((a,b)=>(rank[a.status])-(rank[b.status]));
   if(!list.length)return '<div class="empty">没有符合条件的资产</div>';
+  if(S.viewMode==='card')return list.map(richCard).join('');
   return '<div class="items">'+list.map(itemCard).join('')+'</div>';
 }
 function itemCard(a){
@@ -610,6 +644,76 @@ function itemCard(a){
     '<div class="thumb'+(a.photo?' photo':'')+'" style="'+(a.photo?'background-image:url('+a.photo+');background-size:cover;background-position:center':'background:'+a.tint)+'">'+(a.photo?'':svg(a.icon))+'</div>'+
     '<div class="body"><div class="nm">'+a.name+'</div><div class="sub">'+sub+'</div>'+ruler+'</div>'+
     '<div class="right">'+right+'</div></div>';
+}
+/* 卡片视图：有数风格的富卡片 */
+function richCard(a){
+  const faded=(a.status==='retired'||a.status==='sold')?' faded':'';
+  const catTag={'physical':'实物','cash':'现金','entitle':'权益','invest':'理财'}[a.group]||a.cat;
+  /* 指标 */
+  let m1='',m2='';
+  if(a.group==='cash'){
+    m1='<div class="rk">当前余额</div><div class="rv num">'+money(a.value,{sym:false})+'</div>';
+    m2='<div class="rk">账户类型</div><div class="rv" style="font-family:var(--cn);font-size:14px;color:var(--ink)">'+(a.meta&&a.meta[0]?a.meta[0][1]:'—')+'</div>';
+  }else if(a.group==='entitle'){
+    m1='<div class="rk">折算价值</div><div class="rv num">'+money(a.value,{sym:false})+'</div>';
+    if(a.meter&&a.meter.type==='discrete')m2='<div class="rk">剩余</div><div class="rv num">'+a.meter.remaining+'<span class="ru">/ '+a.meter.total+' '+a.unitName+'</span></div>';
+    else if(a.meter&&a.meter.type==='cont')m2='<div class="rk">剩余余额</div><div class="rv num">'+money(a.meter.remaining,{sym:false})+'</div>';
+    else if(a.meter&&a.meter.type==='time'){const left=daysBetween(TODAY,a.meter.end);m2='<div class="rk">剩余天数</div><div class="rv num">'+Math.max(0,left)+'<span class="ru">天</span></div>';}
+    else m2='<div class="rk">状态</div><div class="rv" style="font-family:var(--cn);font-size:14px;color:var(--ink)">'+STATUS[a.status].label+'</div>';
+  }else if(a.status==='sold'){
+    m1='<div class="rk">出售价</div><div class="rv num" style="color:var(--sold)">'+money(a.soldPrice||0,{sym:false})+'</div>';
+    m2='<div class="rk">折旧</div><div class="rv num" style="color:var(--amber-ink)">'+money((a.soldPrice||0)-(a.price||0),{sign:true,sym:false})+'</div>';
+  }else if(a.status==='retired'){
+    m1='<div class="rk">原价</div><div class="rv num" style="color:var(--slate)">'+money(a.price||0,{cents:false,sym:false})+'</div>';
+    m2='<div class="rk">状态</div><div class="rv" style="font-family:var(--cn);font-size:14px;color:var(--slate)">已退役</div>';
+  }else{
+    m1='<div class="rk">净值</div><div class="rv num">'+money(a.value,{sym:false})+'</div>';
+    m2='<div class="rk">日均成本</div><div class="rv num">'+dailyCost(a).toFixed(2)+'<span class="ru">/天</span></div>';
+  }
+  /* 故事 */
+  let story='';
+  if(a.group==='cash'){
+    story=(a.meta&&a.meta[0]?a.meta[0][1]:'账户')+'，当前余额 <b>'+money(a.value)+'</b>。';
+  }else if(a.group==='entitle'){
+    const src=a.events&&a.events.length?a.events[a.events.length-1]:null;
+    story=a.name;
+    if(a.validUntil)story+='，有效期至 <b>'+a.validUntil+'</b>';
+    if(src)story+='。'+src.sub||'';
+    story+='。';
+  }else if(a.status==='sold'){
+    story=a.name+'，购入价 <b>'+money(a.price||0)+'</b>，持有 <b>'+heldText(a)+'</b>，以 <b>'+money(a.soldPrice||0)+'</b> 出售，折旧 <b>'+money((a.soldPrice||0)-(a.price||0),{sign:true})+'</b>。';
+  }else if(a.status==='retired'){
+    story=a.name+'，购入价 <b>'+money(a.price||0)+'</b>，已退役，持有 <b>'+heldText(a)+'</b>。';
+  }else{
+    story=a.name+'，购入价 <b>'+money(a.price||0,{cents:false})+'</b>，已持有 <b>'+heldText(a)+'</b>';
+    if(a.bought)story+='，购入于 '+a.bought;
+    if(a.value!==a.price)story+='。当前估值 <b>'+money(a.value)+'</b>';
+    story+='。日均消耗 <b>¥'+dailyCost(a).toFixed(2)+'</b>';
+    if(a.status==='idle')story+='，当前闲置';
+    story+='。';
+  }
+  /* 底部按钮 */
+  let btns='';
+  if(a.group==='cash')btns='<button class="primary" data-act="edit" data-arg="balance">改余额</button>';
+  else if(a.group==='entitle'){
+    if(a.meter&&a.meter.type==='discrete')btns='<button class="primary" data-act="use" data-arg="'+a.id+'"'+(a.meter.remaining<=0?' disabled':'')+'>'+(a.meter.remaining<=0?'已用完':'用掉一'+a.unitName)+'</button><button data-act="renew" data-arg="'+a.id+'">续期</button>';
+    else if(a.meter&&a.meter.type==='cont')btns='<button class="primary" data-act="edit" data-arg="cont">改余额</button><button data-act="renew" data-arg="'+a.id+'">续期</button>';
+    else btns='<button class="primary" data-act="renew" data-arg="'+a.id+'">续期一年</button>';
+  }else if(a.status==='sold'){btns='<button data-act="noop">查看记录</button>';}
+  else if(a.status==='retired'){btns='<button class="primary" data-act="sell" data-arg="'+a.id+'">标记已售</button><button data-act="setstatus" data-arg="active">恢复服役</button>';}
+  else{btns='<button class="primary" data-act="edit" data-arg="value">更新估值</button>'+(a.status==='idle'?'<button data-act="setstatus" data-arg="active">恢复服役</button>':'<button data-act="setstatus" data-arg="idle">标记闲置</button>');}
+
+  return '<div class="rcard'+faded+'" data-act="asset" data-arg="'+a.id+'" role="button" tabindex="0">'+
+    '<div class="rcard-top">'+
+      '<div class="ric'+(a.photo?' photo':'')+'" style="'+(a.photo?'background-image:url('+a.photo+');background-size:cover;background-position:center':'background:'+a.tint)+'">'+(a.photo?'':svg(a.icon))+'</div>'+
+      '<div class="rinfo"><div class="rname">'+a.name+' '+statusPill(a)+'</div></div>'+
+      '<span class="rtag">'+catTag+'</span>'+
+    '</div>'+
+    '<div class="rcard-metrics"><div class="rcard-metric">'+m1+'</div><div class="rcard-metric">'+m2+'</div></div>'+
+    (a.group==='entitle'?rulerHTML(a,true):'')+
+    '<div class="rcard-story">'+story+'</div>'+
+    '<div class="rcard-bottom"><span class="rl">'+(a.bought?'购入 '+a.bought:'')+'</span><div class="rr" onclick="event.stopPropagation()">'+btns+'</div></div>'+
+  '</div>';
 }
 
 /* ---------- Asset detail ---------- */
@@ -869,6 +973,7 @@ document.getElementById('app').addEventListener('click',e=>{
   else if(act==='group'){S.cat=({cash:'现金',physical:'数码',entitle:'权益'})[arg]||'全部';S.status='全部';route('assets');}
   else if(act==='cat'){S.cat=arg;const l=document.getElementById('itemList');if(l)l.innerHTML=itemsHTML();document.querySelectorAll('.cat-tab').forEach(x=>x.classList.toggle('on',x.dataset.arg===arg));}
   else if(act==='status'){S.status=arg;const l=document.getElementById('itemList');if(l)l.innerHTML=itemsHTML();document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x.dataset.arg===arg));}
+  else if(act==='viewmode'){S.viewMode=arg;const l=document.getElementById('itemList');if(l)l.innerHTML=itemsHTML();document.querySelectorAll('.view-toggle button').forEach(x=>x.classList.toggle('on',x.dataset.arg===arg));}
   else if(act==='asset'){S.currentAsset=arg;S.edit=null;route('asset-detail');}
   else if(act==='use')useAsset(arg);
   else if(act==='renew')renew(arg);
