@@ -1,0 +1,19 @@
+{
+  "name": "youshu-ledger-app",
+  "version": "1.0.0",
+  "description": "这是一个准备阶段的项目文件夹，用于后续制作一个参考“有数”体验的记账工具。",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "playwright": "^1.61.0"
+  }
+}
