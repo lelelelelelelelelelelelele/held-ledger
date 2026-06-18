@@ -4,7 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#F3F5F0" />
-<title>持有 · 个人资产台账 Demo</title>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="持有" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<title>持有 · 个人资产台账</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Sans:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -312,7 +317,24 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 </div>
 <script>
 "use strict";
-const TODAY="2026-06-17";
+const TODAY=new Date().toISOString().slice(0,10);
+
+/* ---------- IndexedDB 持久化层 ---------- */
+const DB_NAME='youshu_ledger';
+const DB_VER=1;
+const STORE='assets';
+function openDB(){return new Promise((ok,fail)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:'id'});};r.onsuccess=e=>ok(e.target.result);r.onerror=e=>fail(e.target.error);});}
+async function dbGetAll(){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(STORE,'readonly');const st=tx.objectStore(STORE);const req=getAll_compat(st);req.onsuccess=e=>ok(e.target.result);req.onerror=e=>fail(e.target.error);});}
+async function dbPutAll(assets){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(STORE,'readwrite');const st=tx.objectStore(STORE);st.clear();assets.forEach(a=>st.put(a));tx.oncomplete=()=>ok();tx.onerror=e=>fail(e.target.error);});}
+/* getAll 兼容（Safari 早期版本不支持 IDBObjectStore.getAll） */
+function getAll_compat(store){if(store.getAll)return store.getAll();return new Promise((ok,fail)=>{const r=store.openCursor();const out=[];r.onsuccess=e=>{const c=e.target.result;if(c){out.push(c.value);c.continue();}else ok(out);};r.onerror=e=>fail(e.target.error);});}
+
+/* 500ms 防抖写入（借鉴 Focus Flow） */
+let _saveTimer=null;
+function debouncedSave(){
+  if(_saveTimer)clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(()=>dbPutAll(ASSETS).catch(e=>console.warn('[DB] save failed',e)),500);
+}
 
 const ICON={
   home:'<path d="M4 11.4 12 4.5l8 6.9"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/>',
@@ -369,8 +391,9 @@ const STATUS={
   sold:{label:'已卖出',color:'#5E7C9A'},
 };
 
-/* assets */
-let ASSETS=[
+/* assets — DEFAULT_ASSETS 首次启动时写入 IndexedDB，之后从 DB 读取 */
+let ASSETS=[];
+const DEFAULT_ASSETS=[
   // 数码
   {id:'macair',group:'physical',cat:'数码',name:'MacBook Air 13"',icon:'laptop',tint:'#E2E8EC',status:'active',countable:true,price:5000,bought:'2026-06-11',value:5000,
    meta:[['购入价','¥5,000'],['购入日','2026-06-11'],['当前估值','¥5,000'],['状态','新购入 · 用了约一周']],
@@ -508,7 +531,7 @@ function setScreen(html){const s=document.getElementById('screen');s.className='
 
 /* ---------- Overview ---------- */
 function viewOverview(){
-  appbar('<span class="brand">持有</span>',{sub:'资产台账 · 6月17日'});
+  appbar('<span class="brand">持有</span>',{sub:'资产台账 · '+parseInt(TODAY.slice(5,7))+'月'+parseInt(TODAY.slice(8,10))+'日'});
   const sc=statusCounts(),total=physItems().length||1;
   const segColor={active:STATUS.active.color,idle:STATUS.idle.color,retired:STATUS.retired.color,sold:STATUS.sold.color};
   const segs=['active','idle','retired','sold'].filter(k=>sc[k]).map(k=>'<i style="flex:'+sc[k]+';background:'+segColor[k]+'"></i>').join('');
@@ -694,7 +717,8 @@ function viewMe(){
     '<div class="section-label">关于</div><div class="block">'+
       '<div class="me-row" data-act="noop"><div class="ic">'+svg('shield')+'</div><div class="t">本地存储 · 不上传</div></div>'+
       '<div class="me-row" data-act="noop"><div class="ic">'+svg('gear')+'</div><div class="t">设置</div></div>'+
-    '</div><div class="empty" style="padding:20px">持有 · 个人资产台账 Demo</div>'
+      '<div class="me-row" data-act="reset-data" role="button" tabindex="0"><div class="ic" style="background:#FBF1E2;color:#C77A12;border-color:#F0DEC0">'+svg('refresh')+'</div><div class="t">重置示例数据</div><div class="v" style="color:var(--amber-ink)">清除并恢复</div></div>'+
+    '</div><div class="empty" style="padding:20px">持有 · 个人资产台账</div>'
   );
 }
 
@@ -707,16 +731,16 @@ window.fillAdd=function(){route('action');};
 
 /* ---------- interactions ---------- */
 function showStamp(text){const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;const host=document.createElement('div');host.className='stamp-host';const st=document.createElement('div');st.className='stamp';st.textContent=text;if(reduce){st.style.opacity='1';st.style.transform='rotate(-8deg)';}host.appendChild(st);document.getElementById('app').appendChild(host);if(!reduce){requestAnimationFrame(()=>st.classList.add('go'));setTimeout(()=>st.classList.add('out'),700);}setTimeout(()=>host.remove(),reduce?1200:1300);}
-function useAsset(id){const a=ASSETS.find(x=>x.id===id);if(!a||!a.meter||a.meter.type!=='discrete'||a.meter.remaining<=0)return;a.meter.remaining-=1;a.value=Math.max(0,a.value-(a.perUnit||0));a.events.unshift({date:TODAY,title:'用掉 1 '+a.unitName,delta:'−1',sub:'剩 '+a.meter.remaining+' '+a.unitName,kind:'use'});showStamp('已核销');setTimeout(()=>{viewAssetDetail();renderTabs();},460);}
-function renew(id){const a=ASSETS.find(x=>x.id===id);if(!a)return;if(a.validUntil)a.validUntil=addYears(a.validUntil,1);if(a.meter&&a.meter.type==='time'){a.meter.start=a.meter.end;a.meter.end=addYears(a.meter.end,1);}if(a.meta){a.meta=a.meta.map(r=>/到期|有效期/.test(r[0])?[r[0],a.validUntil||r[1]]:r);}a.events.unshift({date:TODAY,title:'续期一年',delta:'',sub:'有效期延至 '+(a.validUntil||a.meter.end),kind:'in'});showStamp('已续期');setTimeout(()=>{viewAssetDetail();renderTabs();},460);}
-function setStatus(st){const a=ASSETS.find(x=>x.id===S.currentAsset);if(!a)return;a.status=st;a.events.unshift({date:TODAY,title:'状态改为「'+STATUS[st].label+'」',delta:'',sub:'',kind:st==='active'?'in':'idle'});showStamp(STATUS[st].label);setTimeout(()=>{viewAssetDetail();renderTabs();},420);}
+function useAsset(id){const a=ASSETS.find(x=>x.id===id);if(!a||!a.meter||a.meter.type!=='discrete'||a.meter.remaining<=0)return;a.meter.remaining-=1;a.value=Math.max(0,a.value-(a.perUnit||0));a.events.unshift({date:TODAY,title:'用掉 1 '+a.unitName,delta:'−1',sub:'剩 '+a.meter.remaining+' '+a.unitName,kind:'use'});saveAssets();showStamp('已核销');setTimeout(()=>{viewAssetDetail();renderTabs();},460);}
+function renew(id){const a=ASSETS.find(x=>x.id===id);if(!a)return;if(a.validUntil)a.validUntil=addYears(a.validUntil,1);if(a.meter&&a.meter.type==='time'){a.meter.start=a.meter.end;a.meter.end=addYears(a.meter.end,1);}if(a.meta){a.meta=a.meta.map(r=>/到期|有效期/.test(r[0])?[r[0],a.validUntil||r[1]]:r);}a.events.unshift({date:TODAY,title:'续期一年',delta:'',sub:'有效期延至 '+(a.validUntil||a.meter.end),kind:'in'});saveAssets();showStamp('已续期');setTimeout(()=>{viewAssetDetail();renderTabs();},460);}
+function setStatus(st){const a=ASSETS.find(x=>x.id===S.currentAsset);if(!a)return;a.status=st;a.events.unshift({date:TODAY,title:'状态改为「'+STATUS[st].label+'」',delta:'',sub:'',kind:st==='active'?'in':'idle'});saveAssets();showStamp(STATUS[st].label);setTimeout(()=>{viewAssetDetail();renderTabs();},420);}
 function sell(id){const a=ASSETS.find(x=>x.id===id);if(!a)return;const guess=Math.round(a.value*0.6);S.edit={field:'sell',label:'出售价',value:String(guess||0)};viewAssetDetail();}
 function applyEdit(){const a=ASSETS.find(x=>x.id===S.currentAsset);const inp=document.getElementById('editInput');if(!a||!inp){S.edit=null;viewAssetDetail();return;}const v=parseFloat(inp.value)||0;const f=S.edit.field;
   if(f==='balance'){a.value=v;if(a.meta)a.meta=a.meta.map(r=>/余额/.test(r[0])?[r[0],money(v)]:r);a.events.unshift({date:TODAY,title:'改余额',delta:money(v),sub:'手动核对',kind:'val'});}
   else if(f==='cont'){a.meter.remaining=Math.min(v,a.meter.total);a.value=a.meter.remaining;a.events.unshift({date:TODAY,title:'改余额',delta:money(a.meter.remaining),sub:'',kind:'val'});}
   else if(f==='value'){a.value=v;if(a.meta)a.meta=a.meta.map(r=>/估值/.test(r[0])?[r[0],money(v)]:r);a.events.unshift({date:TODAY,title:'更新估值',delta:money(v),sub:'按行情评估',kind:'val'});}
   else if(f==='sell'){a.soldPrice=v;a.status='sold';a.value=0;a.events.unshift({date:TODAY,title:'已出售',delta:money(v,{sign:true}),sub:'折旧 '+money(v-(a.price||0),{sign:true}),kind:'sell'});}
-  S.edit=null;showStamp('已更新');setTimeout(()=>{viewAssetDetail();renderTabs();},300);}
+  S.edit=null;saveAssets();showStamp('已更新');setTimeout(()=>{viewAssetDetail();renderTabs();},300);}
 
 /* ---------- BYOK + 自然语言添加（OpenAI 兼容：Kimi / 小米 等） ---------- */
 function loadByok(){try{return JSON.parse(localStorage.getItem('byok_v1')||'{}');}catch(e){return {};}}
@@ -815,7 +839,7 @@ function addAssetFromNL(r){
   else if(c.group==='cash'){a.value=value;a.meta=[['账户',a.name],['当前余额',money(value)]];}
   else {a.value=value;a.meta=[['当前价值',money(value)],['录入方式',r._src||'手动']];}
   ASSETS.unshift(a);
-  S.nl=null;S.currentAsset=id;showStamp('已添加');setTimeout(()=>route('asset-detail'),440);
+  S.nl=null;S.currentAsset=id;saveAssets();showStamp('已添加');setTimeout(()=>route('asset-detail'),440);
 }
 function viewByok(){
   appbar('智能添加 · 接入 API',{back:'me'});
@@ -863,11 +887,26 @@ document.getElementById('app').addEventListener('click',e=>{
   else if(act==='byok-preset'){const p=BYOK_PRESETS[arg]||BYOK_PRESETS.kimi;const cur=loadByok();saveByok({provider:arg,base:p.base||cur.base||'',model:p.model||cur.model||'',key:cur.key||''});viewByok();}
   else if(act==='byok-save'){const base=(document.getElementById('byokBase').value||'').trim();const key=(document.getElementById('byokKey').value||'').trim();const model=(document.getElementById('byokModel').value||'').trim()||'kimi-latest';const cur=loadByok();saveByok({provider:cur.provider||'kimi',base,key,model});showStamp(key&&base?'已启用 AI':'已保存');setTimeout(()=>route('me'),440);}
   else if(act==='byok-clear'){saveByok({});showStamp('已清除');viewByok();}
+  else if(act==='reset-data'){if(confirm('确定要重置所有数据为示例数据吗？')){ASSETS=[...DEFAULT_ASSETS];dbPutAll(ASSETS);showStamp('已重置');setTimeout(()=>route('overview'),400);}}
   else if(act==='noop')showStamp('演示中暂未开放');
 });
 document.getElementById('app').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='editInput'){e.preventDefault();applyEdit();return;}if(e.key!=='Enter'&&e.key!==' ')return;const t=e.target.closest('[data-act][tabindex]');if(!t)return;e.preventDefault();t.click();});
 
-(function boot(){const h=(location.hash||'').replace('#','');if(h&&VIEWS[h])S.screen=h;route(S.screen);})();
+/* --- 持久化：所有修改 ASSETS 的地方都调用 saveAssets --- */
+function saveAssets(){debouncedSave();}
+
+/* --- boot：从 IndexedDB 加载，首次用默认数据 --- */
+(async function boot(){
+  const h=(location.hash||'').replace('#','');
+  if(h&&VIEWS[h])S.screen=h;
+  try{
+    const saved=await dbGetAll();
+    if(saved&&saved.length){ASSETS=saved;}else{ASSETS=DEFAULT_ASSETS;await dbPutAll(ASSETS);}
+  }catch(e){console.warn('[boot] IndexedDB load failed, using defaults',e);ASSETS=DEFAULT_ASSETS;}
+  /* 注册 Service Worker */
+  if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+  route(S.screen);
+})();
 </script>
 </body>
 </html>
