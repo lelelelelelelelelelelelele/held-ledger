@@ -149,6 +149,29 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .asset-table .nm .t{font-family:var(--cn);font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .asset-table .cell{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap;}
 .asset-table .cell.muted{color:var(--slate-2);}
+/* ---------- Card grid view (有数 photo cards) ---------- */
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 18px;}
+.gcell{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;}
+.gcell:active{transform:scale(.99);}
+.gcell.faded{opacity:.6;}
+.gcell .ph{position:relative;aspect-ratio:4/3;background:var(--card-2);display:grid;place-items:center;}
+.gcell .ph.photo{background-size:cover;background-position:center;}
+.gcell .ph > svg{width:38px;height:38px;color:var(--slate-2);opacity:.55;}
+.gcell .gpill{position:absolute;top:8px;right:8px;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.93);border-radius:99px;padding:3px 8px;font-family:var(--cn);font-size:11px;font-weight:500;color:var(--ink-soft);box-shadow:0 1px 3px rgba(28,33,29,.12);}
+.gcell .gpill i{width:5px;height:5px;border-radius:99px;flex:none;}
+.gcell .ginfo{padding:11px 12px 13px;display:flex;flex-direction:column;flex:1;}
+.gcell .gnm{font-family:var(--cn);font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gcell .gsub{font-family:var(--cn);font-size:11px;color:var(--slate-2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gcell .gcost{font-family:var(--mono);font-size:12px;color:var(--green);margin-top:9px;letter-spacing:-.01em;display:flex;align-items:baseline;}
+.gcell .gcost b{font-size:21px;font-weight:600;line-height:1;}
+.gcell .gcost .u{font-size:11px;color:var(--slate-2);font-weight:500;margin-left:2px;}
+.gcell .gcost.cash{color:var(--ink);}
+.gcell .gcost.sold{color:var(--sold);}
+.gcell .gcost.retired{color:var(--slate);font-family:var(--cn);}
+.gcell .gcost.retired b{font-size:15px;}
+.gcell .spark{width:62%;height:21px;margin-top:8px;color:var(--green);opacity:.85;}
+.gcell .spark path{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;vector-effect:non-scaling-stroke;}
+.gcell .gfoot{font-family:var(--cn);font-size:11px;color:var(--slate-2);margin-top:8px;}
 
 /* ---------- Depletion ruler (signature) ---------- */
 .ruler{margin-top:9px;}
@@ -657,7 +680,7 @@ function itemsHTML(){
   const rank={active:0,idle:1,retired:3,sold:4};
   list.sort((a,b)=>(rank[a.status])-(rank[b.status]));
   if(!list.length)return '<div class="empty">没有符合条件的资产</div>';
-  if(S.viewMode==='card')return list.map(richCard).join('');
+  if(S.viewMode==='card')return '<div class="card-grid">'+list.map(gridCard).join('')+'</div>';
   if(S.viewMode==='table')return assetTable(list);
   return '<div class="items">'+list.map(itemCard).join('')+'</div>';
 }
@@ -696,75 +719,41 @@ function itemCard(a){
     '<div class="body"><div class="nm">'+a.name+'</div><div class="sub">'+sub+'</div>'+ruler+'</div>'+
     '<div class="right">'+right+'</div></div>';
 }
-/* 卡片视图：有数风格的富卡片 */
-function richCard(a){
+/* 预计服役年限（按类别），用于卡片「剩余 N 天」 */
+const LIFE_YEARS={数码:8,家居:15,交通:15,腕表:50};
+function serviceLeft(a){const ly=LIFE_YEARS[a.cat]||10;return Math.max(0,Math.round(ly*365-daysHeld(a)));}
+/* 卡片视图：有数风格照片卡（两列网格）
+   照片 + 状态角标 + 名称 + 原价·已用天数 + 醒目日均成本 + 衰减曲线 + 剩余天数 */
+function gridCard(a){
   const faded=(a.status==='retired'||a.status==='sold')?' faded':'';
-  const catTag={'physical':'实物','cash':'现金','entitle':'权益','invest':'理财'}[a.group]||a.cat;
-  /* 指标 */
-  let m1='',m2='';
+  const ph='<div class="ph'+(a.photo?' photo':'')+'" style="'+(a.photo?'background-image:url('+a.photo+')':'background:'+(a.tint||'var(--card-2)'))+'">'+(a.photo?'':svg(a.icon))+
+    '<span class="gpill"><i style="background:'+STATUS[a.status].color+'"></i>'+STATUS[a.status].label+'</span></div>';
+  let sub='',hero='',heroCls='',foot='';
   if(a.group==='cash'){
-    m1='<div class="rk">当前余额</div><div class="rv num">'+money(a.value,{sym:false})+'</div>';
-    m2='<div class="rk">账户类型</div><div class="rv" style="font-family:var(--cn);font-size:14px;color:var(--ink)">'+(a.meta&&a.meta[0]?a.meta[0][1]:'—')+'</div>';
+    sub=a.meta&&a.meta[0]?a.meta[0][1]:'账户';
+    hero='¥<b>'+money(a.value,{cents:false,sym:false})+'</b>';heroCls=' cash';foot='当前余额';
   }else if(a.group==='entitle'){
-    m1='<div class="rk">折算价值</div><div class="rv num">'+money(a.value,{sym:false})+'</div>';
-    if(a.meter&&a.meter.type==='discrete')m2='<div class="rk">剩余</div><div class="rv num">'+a.meter.remaining+'<span class="ru">/ '+a.meter.total+' '+a.unitName+'</span></div>';
-    else if(a.meter&&a.meter.type==='cont')m2='<div class="rk">剩余余额</div><div class="rv num">'+money(a.meter.remaining,{sym:false})+'</div>';
-    else if(a.meter&&a.meter.type==='time'){const left=daysBetween(TODAY,a.meter.end);m2='<div class="rk">剩余天数</div><div class="rv num">'+Math.max(0,left)+'<span class="ru">天</span></div>';}
-    else m2='<div class="rk">状态</div><div class="rv" style="font-family:var(--cn);font-size:14px;color:var(--ink)">'+STATUS[a.status].label+'</div>';
+    sub=a.validUntil?('有效期 '+a.validUntil):'权益';
+    hero='¥<b>'+money(a.value,{cents:false,sym:false})+'</b>';heroCls=' cash';foot='折算价值';
   }else if(a.status==='sold'){
-    m1='<div class="rk">出售价</div><div class="rv num" style="color:var(--sold)">'+money(a.soldPrice||0,{sym:false})+'</div>';
-    m2='<div class="rk">折旧</div><div class="rv num" style="color:var(--amber-ink)">'+money((a.soldPrice||0)-(a.price||0),{sign:true,sym:false})+'</div>';
+    sub='持有 '+heldText(a);
+    hero='¥<b>'+money(a.soldPrice||0,{cents:false,sym:false})+'</b>';heroCls=' sold';
+    foot='折旧 '+money((a.soldPrice||0)-(a.price||0),{sign:true,cents:false});
   }else if(a.status==='retired'){
-    m1='<div class="rk">原价</div><div class="rv num" style="color:var(--slate)">'+money(a.price||0,{cents:false,sym:false})+'</div>';
-    m2='<div class="rk">状态</div><div class="rv" style="font-family:var(--cn);font-size:14px;color:var(--slate)">已退役</div>';
+    sub='原价 '+money(a.price||0,{cents:false});
+    hero='<b>已退役</b>';heroCls=' retired';foot='持有 '+heldText(a);
   }else{
-    m1='<div class="rk">净值</div><div class="rv num">'+money(a.value,{sym:false})+'</div>';
-    m2='<div class="rk">日均成本</div><div class="rv num">'+dailyCost(a).toFixed(2)+'<span class="ru">/天</span></div>';
+    sub=money(a.price,{cents:false})+' · 已用 '+daysHeld(a)+' 天';
+    hero='¥<b>'+dailyCost(a).toFixed(2)+'</b><span class="u">/天</span>';
+    foot='剩余 '+serviceLeft(a).toLocaleString('en-US')+' 天';
   }
-  /* 故事 */
-  let story='';
-  if(a.group==='cash'){
-    story=(a.meta&&a.meta[0]?a.meta[0][1]:'账户')+'，当前余额 <b>'+money(a.value)+'</b>。';
-  }else if(a.group==='entitle'){
-    const src=a.events&&a.events.length?a.events[a.events.length-1]:null;
-    story=a.name;
-    if(a.validUntil)story+='，有效期至 <b>'+a.validUntil+'</b>';
-    if(src)story+='。'+src.sub||'';
-    story+='。';
-  }else if(a.status==='sold'){
-    story=a.name+'，购入价 <b>'+money(a.price||0)+'</b>，持有 <b>'+heldText(a)+'</b>，以 <b>'+money(a.soldPrice||0)+'</b> 出售，折旧 <b>'+money((a.soldPrice||0)-(a.price||0),{sign:true})+'</b>。';
-  }else if(a.status==='retired'){
-    story=a.name+'，购入价 <b>'+money(a.price||0)+'</b>，已退役，持有 <b>'+heldText(a)+'</b>。';
-  }else{
-    story=a.name+'，购入价 <b>'+money(a.price||0,{cents:false})+'</b>，已持有 <b>'+heldText(a)+'</b>';
-    if(a.bought)story+='，购入于 '+a.bought;
-    if(a.value!==a.price)story+='。当前估值 <b>'+money(a.value)+'</b>';
-    story+='。日均消耗 <b>¥'+dailyCost(a).toFixed(2)+'</b>';
-    if(a.status==='idle')story+='，当前闲置';
-    story+='。';
-  }
-  /* 底部按钮 */
-  let btns='';
-  if(a.group==='cash')btns='<button class="primary" data-act="edit" data-arg="balance">改余额</button>';
-  else if(a.group==='entitle'){
-    if(a.meter&&a.meter.type==='discrete')btns='<button class="primary" data-act="use" data-arg="'+a.id+'"'+(a.meter.remaining<=0?' disabled':'')+'>'+(a.meter.remaining<=0?'已用完':'用掉一'+a.unitName)+'</button><button data-act="renew" data-arg="'+a.id+'">续期</button>';
-    else if(a.meter&&a.meter.type==='cont')btns='<button class="primary" data-act="edit" data-arg="cont">改余额</button><button data-act="renew" data-arg="'+a.id+'">续期</button>';
-    else btns='<button class="primary" data-act="renew" data-arg="'+a.id+'">续期一年</button>';
-  }else if(a.status==='sold'){btns='<button data-act="noop">查看记录</button>';}
-  else if(a.status==='retired'){btns='<button class="primary" data-act="sell" data-arg="'+a.id+'">标记已售</button><button data-act="setstatus" data-arg="active">恢复服役</button>';}
-  else{btns='<button class="primary" data-act="edit" data-arg="value">更新估值</button>'+(a.status==='idle'?'<button data-act="setstatus" data-arg="active">恢复服役</button>':'<button data-act="setstatus" data-arg="idle">标记闲置</button>');}
-
-  return '<div class="rcard'+faded+'" data-act="asset" data-arg="'+a.id+'" role="button" tabindex="0">'+
-    '<div class="rcard-top">'+
-      '<div class="ric'+(a.photo?' photo':'')+'" style="'+(a.photo?'background-image:url('+a.photo+');background-size:cover;background-position:center':'background:'+a.tint)+'">'+(a.photo?'':svg(a.icon))+'</div>'+
-      '<div class="rinfo"><div class="rname">'+a.name+' '+statusPill(a)+'</div></div>'+
-      '<span class="rtag">'+catTag+'</span>'+
-    '</div>'+
-    '<div class="rcard-metrics"><div class="rcard-metric">'+m1+'</div><div class="rcard-metric">'+m2+'</div></div>'+
-    (a.group==='entitle'?rulerHTML(a,true):'')+
-    '<div class="rcard-story">'+story+'</div>'+
-    '<div class="rcard-bottom"><span class="rl">'+(a.bought?'购入 '+a.bought:'')+'</span><div class="rr" onclick="event.stopPropagation()">'+btns+'</div></div>'+
-  '</div>';
+  const spark=(a.group==='physical'&&(a.status==='active'||a.status==='idle'))
+    ?'<svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none"><path d="M2 5 C 22 7 26 20 50 22 S 84 24 98 24"/></svg>':'';
+  return '<div class="gcell'+faded+'" data-act="asset" data-arg="'+a.id+'" role="button" tabindex="0" aria-label="'+a.name+'，'+STATUS[a.status].label+'">'+
+    ph+
+    '<div class="ginfo"><div class="gnm">'+a.name+'</div><div class="gsub">'+sub+'</div>'+
+      '<div class="gcost'+heroCls+'">'+hero+'</div>'+spark+
+      '<div class="gfoot">'+foot+'</div></div></div>';
 }
 
 /* ---------- Asset detail ---------- */
