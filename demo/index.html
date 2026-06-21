@@ -252,6 +252,10 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .detail-actions button.primary{background:var(--green);color:#fff;border-color:var(--green);}
 .detail-actions button:active{transform:scale(.985);}
 .detail-actions button:disabled{opacity:.4;}
+.photo-row{margin:10px 18px 0;}
+.photo-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;font-family:var(--cn);font-size:14px;font-weight:500;color:var(--slate);padding:11px 0;border-radius:12px;border:1px dashed var(--hair);background:var(--card-2);}
+.photo-btn svg{width:18px;height:18px;}
+.photo-btn:active{transform:scale(.985);}
 .metarow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--hair-2);font-family:var(--cn);font-size:14px;}
 .metarow:first-child{border-top:none;}
 .metarow .mk{color:var(--slate);}
@@ -550,6 +554,42 @@ function daysHeld(a){return a.bought?Math.max(1,daysBetween(a.bought,TODAY)):0;}
 function dailyCost(a){return (a.price&&a.bought)?a.price/daysHeld(a):0;}
 function heldText(a){const d=daysHeld(a);if(d>=365){return (d/365).toFixed(1)+' 年';}return d+' 天';}
 
+/* ---------- 缩略图流程：上传 → 居中裁切缩放 → 存储 → 展示 ---------- */
+// 把任意图片 dataURL 压成方形缩略图（默认 360px、JPEG），减小 IndexedDB 体积。
+function makeThumb(src,size){
+  size=size||360;
+  return new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>{
+      try{
+        const s=Math.min(img.width,img.height);
+        const sx=(img.width-s)/2, sy=(img.height-s)/2;
+        const cv=document.createElement('canvas');cv.width=size;cv.height=size;
+        const ctx=cv.getContext('2d');
+        ctx.drawImage(img,sx,sy,s,s,0,0,size,size);
+        resolve(cv.toDataURL('image/jpeg',0.82));
+      }catch(e){resolve(src);} // 跨域/解码失败时回退原图
+    };
+    img.onerror=()=>resolve(src);
+    img.src=src;
+  });
+}
+// 调亮/调暗一个 #rrggbb 颜色
+function shade(hex,amt){const n=parseInt(hex.replace('#',''),16);let r=(n>>16)+amt,g=((n>>8)&255)+amt,b=(n&255)+amt;const cl=x=>Math.max(0,Math.min(255,x));return '#'+(0x1000000+(cl(r)<<16)+(cl(g)<<8)+cl(b)).toString(16).slice(1);}
+// 没有真实照片时，按资产色调 + 图标生成一张占位缩略图（data-URI SVG）
+function svgThumb(a){
+  const base=a.tint||'#DDE6DD', mid=shade(base,-48), deep=shade(base,-88), glyph=ICON[a.icon]||'';
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90">'+
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+mid+'"/><stop offset="1" stop-color="'+deep+'"/></linearGradient>'+
+    '<radialGradient id="h" cx="0.3" cy="0.24" r="0.95"><stop offset="0" stop-color="#fff" stop-opacity="0.3"/><stop offset="0.6" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>'+
+    '<rect width="120" height="90" fill="url(#g)"/><rect width="120" height="90" fill="url(#h)"/>'+
+    '<g transform="translate(60 45) scale(2.1) translate(-12 -12)" fill="none" stroke="#fff" stroke-opacity="0.9" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+glyph+'</g></svg>';
+  // encodeURIComponent leaves ()  raw — they break the unquoted CSS url(...) token, so encode them too
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg).replace(/\(/g,'%28').replace(/\)/g,'%29');
+}
+// 启动后：给没有真实照片的实物/权益资产补一张生成缩略图（仅内存，不写库）
+function ensureThumbs(){ASSETS.forEach(a=>{if(a.group!=='cash'&&!a.photo)a.photo=svgThumb(a);});}
+
 const S={screen:'overview',currentAsset:null,cat:'全部',status:'全部',valueMode:'all',edit:null,nl:null,viewMode:'card',ovMode:'list'};
 let nlSeq=1;
 
@@ -804,11 +844,21 @@ function viewAssetDetail(){
   const meta=a.meta.map(r=>'<div class="metarow"><span class="mk">'+r[0]+'</span><span class="mv'+(/[¥0-9]/.test(r[1])?'':' cn')+'">'+r[1]+'</span></div>').join('');
   const evs=a.events.map(e=>{const down=/^[−-]/.test(e.delta),up=/^[+]/.test(e.delta);
     return '<div class="tlrow"><div class="rail"><span class="dot'+(e.kind==='spend'||e.kind==='retire'||e.kind==='sell'?' spent':'')+'"></span><span class="line"></span></div><div class="c"><div class="t1"><span>'+e.title+'</span><span class="delta'+(down?' down':(up?' up':''))+'">'+(e.delta||'')+'</span></div><div class="t2">'+mdLabel(e.date)+(e.sub?' · '+e.sub:'')+'</div></div></div>';}).join('');
-  setScreen(hero+acts+
+  const photoRow=(!S.edit&&a.group!=='cash')?
+    '<div class="photo-row"><button class="photo-btn" data-act="pickphoto">'+svg('camera')+(a.realPhoto?'更换照片':'添加照片')+'</button>'+
+    '<input type="file" id="assetPhoto" accept="image/*" style="display:none"/></div>':'';
+  setScreen(hero+acts+photoRow+
     '<div class="section-label">资产信息</div><div class="block">'+meta+'</div>'+
     '<div class="section-label">变动记录<span class="muted">'+a.events.length+' 条</span></div><div class="block"><div class="timeline">'+evs+'</div></div>'+
     '<div style="height:8px"></div>');
   if(S.edit){const inp=document.getElementById('editInput');if(inp){inp.focus();inp.select();}}
+  const pin=document.getElementById('assetPhoto');
+  if(pin)pin.addEventListener('change',ev=>{
+    const f=ev.target.files&&ev.target.files[0];if(!f)return;
+    const rd=new FileReader();
+    rd.onload=async()=>{a.photo=await makeThumb(rd.result);a.realPhoto=true;saveAssets();showStamp('已更新照片');viewAssetDetail();};
+    rd.readAsDataURL(f);
+  });
 }
 
 /* ---------- Todos ---------- */
@@ -1033,7 +1083,8 @@ document.getElementById('app').addEventListener('click',e=>{
   else if(act==='byok-preset'){const p=BYOK_PRESETS[arg]||BYOK_PRESETS.kimi;const cur=loadByok();saveByok({provider:arg,base:p.base||cur.base||'',model:p.model||cur.model||'',key:cur.key||''});viewByok();}
   else if(act==='byok-save'){const base=(document.getElementById('byokBase').value||'').trim();const key=(document.getElementById('byokKey').value||'').trim();const model=(document.getElementById('byokModel').value||'').trim()||'kimi-latest';const cur=loadByok();saveByok({provider:cur.provider||'kimi',base,key,model});showStamp(key&&base?'已启用 AI':'已保存');setTimeout(()=>route('me'),440);}
   else if(act==='byok-clear'){saveByok({});showStamp('已清除');viewByok();}
-  else if(act==='reset-data'){if(confirm('确定要重置所有数据为示例数据吗？')){ASSETS=[...DEFAULT_ASSETS];dbPutAll(ASSETS);showStamp('已重置');setTimeout(()=>route('overview'),400);}}
+  else if(act==='reset-data'){if(confirm('确定要重置所有数据为示例数据吗？')){ASSETS=DEFAULT_ASSETS.map(a=>({...a}));dbPutAll(ASSETS);ensureThumbs();showStamp('已重置');setTimeout(()=>route('overview'),400);}}
+  else if(act==='pickphoto'){const i=document.getElementById('assetPhoto');if(i)i.click();}
   else if(act==='noop')showStamp('演示中暂未开放');
 });
 document.getElementById('app').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='editInput'){e.preventDefault();applyEdit();return;}if(e.key!=='Enter'&&e.key!==' ')return;const t=e.target.closest('[data-act][tabindex]');if(!t)return;e.preventDefault();t.click();});
@@ -1049,6 +1100,7 @@ function saveAssets(){debouncedSave();}
     const saved=await dbGetAll();
     if(saved&&saved.length){ASSETS=saved;}else{ASSETS=DEFAULT_ASSETS;await dbPutAll(ASSETS);}
   }catch(e){console.warn('[boot] IndexedDB load failed, using defaults',e);ASSETS=DEFAULT_ASSETS;}
+  ensureThumbs();
   /* 注册 Service Worker */
   if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
   route(S.screen);
