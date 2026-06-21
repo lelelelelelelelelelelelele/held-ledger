@@ -135,6 +135,20 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .gcard.ph .ic{background:var(--card-2);color:var(--slate-2);}
 .gcard.ph .pct,.gcard.ph .val{color:var(--slate-2);}
 .gcard.ph .val{font-family:var(--mono);}
+/* ---------- Asset table view ---------- */
+.asset-table{margin:0 18px;background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);box-shadow:var(--shadow-soft);overflow:hidden;}
+.asset-table .thead,.asset-table .trow{display:grid;grid-template-columns:minmax(0,1fr) 104px 80px;gap:10px;align-items:center;padding:11px 15px;}
+.asset-table .thead{background:var(--card-2);border-bottom:1px solid var(--hair);}
+.asset-table .thead span{font-family:var(--cn);font-size:11px;font-weight:500;color:var(--slate-2);letter-spacing:.02em;}
+.asset-table .thead .r,.asset-table .cell{text-align:right;}
+.asset-table .trow{border-top:1px solid var(--hair-2);}
+.asset-table .trow:active{background:var(--card-2);}
+.asset-table .trow.faded{opacity:.5;}
+.asset-table .nm{display:flex;align-items:center;gap:8px;min-width:0;}
+.asset-table .nm .dot{width:7px;height:7px;border-radius:99px;flex:none;}
+.asset-table .nm .t{font-family:var(--cn);font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.asset-table .cell{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap;}
+.asset-table .cell.muted{color:var(--slate-2);}
 
 /* ---------- Depletion ruler (signature) ---------- */
 .ruler{margin-top:9px;}
@@ -631,7 +645,7 @@ function viewAssets(){
   const states=['全部','服役中','闲置','临期','已退役','已卖出'];
   const catTabs=cats.map(c=>'<button class="cat-tab'+(S.cat===c?' on':'')+'" data-act="cat" data-arg="'+c+'">'+c+'</button>').join('');
   const chips=states.map(s=>'<button class="chip'+(S.status===s?' on':'')+'" data-act="status" data-arg="'+s+'">'+s+'</button>').join('');
-  const toggle='<div class="view-toggle"><button class="'+(S.viewMode==='list'?'on':'')+'" data-act="viewmode" data-arg="list" aria-label="列表视图">'+svg('list')+'</button><button class="'+(S.viewMode==='card'?'on':'')+'" data-act="viewmode" data-arg="card" aria-label="卡片视图">'+svg('grid2')+'</button></div>';
+  const toggle='<div class="view-toggle"><button class="'+(S.viewMode==='table'?'on':'')+'" data-act="viewmode" data-arg="table" aria-label="表格视图">'+svg('table')+'</button><button class="'+(S.viewMode==='list'?'on':'')+'" data-act="viewmode" data-arg="list" aria-label="列表视图">'+svg('list')+'</button><button class="'+(S.viewMode==='card'?'on':'')+'" data-act="viewmode" data-arg="card" aria-label="卡片视图">'+svg('grid2')+'</button></div>';
   setScreen('<div class="cat-tabs">'+catTabs+toggle+'</div><div class="chips">'+chips+'</div><div id="itemList">'+itemsHTML()+'</div><div style="height:8px"></div>');
 }
 function itemsHTML(){
@@ -644,7 +658,23 @@ function itemsHTML(){
   list.sort((a,b)=>(rank[a.status])-(rank[b.status]));
   if(!list.length)return '<div class="empty">没有符合条件的资产</div>';
   if(S.viewMode==='card')return list.map(richCard).join('');
+  if(S.viewMode==='table')return assetTable(list);
   return '<div class="items">'+list.map(itemCard).join('')+'</div>';
+}
+/* 表格视图：每一项资产一行，资产 / 净值 / 日均 三列对齐 */
+function assetTable(list){
+  const head='<div class="thead"><span>资产</span><span class="r">净值</span><span class="r">日均</span></div>';
+  const rows=list.map(a=>{
+    const faded=(a.status==='retired'||a.status==='sold')?' faded':'';
+    const net=money(a.status==='sold'?(a.soldPrice||0):a.value,{cents:false});
+    const hasDaily=a.group==='physical'&&(a.status==='active'||a.status==='idle');
+    const daily=hasDaily?('¥'+dailyCost(a).toFixed(2)):'—';
+    return '<div class="trow'+faded+'" data-act="asset" data-arg="'+a.id+'" role="button" tabindex="0" aria-label="'+a.name+'，'+STATUS[a.status].label+'">'+
+      '<div class="nm"><span class="dot" style="background:'+STATUS[a.status].color+'"></span><span class="t">'+a.name+'</span></div>'+
+      '<div class="cell">'+net+'</div>'+
+      '<div class="cell'+(hasDaily?'':' muted')+'">'+daily+'</div></div>';
+  }).join('');
+  return '<div class="asset-table">'+head+rows+'</div>';
 }
 function itemCard(a){
   const faded=(a.status==='retired'||a.status==='sold')?' faded':'';
