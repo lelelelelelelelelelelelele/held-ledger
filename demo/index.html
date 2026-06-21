@@ -239,6 +239,8 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 /* ---------- Asset detail ---------- */
 .dhero{margin:14px 18px 0;background:var(--card);border:1px solid var(--hair);border-radius:18px;padding:20px;box-shadow:var(--shadow);text-align:center;position:relative;overflow:hidden;}
 .dhero .thumb{width:84px;height:84px;border-radius:22px;margin:0 auto 14px;}
+.dhero.has-photo{padding-top:0;}
+.dhero-photo{margin:-20px -20px 16px;height:200px;background-size:cover;background-position:center;background-color:var(--card-2);}
 .dhero .thumb svg{width:40px;height:40px;}
 .dhero .nm{font-family:var(--cn);font-size:20px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;}
 .dhero .dailybig{font-family:var(--mono);font-size:34px;font-weight:600;color:var(--green);margin-top:10px;}
@@ -800,23 +802,27 @@ function gridCard(a){
 function viewAssetDetail(){
   const a=ASSETS.find(x=>x.id===S.currentAsset)||ASSETS[0];
   appbar(a.name,{back:'assets'});
+  // 有真实/占位照片 → 顶部整宽照片横幅；现金账户等无照片 → 小图标块
+  const heroVisual=a.photo
+    ?'<div class="dhero-photo" style="background-image:url('+a.photo+')"></div>'
+    :'<div class="thumb" style="background:'+(a.tint||'var(--card-2)')+'">'+svg(a.icon)+'</div>';
   let hero='';
   if(a.group==='cash'){
-    hero='<div class="dhero"><div class="thumb" style="background:'+a.tint+';display:grid;place-items:center"></div><div class="nm">'+a.name+'</div>'+
+    hero='<div class="dhero'+(a.photo?' has-photo':'')+'">'+heroVisual+'<div class="nm">'+a.name+'</div>'+
       '<div class="bal num"><span class="sym">¥</span>'+money(a.value,{sym:false})+'</div><div class="line">当前余额</div></div>';
   }else if(a.group==='entitle'){
     let big='',line='';const m=a.meter;
     if(m.type==='discrete'){big=m.remaining+' <span class="u">/ 共 '+m.total+' '+a.unitName+'</span>';line='折算价值 '+money(a.value);}
     else if(m.type==='cont'){big=money(m.remaining);line='面值 '+money(m.total);}
     else{const left=daysBetween(TODAY,m.end);big=Math.max(0,left)+' <span class="u">天后到期</span>';line='折算剩余 '+money(a.value);}
-    hero='<div class="dhero"><div class="thumb'+(a.photo?' photo':'')+'" style="'+(a.photo?'background-image:url('+a.photo+');background-size:cover;background-position:center':'background:'+a.tint)+'">'+(a.photo?'':svg(a.icon))+'</div><div class="nm">'+a.name+'</div>'+
+    hero='<div class="dhero'+(a.photo?' has-photo':'')+'">'+heroVisual+'<div class="nm">'+a.name+'</div>'+
       '<div class="dailybig num">'+big+'</div><div class="line">'+line+'</div>'+rulerHTML(a,true)+'</div>';
   }else{ // physical
     if(a.status==='sold'){
-      hero='<div class="dhero"><div class="thumb'+(a.photo?' photo':'')+'" style="'+(a.photo?'background-image:url('+a.photo+');background-size:cover;background-position:center':'background:'+a.tint)+'">'+(a.photo?'':svg(a.icon))+'</div><div class="nm">'+a.name+' '+statusPill(a)+'</div>'+
+      hero='<div class="dhero'+(a.photo?' has-photo':'')+'">'+heroVisual+'<div class="nm">'+a.name+' '+statusPill(a)+'</div>'+
         '<div class="bal num" style="color:var(--sold)">'+money(a.soldPrice)+'</div><div class="line">出售价 · 持有 '+heldText(a)+' · 折旧 '+money(a.soldPrice-a.price,{sign:true})+'</div></div>';
     }else{
-      hero='<div class="dhero"><div class="thumb'+(a.photo?' photo':'')+'" style="'+(a.photo?'background-image:url('+a.photo+');background-size:cover;background-position:center':'background:'+a.tint)+'">'+(a.photo?'':svg(a.icon))+'</div><div class="nm">'+a.name+' '+statusPill(a)+'</div>'+
+      hero='<div class="dhero'+(a.photo?' has-photo':'')+'">'+heroVisual+'<div class="nm">'+a.name+' '+statusPill(a)+'</div>'+
         (a.status==='retired'?'<div class="bal num">'+money(a.price,{cents:false})+'</div><div class="line">原价 · 已退役 · 持有 '+heldText(a)+'</div>':
         '<div class="dailybig num">¥'+dailyCost(a).toFixed(2)+'<span class="u">/天</span></div><div class="line">总价 '+money(a.price,{cents:false})+' · 已持有 '+heldText(a)+'</div>')+'</div>';
     }
