@@ -1,6 +1,7 @@
-// Screenshot harness: renders demo/index.html at an iPhone viewport and
-// captures every screen + a couple of interaction states. Also collects any
-// console errors / page errors so detection can flag runtime breakage.
+// Screenshot harness for 持有 (Youshu) demo
+// Captures every main screen at iPhone viewport. The demo shell (#app) is a
+// fixed 100dvh frame with overflow:hidden, so a fullPage shot adds nothing —
+// one viewport capture per screen is the canonical set.
 import { chromium } from 'playwright';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -11,17 +12,6 @@ const root = resolve(__dirname, '..');
 const indexUrl = pathToFileURL(resolve(root, 'demo/index.html')).href;
 const outDir = resolve(root, 'screenshots');
 mkdirSync(outDir, { recursive: true });
-
-// Each shot: drive the app to a screen (optionally run an extra action), wait, capture.
-const SHOTS = [
-  { name: '01-dashboard', screen: 'dashboard' },
-  { name: '02-add',       screen: 'add' },
-  { name: '03-add-filled',screen: 'add', action: 'fillAdd' },
-  { name: '04-records',   screen: 'records' },
-  { name: '05-analytics', screen: 'analytics' },
-  { name: '06-assets',    screen: 'assets' },
-  { name: '07-asset-detail', screen: 'asset-detail' },
-];
 
 const errors = [];
 
@@ -34,31 +24,74 @@ page.on('console', (m) => { if (m.type() === 'error') errors.push('console.error
 page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
 
 await page.goto(indexUrl, { waitUntil: 'networkidle' });
-// Give web fonts a beat to settle for deterministic type rendering.
 await page.evaluate(() => (document.fonts ? document.fonts.ready : Promise.resolve()));
-await page.waitForTimeout(400);
+await page.waitForTimeout(600);
 
-for (const shot of SHOTS) {
-  await page.evaluate((s) => {
-    if (typeof window.gotoScreen === 'function') window.gotoScreen(s);
-    else location.hash = '#' + s;
-  }, shot.screen);
-  await page.waitForTimeout(250);
-  if (shot.action) {
-    await page.evaluate((a) => { if (typeof window[a] === 'function') window[a](); }, shot.action);
-    await page.waitForTimeout(300);
-  }
-  // Full viewport (above-the-fold mobile frame) shot.
-  await page.screenshot({ path: resolve(outDir, shot.name + '.png') });
-  // Also a full-page shot to inspect scroll content.
-  await page.screenshot({ path: resolve(outDir, shot.name + '-full.png'), fullPage: true });
+// Helper: navigate to a screen and wait
+async function goto(screen) {
+  await page.evaluate((s) => { route(s); }, screen);
+  await page.waitForTimeout(300);
 }
+
+// Helper: capture the viewport frame
+async function shot(name) {
+  await page.screenshot({ path: resolve(outDir, name + '.png') });
+  console.log('  ✓ ' + name);
+}
+
+console.log('Capturing screenshots...\n');
+
+// 1. 总览看板
+await goto('overview');
+await shot('01-overview');
+
+// 2. 资产 - 卡片视图（默认）
+await goto('assets');
+await shot('02-assets-card');
+
+// 3. 资产 - 列表视图
+await page.evaluate(() => { S.viewMode = 'list'; });
+await page.evaluate(() => {
+  const l = document.getElementById('itemList');
+  if (l) l.innerHTML = itemsHTML();
+  document.querySelectorAll('.view-toggle button').forEach(x =>
+    x.classList.toggle('on', x.dataset.arg === 'list'));
+});
+await page.waitForTimeout(200);
+await shot('03-assets-list');
+
+// 4. 资产详情
+await page.evaluate(() => { S.currentAsset = 'mac'; S.edit = null; route('asset-detail'); });
+await page.waitForTimeout(300);
+await shot('04-asset-detail-macbook');
+
+// 5. 资产详情 - 权益类（国航航段）
+await page.evaluate(() => { S.currentAsset = 'air'; S.edit = null; route('asset-detail'); });
+await page.waitForTimeout(300);
+await shot('05-asset-detail-airline');
+
+// 6. 资产详情 - 车辆
+await page.evaluate(() => { S.currentAsset = 'car'; S.edit = null; route('asset-detail'); });
+await page.waitForTimeout(300);
+await shot('06-asset-detail-car');
+
+// 7. 待办
+await goto('todos');
+await shot('07-todos');
+
+// 8. 智能添加
+await goto('action');
+await shot('08-action');
+
+// 9. 我的
+await goto('me');
+await shot('09-me');
 
 await browser.close();
 
 if (errors.length) {
-  console.log('RUNTIME_ERRORS:\n' + errors.join('\n'));
+  console.log('\nRUNTIME_ERRORS:\n' + errors.join('\n'));
   process.exitCode = 2;
 } else {
-  console.log('OK: captured ' + SHOTS.length + ' screens, no runtime errors.');
+  console.log('\nOK: captured 9 screens, no runtime errors.');
 }

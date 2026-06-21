@@ -121,6 +121,20 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .group-row:active{background:var(--card-2);}
 .sharebar{height:5px;border-radius:99px;background:var(--hair);overflow:hidden;margin-top:8px;}
 .sharebar > i{display:block;height:100%;border-radius:99px;background:var(--green);}
+.section-label .sec-right{display:flex;align-items:center;gap:10px;}
+.group-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin:0 18px;}
+.gcard{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);box-shadow:var(--shadow-soft);padding:14px 14px 15px;display:flex;flex-direction:column;}
+.gcard:active{background:var(--card-2);}
+.gcard .top{display:flex;align-items:center;justify-content:space-between;}
+.gcard .ic{flex:none;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--green-tint);border:1px solid var(--hair-2);color:var(--green-deep);}
+.gcard .pct{font-family:var(--mono);font-size:11px;color:var(--slate-2);}
+.gcard .nm{font-family:var(--cn);font-size:15px;font-weight:500;margin-top:12px;}
+.gcard .cnt{font-family:var(--cn);font-size:11.5px;color:var(--slate);margin-top:2px;}
+.gcard .val{font-size:18px;font-weight:600;margin-top:10px;letter-spacing:-.01em;}
+.gcard .sharebar{margin-top:10px;}
+.gcard.ph .ic{background:var(--card-2);color:var(--slate-2);}
+.gcard.ph .pct,.gcard.ph .val{color:var(--slate-2);}
+.gcard.ph .val{font-family:var(--mono);}
 
 /* ---------- Depletion ruler (signature) ---------- */
 .ruler{margin-top:9px;}
@@ -499,7 +513,7 @@ function daysHeld(a){return a.bought?Math.max(1,daysBetween(a.bought,TODAY)):0;}
 function dailyCost(a){return (a.price&&a.bought)?a.price/daysHeld(a):0;}
 function heldText(a){const d=daysHeld(a);if(d>=365){return (d/365).toFixed(1)+' 年';}return d+' 天';}
 
-const S={screen:'overview',currentAsset:null,cat:'全部',status:'全部',valueMode:'all',edit:null,nl:null,viewMode:'card'};
+const S={screen:'overview',currentAsset:null,cat:'全部',status:'全部',valueMode:'all',edit:null,nl:null,viewMode:'card',ovMode:'list'};
 let nlSeq=1;
 
 function liveAssets(){return ASSETS.filter(a=>a.status!=='sold'&&a.status!=='retired');}
@@ -574,6 +588,13 @@ function viewOverview(){
     const v=groupValue(g.id),cnt=ASSETS.filter(a=>a.group===g.id&&a.countable).length,pct=Math.round(v/nw*100);
     return '<div class="group-row" data-act="group" data-arg="'+g.id+'" role="button" tabindex="0" aria-label="'+g.name+'，'+money(v)+'"><div class="ic">'+svg(g.icon)+'</div><div class="body"><div class="nm">'+g.name+'</div><div class="sub">'+cnt+' 项 · 占 '+pct+'%</div><div class="sharebar"><i style="width:'+pct+'%"></i></div></div><div class="right"><div class="val">'+money(v)+'</div></div><div class="chev">'+svg('chevR')+'</div></div>';
   }).join('');
+  const groupCards=GROUPS.map(g=>{
+    if(g.placeholder)return '<div class="gcard ph" data-act="nav" data-arg="invest" role="button" tabindex="0" aria-label="投资理财，即将上线"><div class="top"><div class="ic">'+svg(g.icon)+'</div><div class="pct">即将上线</div></div><div class="nm">'+g.name+'</div><div class="cnt">'+g.sub+'</div><div class="val">— —</div><div class="sharebar"><i style="width:0%"></i></div></div>';
+    const v=groupValue(g.id),cnt=ASSETS.filter(a=>a.group===g.id&&a.countable).length,pct=Math.round(v/nw*100);
+    return '<div class="gcard" data-act="group" data-arg="'+g.id+'" role="button" tabindex="0" aria-label="'+g.name+'，'+money(v)+'"><div class="top"><div class="ic">'+svg(g.icon)+'</div><div class="pct">占 '+pct+'%</div></div><div class="nm">'+g.name+'</div><div class="cnt">'+cnt+' 项</div><div class="val num">'+money(v)+'</div><div class="sharebar"><i style="width:'+pct+'%"></i></div></div>';
+  }).join('');
+  const ovToggle='<span class="view-toggle"><button class="'+(S.ovMode==='list'?'on':'')+'" data-act="ovmode" data-arg="list" aria-label="列表视图">'+svg('list')+'</button><button class="'+(S.ovMode==='card'?'on':'')+'" data-act="ovmode" data-arg="card" aria-label="卡片视图">'+svg('grid2')+'</button></span>';
+  const groupsSection=S.ovMode==='card'?('<div class="group-grid">'+groupCards+'</div>'):('<div class="block">'+groups+'</div>');
   const td=todos().slice(0,2).map(t=>remindCard(t)).join('');
   const recent=ASSETS.flatMap(a=>a.events.map(e=>({a,e}))).filter(x=>x.e.date.startsWith('2026')).sort((x,y)=>y.e.date.localeCompare(x.e.date)).slice(0,3).map(x=>{
     const down=/^[−-]/.test(x.e.delta);
@@ -587,8 +608,8 @@ function viewOverview(){
       '<div class="note">'+(S.valueMode==='all'?'含非现金估值 · 非现金 '+money(nw-groupValue('cash')):'仅现金 · 非现金 '+money(ASSETS.filter(a=>a.countable&&a.group!=='cash').reduce((s,a)=>s+a.value,0))+' 未计入')+'</div>'+
       '<div class="statusbar"><div class="bar">'+segs+'</div><div class="legend">'+legend+'</div></div>'+
     '</div>'+
-    '<div class="section-label">资产分组<span class="more" data-act="nav" data-arg="assets">查看全部</span></div>'+
-    '<div class="block">'+groups+'</div>'+
+    '<div class="section-label">资产分组<span class="sec-right">'+ovToggle+'<span class="more" data-act="nav" data-arg="assets">查看全部</span></span></div>'+
+    groupsSection+
     '<div class="section-label">待办<span class="more" data-act="nav" data-arg="todos">全部 '+todos().length+' 项</span></div>'+
     '<div class="block">'+(td||'<div class="empty">暂无临期或待维护的资产</div>')+'</div>'+
     '<div class="section-label">最近变动</div>'+
@@ -983,6 +1004,7 @@ document.getElementById('app').addEventListener('click',e=>{
   else if(act==='edit-ok')applyEdit();
   else if(act==='edit-cancel'){S.edit=null;viewAssetDetail();}
   else if(act==='valmode'){S.valueMode=S.valueMode==='all'?'cashOnly':'all';viewOverview();}
+  else if(act==='ovmode'){S.ovMode=arg;viewOverview();}
   else if(act==='valset'){S.valueMode=arg;viewMe();}
   else if(act==='addtmpl')showStamp('演示：已添加');
   else if(act==='nl-go'){const inp=document.getElementById('nlInput');const text=inp?inp.value.trim():'';const img=S.nl&&S.nl.image;if(!text&&!img){showStamp('写一句话或传张图');return;}S.nl={text,image:img,loading:true,result:null,error:null};viewAction();runNL(text,img);}
