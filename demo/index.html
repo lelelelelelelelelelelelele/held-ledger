@@ -484,41 +484,41 @@ const STATUS={
 let ASSETS=[];
 const DEFAULT_ASSETS=[
   // 数码
-  {id:'macair',group:'physical',cat:'数码',name:'MacBook Air 13"',icon:'laptop',tint:'#E2E8EC',status:'active',countable:true,price:5000,bought:'2026-06-11',value:5000,
+  {id:'macair',group:'physical',cat:'数码',name:'MacBook Air 13"',icon:'laptop',tint:'#E2E8EC',photo:'thumbs/macair.jpg',status:'active',countable:true,price:5000,bought:'2026-06-11',value:5000,
    meta:[['购入价','¥5,000'],['购入日','2026-06-11'],['当前估值','¥5,000'],['状态','新购入 · 用了约一周']],
    events:[{date:'2026-06-11',title:'录入资产',delta:'−¥5,000',sub:'新购入 · 约一周',kind:'buy'}]},
-  {id:'pc',group:'physical',cat:'数码',name:'9700X + 5070 主机',icon:'box',tint:'#E1E6EC',status:'active',countable:true,price:11000,bought:'2026-05-16',value:11000,
+  {id:'pc',group:'physical',cat:'数码',name:'9700X + 5070 主机',icon:'box',tint:'#E1E6EC',photo:'thumbs/pc.jpg',status:'active',countable:true,price:11000,bought:'2026-05-16',value:11000,
    meta:[['配置','Ryzen 9700X + RTX 5070'],['购入价','¥11,000'],['购入日','2026-05-16'],['当前估值','¥11,000']],
    events:[{date:'2026-05-16',title:'录入资产',delta:'−¥11,000',sub:'装机 · 9700X + 5070',kind:'buy'}]},
-  {id:'mac', group:'physical',cat:'数码',name:'MacBook Pro 14"',icon:'laptop',tint:'#DCE9E1',status:'active',countable:true,price:14999,bought:'2024-03-10',value:9800,
+  {id:'mac', group:'physical',cat:'数码',name:'MacBook Pro 14"',icon:'laptop',tint:'#DCE9E1',photo:'thumbs/mac.jpg',status:'active',countable:true,price:14999,bought:'2024-03-10',value:9800,
    meta:[['购入价','¥14,999'],['购入日','2024-03-10'],['当前估值','¥9,800'],['成色','95新']],
    events:[{date:'2026-05-02',title:'更新估值',delta:'¥9,800',sub:'按二手行情评估',kind:'val'},{date:'2024-03-10',title:'购入',delta:'−¥14,999',sub:'官网教育优惠',kind:'buy'}]},
-  {id:'ip15',group:'physical',cat:'数码',name:'iPhone 15 Pro',icon:'phone',tint:'#E1E6EC',status:'active',countable:true,price:8999,bought:'2023-10-20',value:4200,
+  {id:'ip15',group:'physical',cat:'数码',name:'iPhone 15 Pro',icon:'phone',tint:'#E1E6EC',photo:'thumbs/ip15.jpg',status:'active',countable:true,price:8999,bought:'2023-10-20',value:4200,
    meta:[['购入价','¥8,999'],['购入日','2023-10-20'],['当前估值','¥4,200'],['保修','已过保']],
    events:[{date:'2024-09-01',title:'换电池',delta:'−¥189',sub:'官方维修',kind:'spend'},{date:'2023-10-20',title:'购入',delta:'−¥8,999',sub:'',kind:'buy'}]},
-  {id:'a7',  group:'physical',cat:'数码',name:'索尼 A7M4 相机',icon:'camera',tint:'#E7E3D9',status:'idle',countable:true,price:16800,bought:'2022-06-01',value:9500,
+  {id:'a7',  group:'physical',cat:'数码',name:'索尼 A7M4 相机',icon:'camera',tint:'#E7E3D9',photo:'thumbs/a7.jpg',status:'idle',countable:true,price:16800,bought:'2022-06-01',value:9500,
    meta:[['购入价','¥16,800'],['购入日','2022-06-01'],['当前估值','¥9,500'],['状态','近半年未使用']],
    events:[{date:'2026-01-10',title:'标记为闲置',delta:'',sub:'半年未出片',kind:'idle'},{date:'2022-06-01',title:'购入',delta:'−¥16,800',sub:'',kind:'buy'}]},
-  {id:'ipad',group:'physical',cat:'数码',name:'iPad Air 4',icon:'tablet',tint:'#E7E9E4',status:'retired',countable:false,price:4799,bought:'2021-05-01',value:0,
+  {id:'ipad',group:'physical',cat:'数码',name:'iPad Air 4',icon:'tablet',tint:'#E7E9E4',photo:'thumbs/ipad.jpg',status:'retired',countable:false,price:4799,bought:'2021-05-01',value:0,
    meta:[['购入价','¥4,799'],['购入日','2021-05-01'],['状态','已退役 · 不再使用']],
    events:[{date:'2025-12-01',title:'退役',delta:'',sub:'屏幕老化，闲置抽屉',kind:'retire'},{date:'2021-05-01',title:'购入',delta:'−¥4,799',sub:'',kind:'buy'}]},
-  {id:'ip12',group:'physical',cat:'数码',name:'iPhone 12',icon:'phone',tint:'#E7E9E4',status:'sold',countable:false,price:6799,bought:'2020-11-01',value:0,soldPrice:1800,
+  {id:'ip12',group:'physical',cat:'数码',name:'iPhone 12',icon:'phone',tint:'#E7E9E4',photo:'thumbs/ip12.jpg',status:'sold',countable:false,price:6799,bought:'2020-11-01',value:0,soldPrice:1800,
    meta:[['购入价','¥6,799'],['出售价','¥1,800'],['持有','约 4.7 年'],['盈亏','−¥4,999']],
    events:[{date:'2025-08-20',title:'已出售',delta:'+¥1,800',sub:'闲鱼 · 折旧 −¥4,999',kind:'sell'},{date:'2020-11-01',title:'购入',delta:'−¥6,799',sub:'',kind:'buy'}]},
   // 家居
   {id:'dyson',group:'physical',cat:'家居',name:'戴森 V12 吸尘器',icon:'box',tint:'#EAE1E7',status:'active',countable:true,price:4290,bought:'2023-08-15',value:1500,
    meta:[['购入价','¥4,290'],['购入日','2023-08-15'],['当前估值','¥1,500']],
    events:[{date:'2023-08-15',title:'购入',delta:'−¥4,290',sub:'',kind:'buy'}]},
-  {id:'table',group:'physical',cat:'家居',name:'北欧实木餐桌',icon:'table',tint:'#E9E4DA',status:'active',countable:true,price:3200,bought:'2022-12-01',value:1200,
+  {id:'table',group:'physical',cat:'家居',name:'北欧实木餐桌',icon:'table',tint:'#E9E4DA',photo:'thumbs/table.jpg',status:'active',countable:true,price:3200,bought:'2022-12-01',value:1200,
    meta:[['购入价','¥3,200'],['购入日','2022-12-01'],['当前估值','¥1,200']],
    events:[{date:'2022-12-01',title:'购入',delta:'−¥3,200',sub:'',kind:'buy'}]},
   // 交通
-  {id:'car', group:'physical',cat:'交通',name:'本田思域',icon:'car',tint:'#DBE8DF',status:'active',countable:true,price:128000,bought:'2022-09-15',value:96000,
+  {id:'car', group:'physical',cat:'交通',name:'本田思域',icon:'car',tint:'#DBE8DF',photo:'thumbs/car.jpg',status:'active',countable:true,price:128000,bought:'2022-09-15',value:96000,
    due:[{label:'车险到期',date:'2026-07-12'},{label:'年检',date:'2026-11-20'}],
    meta:[['车牌','沪A·8F2K9'],['购入价','¥128,000'],['购入日','2022-09-15'],['当前估值','¥96,000'],['车险到期','2026-07-12'],['下次年检','2026-11-20']],
    events:[{date:'2026-06-01',title:'加油',delta:'−¥420',sub:'中石化 95号',kind:'spend'},{date:'2026-05-18',title:'小保养',delta:'−¥680',sub:'4S店',kind:'spend'},{date:'2022-09-15',title:'购入',delta:'−¥128,000',sub:'',kind:'buy'}]},
   // 腕表
-  {id:'watch',group:'physical',cat:'腕表',name:'浪琴名匠',icon:'watch',tint:'#E8E4D7',status:'active',countable:true,price:14800,bought:'2023-02-14',value:9800,
+  {id:'watch',group:'physical',cat:'腕表',name:'浪琴名匠',icon:'watch',tint:'#E8E4D7',photo:'thumbs/watch.jpg',status:'active',countable:true,price:14800,bought:'2023-02-14',value:9800,
    meta:[['购入价','¥14,800'],['购入日','2023-02-14'],['当前估值','¥9,800'],['成色','98新 · 含表盒']],
    events:[{date:'2025-03-01',title:'保养',delta:'−¥600',sub:'机芯清洗',kind:'spend'},{date:'2023-02-14',title:'购入',delta:'−¥14,800',sub:'',kind:'buy'}]},
   // 现金
@@ -850,8 +850,9 @@ function viewAssetDetail(){
   const meta=a.meta.map(r=>'<div class="metarow"><span class="mk">'+r[0]+'</span><span class="mv'+(/[¥0-9]/.test(r[1])?'':' cn')+'">'+r[1]+'</span></div>').join('');
   const evs=a.events.map(e=>{const down=/^[−-]/.test(e.delta),up=/^[+]/.test(e.delta);
     return '<div class="tlrow"><div class="rail"><span class="dot'+(e.kind==='spend'||e.kind==='retire'||e.kind==='sell'?' spent':'')+'"></span><span class="line"></span></div><div class="c"><div class="t1"><span>'+e.title+'</span><span class="delta'+(down?' down':(up?' up':''))+'">'+(e.delta||'')+'</span></div><div class="t2">'+mdLabel(e.date)+(e.sub?' · '+e.sub:'')+'</div></div></div>';}).join('');
+  const hasRealPhoto=a.photo&&a.photo.indexOf('data:image/svg')!==0; // 生成占位图(svg) 视为「未设照片」
   const photoRow=(!S.edit&&a.group!=='cash')?
-    '<div class="photo-row"><button class="photo-btn" data-act="pickphoto">'+svg('camera')+(a.realPhoto?'更换照片':'添加照片')+'</button>'+
+    '<div class="photo-row"><button class="photo-btn" data-act="pickphoto">'+svg('camera')+(hasRealPhoto?'更换照片':'添加照片')+'</button>'+
     '<input type="file" id="assetPhoto" accept="image/*" style="display:none"/></div>':'';
   setScreen(hero+acts+photoRow+
     '<div class="section-label">资产信息</div><div class="block">'+meta+'</div>'+
@@ -862,7 +863,7 @@ function viewAssetDetail(){
   if(pin)pin.addEventListener('change',ev=>{
     const f=ev.target.files&&ev.target.files[0];if(!f)return;
     const rd=new FileReader();
-    rd.onload=async()=>{a.photo=await makeThumb(rd.result);a.realPhoto=true;saveAssets();showStamp('已更新照片');viewAssetDetail();};
+    rd.onload=async()=>{a.photo=await makeThumb(rd.result);saveAssets();showStamp('已更新照片');viewAssetDetail();};
     rd.readAsDataURL(f);
   });
 }
