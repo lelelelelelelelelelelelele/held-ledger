@@ -1,4 +1,4 @@
-const CACHE_NAME = 'youshu-v2';
+const CACHE_NAME = 'youshu-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const ASSETS = [
   './thumbs/ip12.jpg',
   './thumbs/table.jpg',
   './thumbs/car.jpg',
+  './thumbs/zeekr.jpg',
   './thumbs/watch.jpg'
 ];
 

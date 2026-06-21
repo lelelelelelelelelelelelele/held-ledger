@@ -154,7 +154,7 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .gcell{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;}
 .gcell:active{transform:scale(.99);}
 .gcell.faded{opacity:.6;}
-.gcell .ph{position:relative;aspect-ratio:4/3;background:var(--card-2);display:grid;place-items:center;}
+.gcell .ph{position:relative;aspect-ratio:16/10;background:var(--card-2);display:grid;place-items:center;}
 .gcell .ph.photo{background-size:cover;background-position:center;}
 .gcell .ph > svg{width:38px;height:38px;color:var(--slate-2);opacity:.55;}
 .gcell .gpill{position:absolute;top:8px;right:8px;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.93);border-radius:99px;padding:3px 8px;font-family:var(--cn);font-size:11px;font-weight:500;color:var(--ink-soft);box-shadow:0 1px 3px rgba(28,33,29,.12);}
@@ -517,6 +517,10 @@ const DEFAULT_ASSETS=[
    due:[{label:'车险到期',date:'2026-07-12'},{label:'年检',date:'2026-11-20'}],
    meta:[['车牌','沪A·8F2K9'],['购入价','¥128,000'],['购入日','2022-09-15'],['当前估值','¥96,000'],['车险到期','2026-07-12'],['下次年检','2026-11-20']],
    events:[{date:'2026-06-01',title:'加油',delta:'−¥420',sub:'中石化 95号',kind:'spend'},{date:'2026-05-18',title:'小保养',delta:'−¥680',sub:'4S店',kind:'spend'},{date:'2022-09-15',title:'购入',delta:'−¥128,000',sub:'',kind:'buy'}]},
+  {id:'zeekr',group:'physical',cat:'交通',name:'极氪001',icon:'car',tint:'#D7E0E6',photo:'thumbs/zeekr.jpg',status:'active',countable:true,price:296000,bought:'2024-05-20',value:228000,
+   due:[{label:'车险到期',date:'2026-08-05'}],
+   meta:[['车牌','沪AD·0012'],['购入价','¥296,000'],['购入日','2024-05-20'],['当前估值','¥228,000'],['续航','WLTP 656km'],['车险到期','2026-08-05']],
+   events:[{date:'2026-06-10',title:'充电',delta:'−¥58',sub:'家充 · 42 度',kind:'spend'},{date:'2024-05-20',title:'购入',delta:'−¥296,000',sub:'极氪001 WE 版',kind:'buy'}]},
   // 腕表
   {id:'watch',group:'physical',cat:'腕表',name:'浪琴名匠',icon:'watch',tint:'#E8E4D7',photo:'thumbs/watch.jpg',status:'active',countable:true,price:14800,bought:'2023-02-14',value:9800,
    meta:[['购入价','¥14,800'],['购入日','2023-02-14'],['当前估值','¥9,800'],['成色','98新 · 含表盒']],
