@@ -1,19 +1,53 @@
 {
   "name": "youshu-ledger-app",
   "version": "1.0.0",
-  "description": "这是一个准备阶段的项目文件夹，用于后续制作一个参考“有数”体验的记账工具。",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
+  "description": "持有：轻量、清晰的个人资产与记账工具桌面演示版。",
+  "main": "desktop/main.cjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "desktop": "electron .",
+    "build:desktop": "electron-builder --mac dmg",
+    "pack:desktop": "electron-builder --mac dir",
+    "test:desktop": "node tools/smoke-electron.mjs",
+    "test:packaged": "node tools/smoke-packaged.mjs",
+    "test:seeded-flow": "node tools/acceptance-seeded-flow.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "build": {
+    "appId": "com.youshu.ledger",
+    "productName": "持有",
+    "asar": true,
+    "directories": {
+      "buildResources": "build"
+    },
+    "files": [
+      "desktop/**/*",
+      "demo/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.finance",
+      "icon": "build/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    }
+  },
   "dependencies": {
     "playwright": "^1.61.0"
+  },
+  "devDependencies": {
+    "electron": "^43.0.0",
+    "electron-builder": "^26.15.3"
   }
 }

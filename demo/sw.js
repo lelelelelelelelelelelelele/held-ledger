@@ -1,21 +1,13 @@
-const CACHE_NAME = 'youshu-v3';
+const CACHE_NAME = 'youshu-v4';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  './thumbs/mac.jpg',
   './thumbs/macair.jpg',
   './thumbs/pc.jpg',
-  './thumbs/ip15.jpg',
-  './thumbs/a7.jpg',
-  './thumbs/ipad.jpg',
-  './thumbs/ip12.jpg',
-  './thumbs/table.jpg',
-  './thumbs/car.jpg',
-  './thumbs/zeekr.jpg',
-  './thumbs/watch.jpg'
+  './thumbs/zeekr.jpg'
 ];
 
 /* 安装：预缓存核心资源 */

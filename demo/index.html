@@ -407,7 +407,7 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 const TODAY=new Date().toISOString().slice(0,10);
 
 /* ---------- IndexedDB 持久化层 ---------- */
-const DB_NAME='youshu_ledger';
+const DB_NAME='youshu_ledger_seeded_v4';
 const DB_VER=1;
 const STORE='assets';
 function openDB(){return new Promise((ok,fail)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:'id'});};r.onsuccess=e=>ok(e.target.result);r.onerror=e=>fail(e.target.error);});}
@@ -466,10 +466,10 @@ function svg(n){return '<svg aria-hidden="true" focusable="false" viewBox="0 0 2
 
 /* groups */
 const GROUPS=[
-  {id:'cash',name:'现金类',icon:'bank',sub:'银行卡 · 支付账户 · 现金'},
-  {id:'invest',name:'投资理财',icon:'invest',sub:'股票 · 基金 · 数字货币',placeholder:true},
-  {id:'physical',name:'实物资产',icon:'box',sub:'数码 · 家居 · 交通 · 腕表'},
-  {id:'entitle',name:'权益票券',icon:'ticket',sub:'航段 · 礼品卡 · 会员 · 票券'},
+  {id:'financial',name:'金融资产',icon:'bank',sub:'现金 · 存款 · 投资理财'},
+  {id:'physical',name:'实物资产',icon:'box',sub:'数码 · 家居 · 交通'},
+  {id:'entitle',name:'权益票券',icon:'ticket',sub:'里程 · 礼品卡 · 票券'},
+  {id:'member',name:'会员订阅',icon:'member',sub:'会员 · 订阅 · 到期提醒'},
 ];
 
 /* lifecycle status meta */
@@ -480,74 +480,31 @@ const STATUS={
   sold:{label:'已卖出',color:'#5E7C9A'},
 };
 
-/* assets — DEFAULT_ASSETS 首次启动时写入 IndexedDB，之后从 DB 读取 */
+/* assets — 默认初始化为真实登记过的少量资产 */
 let ASSETS=[];
 const DEFAULT_ASSETS=[
-  // 数码
-  {id:'macair',group:'physical',cat:'数码',name:'MacBook Air 13"',icon:'laptop',tint:'#E2E8EC',photo:'thumbs/macair.jpg',status:'active',countable:true,price:5000,bought:'2026-06-11',value:5000,
-   meta:[['购入价','¥5,000'],['购入日','2026-06-11'],['当前估值','¥5,000'],['状态','新购入 · 用了约一周']],
-   events:[{date:'2026-06-11',title:'录入资产',delta:'−¥5,000',sub:'新购入 · 约一周',kind:'buy'}]},
+  // 数码与实物
+  {id:'macair',group:'physical',cat:'数码',name:'MacBook Air 13"',icon:'laptop',tint:'#E2E8EC',photo:'thumbs/macair.jpg',status:'active',countable:true,price:5700,bought:'2026-06-11',value:5700,
+   meta:[['购入价','¥5,700'],['购入日','2026-06-11'],['当前估值','¥5,700'],['状态','新购入 · 用了约三周']],
+   events:[{date:'2026-06-11',title:'录入资产',delta:'−¥5,700',sub:'新购入 · 约三周',kind:'buy'}]},
   {id:'pc',group:'physical',cat:'数码',name:'9700X + 5070 主机',icon:'box',tint:'#E1E6EC',photo:'thumbs/pc.jpg',status:'active',countable:true,price:11000,bought:'2026-05-16',value:11000,
    meta:[['配置','Ryzen 9700X + RTX 5070'],['购入价','¥11,000'],['购入日','2026-05-16'],['当前估值','¥11,000']],
    events:[{date:'2026-05-16',title:'录入资产',delta:'−¥11,000',sub:'装机 · 9700X + 5070',kind:'buy'}]},
-  {id:'mac', group:'physical',cat:'数码',name:'MacBook Pro 14"',icon:'laptop',tint:'#DCE9E1',photo:'thumbs/mac.jpg',status:'active',countable:true,price:14999,bought:'2024-03-10',value:9800,
-   meta:[['购入价','¥14,999'],['购入日','2024-03-10'],['当前估值','¥9,800'],['成色','95新']],
-   events:[{date:'2026-05-02',title:'更新估值',delta:'¥9,800',sub:'按二手行情评估',kind:'val'},{date:'2024-03-10',title:'购入',delta:'−¥14,999',sub:'官网教育优惠',kind:'buy'}]},
-  {id:'ip15',group:'physical',cat:'数码',name:'iPhone 15 Pro',icon:'phone',tint:'#E1E6EC',photo:'thumbs/ip15.jpg',status:'active',countable:true,price:8999,bought:'2023-10-20',value:4200,
-   meta:[['购入价','¥8,999'],['购入日','2023-10-20'],['当前估值','¥4,200'],['保修','已过保']],
-   events:[{date:'2024-09-01',title:'换电池',delta:'−¥189',sub:'官方维修',kind:'spend'},{date:'2023-10-20',title:'购入',delta:'−¥8,999',sub:'',kind:'buy'}]},
-  {id:'a7',  group:'physical',cat:'数码',name:'索尼 A7M4 相机',icon:'camera',tint:'#E7E3D9',photo:'thumbs/a7.jpg',status:'idle',countable:true,price:16800,bought:'2022-06-01',value:9500,
-   meta:[['购入价','¥16,800'],['购入日','2022-06-01'],['当前估值','¥9,500'],['状态','近半年未使用']],
-   events:[{date:'2026-01-10',title:'标记为闲置',delta:'',sub:'半年未出片',kind:'idle'},{date:'2022-06-01',title:'购入',delta:'−¥16,800',sub:'',kind:'buy'}]},
-  {id:'ipad',group:'physical',cat:'数码',name:'iPad Air 4',icon:'tablet',tint:'#E7E9E4',photo:'thumbs/ipad.jpg',status:'retired',countable:false,price:4799,bought:'2021-05-01',value:0,
-   meta:[['购入价','¥4,799'],['购入日','2021-05-01'],['状态','已退役 · 不再使用']],
-   events:[{date:'2025-12-01',title:'退役',delta:'',sub:'屏幕老化，闲置抽屉',kind:'retire'},{date:'2021-05-01',title:'购入',delta:'−¥4,799',sub:'',kind:'buy'}]},
-  {id:'ip12',group:'physical',cat:'数码',name:'iPhone 12',icon:'phone',tint:'#E7E9E4',photo:'thumbs/ip12.jpg',status:'sold',countable:false,price:6799,bought:'2020-11-01',value:0,soldPrice:1800,
-   meta:[['购入价','¥6,799'],['出售价','¥1,800'],['持有','约 4.7 年'],['盈亏','−¥4,999']],
-   events:[{date:'2025-08-20',title:'已出售',delta:'+¥1,800',sub:'闲鱼 · 折旧 −¥4,999',kind:'sell'},{date:'2020-11-01',title:'购入',delta:'−¥6,799',sub:'',kind:'buy'}]},
-  // 家居
-  {id:'dyson',group:'physical',cat:'家居',name:'戴森 V12 吸尘器',icon:'box',tint:'#EAE1E7',status:'active',countable:true,price:4290,bought:'2023-08-15',value:1500,
-   meta:[['购入价','¥4,290'],['购入日','2023-08-15'],['当前估值','¥1,500']],
-   events:[{date:'2023-08-15',title:'购入',delta:'−¥4,290',sub:'',kind:'buy'}]},
-  {id:'table',group:'physical',cat:'家居',name:'北欧实木餐桌',icon:'table',tint:'#E9E4DA',photo:'thumbs/table.jpg',status:'active',countable:true,price:3200,bought:'2022-12-01',value:1200,
-   meta:[['购入价','¥3,200'],['购入日','2022-12-01'],['当前估值','¥1,200']],
-   events:[{date:'2022-12-01',title:'购入',delta:'−¥3,200',sub:'',kind:'buy'}]},
-  // 交通
-  {id:'car', group:'physical',cat:'交通',name:'本田思域',icon:'car',tint:'#DBE8DF',photo:'thumbs/car.jpg',status:'active',countable:true,price:128000,bought:'2022-09-15',value:96000,
-   due:[{label:'车险到期',date:'2026-07-12'},{label:'年检',date:'2026-11-20'}],
-   meta:[['车牌','沪A·8F2K9'],['购入价','¥128,000'],['购入日','2022-09-15'],['当前估值','¥96,000'],['车险到期','2026-07-12'],['下次年检','2026-11-20']],
-   events:[{date:'2026-06-01',title:'加油',delta:'−¥420',sub:'中石化 95号',kind:'spend'},{date:'2026-05-18',title:'小保养',delta:'−¥680',sub:'4S店',kind:'spend'},{date:'2022-09-15',title:'购入',delta:'−¥128,000',sub:'',kind:'buy'}]},
-  {id:'zeekr',group:'physical',cat:'交通',name:'极氪001',icon:'car',tint:'#D7E0E6',photo:'thumbs/zeekr.jpg',status:'active',countable:true,price:296000,bought:'2024-05-20',value:228000,
+  {id:'zeekr',group:'physical',cat:'交通',name:'极氪001',icon:'car',tint:'#D7E0E6',photo:'thumbs/zeekr.jpg',status:'active',countable:true,price:296000,bought:'2026-06-25',value:228000,
    due:[{label:'车险到期',date:'2026-08-05'}],
-   meta:[['车牌','沪AD·0012'],['购入价','¥296,000'],['购入日','2024-05-20'],['当前估值','¥228,000'],['续航','WLTP 656km'],['车险到期','2026-08-05']],
-   events:[{date:'2026-06-10',title:'充电',delta:'−¥58',sub:'家充 · 42 度',kind:'spend'},{date:'2024-05-20',title:'购入',delta:'−¥296,000',sub:'极氪001 WE 版',kind:'buy'}]},
-  // 腕表
-  {id:'watch',group:'physical',cat:'腕表',name:'浪琴名匠',icon:'watch',tint:'#E8E4D7',photo:'thumbs/watch.jpg',status:'active',countable:true,price:14800,bought:'2023-02-14',value:9800,
-   meta:[['购入价','¥14,800'],['购入日','2023-02-14'],['当前估值','¥9,800'],['成色','98新 · 含表盒']],
-   events:[{date:'2025-03-01',title:'保养',delta:'−¥600',sub:'机芯清洗',kind:'spend'},{date:'2023-02-14',title:'购入',delta:'−¥14,800',sub:'',kind:'buy'}]},
-  // 现金
-  {id:'cmb',  group:'cash',cat:'现金',name:'招商银行储蓄卡',icon:'bank',tint:'#DDE7EC',status:'active',countable:true,value:24860.30,
-   meta:[['账户','招商银行'],['类型','活期储蓄'],['当前余额','¥24,860.30']],events:[{date:'2026-06-14',title:'工资入账',delta:'+¥8,500',sub:'六月工资',kind:'in'}]},
-  {id:'alipay',group:'cash',cat:'现金',name:'支付宝',icon:'alipay',tint:'#DDE7EC',status:'active',countable:true,value:1205.66,meta:[['账户','支付宝'],['当前余额','¥1,205.66']],events:[]},
-  {id:'wechat',group:'cash',cat:'现金',name:'微信零钱',icon:'wechat',tint:'#DEE9DF',status:'active',countable:true,value:642.10,meta:[['账户','微信支付'],['当前余额','¥642.10']],events:[]},
-  {id:'wallet',group:'cash',cat:'现金',name:'现金钱包',icon:'cash',tint:'#E9E4DA',status:'active',countable:true,value:380.00,meta:[['类型','现金'],['当前余额','¥380.00']],events:[]},
+   meta:[['购入价','¥296,000'],['购入日','2026-06-25'],['当前估值','¥228,000'],['续航','WLTP 656km'],['车险到期','2026-08-05']],
+   events:[{date:'2026-06-10',title:'充电',delta:'−¥58',sub:'家充 · 42 度',kind:'spend'},{date:'2026-06-25',title:'购入',delta:'−¥296,000',sub:'极氪001 WE 版',kind:'buy'}]},
+  {id:'t90pro',group:'physical',cat:'家居',name:'T90 Pro 扫地机器人',icon:'box',tint:'#E9E4DA',status:'active',countable:true,price:2750,bought:'2026-07-03',value:2750,
+   meta:[['购入价','¥2,750'],['购入日','2026-07-03'],['当前估值','¥2,750'],['状态','新购入']],
+   events:[{date:'2026-07-03',title:'录入资产',delta:'−¥2,750',sub:'扫地机器人 · T90 Pro',kind:'buy'}]},
+  {id:'mate70proplus',group:'physical',cat:'数码',name:'Mate 70 Pro+',icon:'phone',tint:'#E1E6EC',status:'active',countable:true,price:9000,bought:'2024-12-01',value:9000,
+   meta:[['购入价','约 ¥9,000'],['购入日','2024-12-01'],['当前估值','约 ¥9,000'],['状态','在用']],
+   events:[{date:'2024-12-01',title:'录入资产',delta:'−¥9,000',sub:'约 9k · Mate 70 Pro+',kind:'buy'}]},
   // 权益票券
-  {id:'air',group:'entitle',cat:'权益',name:'国航航段',icon:'plane',tint:'#DBE8DF',status:'active',countable:true,value:520,validUntil:'2026-06-30',unitName:'段',
-   meter:{type:'discrete',total:2,remaining:2},perUnit:260,
-   meta:[['有效期至','2026-06-30'],['航空公司','中国国航 CA'],['折算价值','¥520 / 2段']],
-   events:[{date:'2025-11-11',title:'购入 2 段',delta:'+2',sub:'兑换券 · ¥520',kind:'buy'}]},
   {id:'gift',group:'entitle',cat:'权益',name:'好利来礼品卡',icon:'card',tint:'#EAE1E7',status:'active',countable:true,value:80,validUntil:'2026-06-30',unitName:'元',
    meter:{type:'cont',total:500,remaining:80},
    meta:[['有效期至','2026-06-30'],['面值','¥500.00'],['当前余额','¥80.00']],
    events:[{date:'2026-06-12',title:'多次消费',delta:'−¥420',sub:'累计 · 半熟芝士等',kind:'spend'},{date:'2026-02-14',title:'充值入账',delta:'+¥500',sub:'激活',kind:'in'}]},
-  {id:'gym',group:'entitle',cat:'权益',name:'威尔士健身年卡',icon:'member',tint:'#DBE8DF',status:'active',countable:true,value:1100,validUntil:'2026-08-01',
-   meter:{type:'time',start:'2025-08-01',end:'2026-08-01',label:'会籍'},
-   meta:[['会籍到期','2026-08-01'],['门店','威尔士 · 静安寺'],['折算剩余','约 ¥1,100']],
-   events:[{date:'2025-08-01',title:'开通年卡',delta:'−¥2,680',sub:'',kind:'buy'}]},
-  {id:'movie',group:'entitle',cat:'权益',name:'万达电影通兑券',icon:'ticket',tint:'#E1E6EC',status:'active',countable:true,value:135,validUntil:'2026-07-31',unitName:'张',
-   meter:{type:'discrete',total:3,remaining:3},perUnit:45,
-   meta:[['有效期至','2026-07-31'],['适用','万达影城 2D/3D'],['折算价值','¥135 / 3张']],
-   events:[{date:'2026-03-08',title:'兑换 3 张',delta:'+3',sub:'积分兑换',kind:'buy'}]},
 ];
 
 /* ---------- helpers ---------- */
@@ -559,6 +516,7 @@ function mdLabel(d){const[,m,da]=d.split('-');return parseInt(m)+'月'+parseInt(
 function daysHeld(a){return a.bought?Math.max(1,daysBetween(a.bought,TODAY)):0;}
 function dailyCost(a){return (a.price&&a.bought)?a.price/daysHeld(a):0;}
 function heldText(a){const d=daysHeld(a);if(d>=365){return (d/365).toFixed(1)+' 年';}return d+' 天';}
+function cloneAssets(assets){return assets.map(a=>JSON.parse(JSON.stringify(a)));}
 
 /* ---------- 缩略图流程：上传 → 居中裁切缩放 → 存储 → 展示 ---------- */
 // 把任意图片 dataURL 压成方形缩略图（默认 360px、JPEG），减小 IndexedDB 体积。
@@ -600,9 +558,18 @@ const S={screen:'overview',currentAsset:null,cat:'全部',status:'全部',valueM
 let nlSeq=1;
 
 function liveAssets(){return ASSETS.filter(a=>a.status!=='sold'&&a.status!=='retired');}
-function groupValue(gid){return ASSETS.filter(a=>a.group===gid&&a.countable).reduce((s,a)=>s+a.value,0);}
-function netWorth(){if(S.valueMode==='cashOnly')return groupValue('cash');return ASSETS.filter(a=>a.countable).reduce((s,a)=>s+a.value,0);}
-function nonCashValue(){return netWorth()-groupValue('cash')+ (S.valueMode==='cashOnly'? (ASSETS.filter(a=>a.countable&&a.group!=='cash').reduce((s,a)=>s+a.value,0)) :0);}
+function isMemberAsset(a){return a.group==='member'||a.cat==='会员'||a.unitName==='会员'||/会员/.test(a.name);}
+function groupAssets(gid){
+  if(gid==='financial')return ASSETS.filter(a=>(a.group==='cash'||a.group==='financial'||a.group==='invest')&&a.countable);
+  if(gid==='member')return ASSETS.filter(a=>isMemberAsset(a)&&a.countable);
+  if(gid==='entitle')return ASSETS.filter(a=>a.group==='entitle'&&!isMemberAsset(a)&&a.countable);
+  return ASSETS.filter(a=>a.group===gid&&a.countable);
+}
+function groupValue(gid){return groupAssets(gid).reduce((s,a)=>s+a.value,0);}
+function cashValue(){return ASSETS.filter(a=>a.group==='cash'&&a.countable).reduce((s,a)=>s+a.value,0);}
+function netWorth(){if(S.valueMode==='cashOnly')return cashValue();return ASSETS.filter(a=>a.countable).reduce((s,a)=>s+a.value,0);}
+function pctOf(v,total){return total>0?Math.round(v/total*100):0;}
+function nonCashValue(){return netWorth()-cashValue()+ (S.valueMode==='cashOnly'? (ASSETS.filter(a=>a.countable&&a.group!=='cash').reduce((s,a)=>s+a.value,0)) :0);}
 function totalDaily(){return ASSETS.filter(a=>(a.status==='active'||a.status==='idle')&&a.price).reduce((s,a)=>s+dailyCost(a),0);}
 function physItems(){return ASSETS.filter(a=>a.group==='physical');}
 function statusCounts(){const c={active:0,idle:0,retired:0,sold:0};physItems().forEach(a=>{c[a.status]=(c[a.status]||0)+1;});return c;}
@@ -626,13 +593,63 @@ function rulerHTML(a,full){
     const lg=full?'<div class="legend"><span>面值 '+money(m.total)+'</span><span class="hi'+(isExpiring(a)?' warn':'')+'">剩余 '+money(m.remaining)+'</span></div>':'';
     return '<div class="ruler cont"><div class="scale"><i style="width:'+p+'%"></i></div>'+lg+'</div>';}
   if(m.type==='time'){const tot=daysBetween(m.start,m.end),pa=daysBetween(m.start,TODAY),p=Math.max(2,Math.min(100,Math.round(pa/tot*100))),left=daysBetween(TODAY,m.end),w=left<=30;
-    const lg=full?'<div class="legend"><span>'+m.label+' '+m.start+'</span><span class="hi'+(w?' warn':'')+'">'+(left<0?'已过期':'剩余 '+left+' 天')+'</span></div>':'';
+    const lg=full?'<div class="legend"><span>'+m.label+' '+m.end+'</span><span class="hi'+(w?' warn':'')+'">'+(left<0?'已过期':'剩余 '+left+' 天')+'</span></div>':'';
     return '<div class="ruler time"><div class="scale"><i class="'+(w?'warn':'')+'" style="width:'+p+'%"></i><span class="pin" style="left:'+p+'%"></span></div>'+lg+'</div>';}
   return '';
 }
 function statusPill(a){
   const st=isExpiring(a)&&(a.status==='active')&&a.validUntil?{label:'临期',cls:'expiring'}:{label:STATUS[a.status].label,cls:a.status};
   return '<span class="pill '+st.cls+'"><span class="dot"></span>'+st.label+'</span>';
+}
+function entitleTotal(a){
+  if(a.mileage&&a.mileage.total)return Number(a.mileage.total).toLocaleString('en-US');
+  if(a.meter&&a.meter.type==='discrete')return Number(a.meter.remaining||0).toLocaleString('en-US');
+  return '';
+}
+function isEntitleLike(a){return a.group==='entitle'||isMemberAsset(a);}
+function entitleUnit(a){return (a.mileage&&'里程')||a.unitName||'权益';}
+function entitleSub(a){
+  if(a.mileage){
+    if(a.mileage.rollingMonths)return '滚动 '+a.mileage.rollingMonths+' 个月';
+    if(a.mileage.expiringSoonDate)return '首批到期 '+a.mileage.expiringSoonDate;
+  }
+  if(a.unitName==='会员'||/会员/.test(a.name))return a.validUntil?'到期 '+a.validUntil:'会员权益';
+  if(a.validUntil)return '有效期 '+a.validUntil;
+  return a.cat||'权益';
+}
+function entitleFoot(a){
+  if(a.mileage){
+    if(a.value>0)return '估值 '+money(a.value);
+    if(a.mileage.remainingExpiry)return '余量至 '+a.mileage.remainingExpiry;
+    if(a.mileage.lastUpdate)return '上次更新 '+a.mileage.lastUpdate;
+  }
+  if(a.unitName==='会员'||/会员/.test(a.name))return '会员';
+  return '折算价值 '+money(a.value);
+}
+function entitleMilesTotal(){
+  return ASSETS.filter(a=>a.group==='entitle'&&a.mileage).reduce((s,a)=>s+Number(a.mileage.total||0),0);
+}
+function groupSubText(gid,cnt,pct){
+  if(gid==='entitle'){
+    const miles=entitleMilesTotal();
+    return cnt+' 项 · '+(miles?miles.toLocaleString('en-US')+' 里程':'权益记录');
+  }
+  if(gid==='member')return cnt+' 项 · 到期提醒';
+  if(gid==='financial')return cnt+' 项 · 占 '+pct+'%';
+  return cnt+' 项 · 占 '+pct+'%';
+}
+function groupValueText(gid,v){
+  if(gid==='member')return groupAssets('member').length+' 项';
+  if(gid==='entitle'){
+    const miles=entitleMilesTotal();
+    return v>0?money(v):(miles?miles.toLocaleString('en-US')+' 里程':money(v));
+  }
+  return money(v);
+}
+function groupPctText(gid,pct,v){
+  if(gid==='entitle')return v>0?'估值':'权益';
+  if(gid==='member')return '会员';
+  return '占 '+pct+'%';
 }
 
 /* ---------- shell ---------- */
@@ -668,13 +685,13 @@ function viewOverview(){
   const nw=netWorth();
   const groups=GROUPS.map(g=>{
     if(g.placeholder)return '<div class="group-row ph" data-act="nav" data-arg="invest" role="button" tabindex="0" aria-label="投资理财，即将上线"><div class="ic">'+svg(g.icon)+'</div><div class="body"><div class="nm">'+g.name+'</div><div class="sub">'+g.sub+'</div></div><div class="right"><div class="val">即将上线</div></div><div class="chev">'+svg('chevR')+'</div></div>';
-    const v=groupValue(g.id),cnt=ASSETS.filter(a=>a.group===g.id&&a.countable).length,pct=Math.round(v/nw*100);
-    return '<div class="group-row" data-act="group" data-arg="'+g.id+'" role="button" tabindex="0" aria-label="'+g.name+'，'+money(v)+'"><div class="ic">'+svg(g.icon)+'</div><div class="body"><div class="nm">'+g.name+'</div><div class="sub">'+cnt+' 项 · 占 '+pct+'%</div><div class="sharebar"><i style="width:'+pct+'%"></i></div></div><div class="right"><div class="val">'+money(v)+'</div></div><div class="chev">'+svg('chevR')+'</div></div>';
+    const v=groupValue(g.id),cnt=groupAssets(g.id).length,pct=pctOf(v,nw);
+    return '<div class="group-row" data-act="group" data-arg="'+g.id+'" role="button" tabindex="0" aria-label="'+g.name+'，'+groupValueText(g.id,v)+'"><div class="ic">'+svg(g.icon)+'</div><div class="body"><div class="nm">'+g.name+'</div><div class="sub">'+groupSubText(g.id,cnt,pct)+'</div><div class="sharebar"><i style="width:'+pct+'%"></i></div></div><div class="right"><div class="val">'+groupValueText(g.id,v)+'</div></div><div class="chev">'+svg('chevR')+'</div></div>';
   }).join('');
   const groupCards=GROUPS.map(g=>{
     if(g.placeholder)return '<div class="gcard ph" data-act="nav" data-arg="invest" role="button" tabindex="0" aria-label="投资理财，即将上线"><div class="top"><div class="ic">'+svg(g.icon)+'</div><div class="pct">即将上线</div></div><div class="nm">'+g.name+'</div><div class="cnt">'+g.sub+'</div><div class="val">— —</div><div class="sharebar"><i style="width:0%"></i></div></div>';
-    const v=groupValue(g.id),cnt=ASSETS.filter(a=>a.group===g.id&&a.countable).length,pct=Math.round(v/nw*100);
-    return '<div class="gcard" data-act="group" data-arg="'+g.id+'" role="button" tabindex="0" aria-label="'+g.name+'，'+money(v)+'"><div class="top"><div class="ic">'+svg(g.icon)+'</div><div class="pct">占 '+pct+'%</div></div><div class="nm">'+g.name+'</div><div class="cnt">'+cnt+' 项</div><div class="val num">'+money(v)+'</div><div class="sharebar"><i style="width:'+pct+'%"></i></div></div>';
+    const v=groupValue(g.id),cnt=groupAssets(g.id).length,pct=pctOf(v,nw);
+    return '<div class="gcard" data-act="group" data-arg="'+g.id+'" role="button" tabindex="0" aria-label="'+g.name+'，'+groupValueText(g.id,v)+'"><div class="top"><div class="ic">'+svg(g.icon)+'</div><div class="pct">'+groupPctText(g.id,pct,v)+'</div></div><div class="nm">'+g.name+'</div><div class="cnt">'+groupSubText(g.id,cnt,pct)+'</div><div class="val num">'+groupValueText(g.id,v)+'</div><div class="sharebar"><i style="width:'+pct+'%"></i></div></div>';
   }).join('');
   const ovToggle='<span class="view-toggle"><button class="'+(S.ovMode==='list'?'on':'')+'" data-act="ovmode" data-arg="list" aria-label="列表视图">'+svg('list')+'</button><button class="'+(S.ovMode==='card'?'on':'')+'" data-act="ovmode" data-arg="card" aria-label="卡片视图">'+svg('grid2')+'</button></span>';
   const groupsSection=S.ovMode==='card'?('<div class="group-grid">'+groupCards+'</div>'):('<div class="block">'+groups+'</div>');
@@ -683,14 +700,15 @@ function viewOverview(){
     const down=/^[−-]/.test(x.e.delta);
     return '<div class="metarow" style="border-color:var(--hair-2)"><span class="mk" style="color:var(--ink);font-weight:500">'+x.e.title+' · '+x.a.name+'</span><span class="mv'+(x.e.delta?'':' cn')+'" style="color:'+(down?'var(--ink)':(x.e.delta?'var(--green)':'var(--slate)'))+'">'+(x.e.delta||'—')+'</span></div>';
   }).join('');
+  const firstRun=!ASSETS.length?'<div class="empty-big"><div class="ic">'+svg('plus')+'</div><div class="t">从第一项资产开始</div><div class="d">可以用一句话录入，比如「上个月 11000 装了 9700X + 5070 主机」。</div><a class="cta" data-act="nav" data-arg="action" role="button" tabindex="0">添加第一项资产</a></div>':'';
   setScreen(
     '<div class="nethero"><div class="toprow"><div class="k">'+svg('bank')+'总资产净值</div>'+
       '<button class="valtoggle" data-act="valmode" aria-label="切换估值口径">'+svg('toggle')+(S.valueMode==='all'?'含非现金':'仅现金')+'</button></div>'+
       '<div class="metrics"><div class="net"><div class="v num"><span class="sym">¥</span>'+money(nw,{sym:false})+'</div></div>'+
         '<div class="daily"><div class="dk">日均成本</div><div class="dv num">¥'+totalDaily().toFixed(0)+'<span class="u">/天</span></div></div></div>'+
-      '<div class="note">'+(S.valueMode==='all'?'含非现金估值 · 非现金 '+money(nw-groupValue('cash')):'仅现金 · 非现金 '+money(ASSETS.filter(a=>a.countable&&a.group!=='cash').reduce((s,a)=>s+a.value,0))+' 未计入')+'</div>'+
+      '<div class="note">'+(S.valueMode==='all'?'含非现金估值 · 非现金 '+money(nw-cashValue()):'仅现金 · 非现金 '+money(ASSETS.filter(a=>a.countable&&a.group!=='cash').reduce((s,a)=>s+a.value,0))+' 未计入')+'</div>'+
       '<div class="statusbar"><div class="bar">'+segs+'</div><div class="legend">'+legend+'</div></div>'+
-    '</div>'+
+    '</div>'+firstRun+
     '<div class="section-label">资产分组<span class="sec-right">'+ovToggle+'<span class="more" data-act="nav" data-arg="assets">查看全部</span></span></div>'+
     groupsSection+
     '<div class="section-label">待办<span class="more" data-act="nav" data-arg="todos">全部 '+todos().length+' 项</span></div>'+
@@ -710,7 +728,7 @@ function remindCard(t){
 /* ---------- Assets list ---------- */
 function viewAssets(){
   appbar('资产',{search:true});
-  const cats=['全部','现金','数码','家居','交通','腕表','权益'];
+  const cats=['全部','现金','数码','家居','交通','权益','会员'];
   const states=['全部','服役中','闲置','临期','已退役','已卖出'];
   const catTabs=cats.map(c=>'<button class="cat-tab'+(S.cat===c?' on':'')+'" data-act="cat" data-arg="'+c+'">'+c+'</button>').join('');
   const chips=states.map(s=>'<button class="chip'+(S.status===s?' on':'')+'" data-act="status" data-arg="'+s+'">'+s+'</button>').join('');
@@ -719,6 +737,7 @@ function viewAssets(){
 }
 function itemsHTML(){
   let list=ASSETS.slice();
+  if(!list.length)return '<div class="empty-big"><div class="ic">'+svg('box')+'</div><div class="t">还没有资产</div><div class="d">先添加一件实物、一个账户或一张权益卡券。</div><a class="cta" data-act="nav" data-arg="action" role="button" tabindex="0">去添加</a></div>';
   if(S.cat!=='全部')list=list.filter(a=>a.cat===S.cat);
   if(S.status!=='全部'){const map={'服役中':'active','闲置':'idle','已退役':'retired','已卖出':'sold'};
     if(S.status==='临期')list=list.filter(a=>isExpiring(a));else list=list.filter(a=>a.status===map[S.status]);}
@@ -730,12 +749,12 @@ function itemsHTML(){
   if(S.viewMode==='table')return assetTable(list);
   return '<div class="items">'+list.map(itemCard).join('')+'</div>';
 }
-/* 表格视图：每一项资产一行，资产 / 净值 / 日均 三列对齐 */
+/* 表格视图：每一项资产一行，资产 / 数值 / 日均 三列对齐 */
 function assetTable(list){
-  const head='<div class="thead"><span>资产</span><span class="r">净值</span><span class="r">日均</span></div>';
+  const head='<div class="thead"><span>资产</span><span class="r">数值</span><span class="r">日均</span></div>';
   const rows=list.map(a=>{
     const faded=(a.status==='retired'||a.status==='sold')?' faded':'';
-    const net=money(a.status==='sold'?(a.soldPrice||0):a.value,{cents:false});
+    const net=isEntitleLike(a)&&entitleTotal(a)?entitleTotal(a)+' '+entitleUnit(a):money(a.status==='sold'?(a.soldPrice||0):a.value,{cents:false});
     const hasDaily=a.group==='physical'&&(a.status==='active'||a.status==='idle');
     const daily=hasDaily?('¥'+dailyCost(a).toFixed(2)):'—';
     return '<div class="trow'+faded+'" data-act="asset" data-arg="'+a.id+'" role="button" tabindex="0" aria-label="'+a.name+'，'+STATUS[a.status].label+'">'+
@@ -749,7 +768,7 @@ function itemCard(a){
   const faded=(a.status==='retired'||a.status==='sold')?' faded':'';
   let right='';
   if(a.group==='cash'){right='<div class="big num">'+money(a.value)+'</div>'+statusPill(a);}
-  else if(a.group==='entitle'){right=statusPill(a);}
+  else if(isEntitleLike(a)){right=statusPill(a);}
   else{ // physical durable
     if(a.status==='sold')right='<div class="big num" style="color:var(--sold)">'+money(a.soldPrice)+'</div>'+statusPill(a);
     else if(a.status==='retired')right=statusPill(a);
@@ -757,16 +776,16 @@ function itemCard(a){
   }
   let sub='';
   if(a.group==='cash')sub=a.meta&&a.meta[0]?a.meta[0][1]:'账户';
-  else if(a.group==='entitle')sub=a.cat==='权益'?('折算 '+money(a.value)):'';
+  else if(isEntitleLike(a))sub=entitleSub(a);
   else sub='总价 '+money(a.price,{cents:false})+' · 已持有 '+heldText(a);
-  const ruler=a.group==='entitle'?rulerHTML(a,false):'';
+  const ruler=isEntitleLike(a)?rulerHTML(a,false):'';
   return '<div class="icard'+faded+'" data-act="asset" data-arg="'+a.id+'" role="button" tabindex="0" aria-label="'+a.name+'，'+STATUS[a.status].label+'">'+
     '<div class="thumb'+(a.photo?' photo':'')+'" style="'+(a.photo?'background-image:url('+a.photo+');background-size:cover;background-position:center':'background:'+a.tint)+'">'+(a.photo?'':svg(a.icon))+'</div>'+
     '<div class="body"><div class="nm">'+a.name+'</div><div class="sub">'+sub+'</div>'+ruler+'</div>'+
     '<div class="right">'+right+'</div></div>';
 }
 /* 预计服役年限（按类别），用于卡片「剩余 N 天」 */
-const LIFE_YEARS={数码:8,家居:15,交通:15,腕表:50};
+const LIFE_YEARS={数码:8,家居:15,交通:15};
 function serviceLeft(a){const ly=LIFE_YEARS[a.cat]||10;return Math.max(0,Math.round(ly*365-daysHeld(a)));}
 /* 卡片视图：有数风格照片卡（两列网格）
    照片 + 状态角标 + 名称 + 原价·已用天数 + 醒目日均成本 + 衰减曲线 + 剩余天数 */
@@ -778,9 +797,18 @@ function gridCard(a){
   if(a.group==='cash'){
     sub=a.meta&&a.meta[0]?a.meta[0][1]:'账户';
     hero='¥<b>'+money(a.value,{cents:false,sym:false})+'</b>';heroCls=' cash';foot='当前余额';
-  }else if(a.group==='entitle'){
-    sub=a.validUntil?('有效期 '+a.validUntil):'权益';
-    hero='¥<b>'+money(a.value,{cents:false,sym:false})+'</b>';heroCls=' cash';foot='折算价值';
+  }else if(isEntitleLike(a)){
+    sub=entitleSub(a);
+    if(a.mileage){
+      hero='<b>'+entitleTotal(a)+'</b><span class="u">'+entitleUnit(a)+'</span>';
+      heroCls=' cash';foot=entitleFoot(a);
+    }else if(a.unitName==='会员'||/会员/.test(a.name)){
+      hero='<b>会员</b>';
+      heroCls=' cash';foot=entitleFoot(a);
+    }else{
+      hero='¥<b>'+money(a.value,{cents:false,sym:false})+'</b>';
+      heroCls=' cash';foot='折算价值 '+money(a.value);
+    }
   }else if(a.status==='sold'){
     sub='持有 '+heldText(a);
     hero='¥<b>'+money(a.soldPrice||0,{cents:false,sym:false})+'</b>';heroCls=' sold';
@@ -805,6 +833,11 @@ function gridCard(a){
 /* ---------- Asset detail ---------- */
 function viewAssetDetail(){
   const a=ASSETS.find(x=>x.id===S.currentAsset)||ASSETS[0];
+  if(!a){
+    appbar('资产详情',{back:'assets'});
+    setScreen('<div class="empty-big"><div class="ic">'+svg('box')+'</div><div class="t">还没有可查看的资产</div><div class="d">添加第一项资产后，可以在这里查看估值、照片和变动记录。</div><a class="cta" data-act="nav" data-arg="action" role="button" tabindex="0">添加资产</a></div>');
+    return;
+  }
   appbar(a.name,{back:'assets'});
   // 有真实/占位照片 → 顶部整宽照片横幅；现金账户等无照片 → 小图标块
   const heroVisual=a.photo
@@ -814,11 +847,13 @@ function viewAssetDetail(){
   if(a.group==='cash'){
     hero='<div class="dhero'+(a.photo?' has-photo':'')+'">'+heroVisual+'<div class="nm">'+a.name+'</div>'+
       '<div class="bal num"><span class="sym">¥</span>'+money(a.value,{sym:false})+'</div><div class="line">当前余额</div></div>';
-  }else if(a.group==='entitle'){
+  }else if(isEntitleLike(a)){
     let big='',line='';const m=a.meter;
-    if(m.type==='discrete'){big=m.remaining+' <span class="u">/ 共 '+m.total+' '+a.unitName+'</span>';line='折算价值 '+money(a.value);}
-    else if(m.type==='cont'){big=money(m.remaining);line='面值 '+money(m.total);}
-    else{const left=daysBetween(TODAY,m.end);big=Math.max(0,left)+' <span class="u">天后到期</span>';line='折算剩余 '+money(a.value);}
+    if(a.mileage){big=entitleTotal(a)+' <span class="u">'+entitleUnit(a)+'</span>';line=entitleSub(a)+' · '+entitleFoot(a);}
+    else if(m&&m.type==='discrete'){big=m.remaining+' <span class="u">/ 共 '+m.total+' '+a.unitName+'</span>';line='折算价值 '+money(a.value);}
+    else if(m&&m.type==='cont'){big=money(m.remaining);line='面值 '+money(m.total);}
+    else if(m&&m.type==='time'){const left=daysBetween(TODAY,m.end);big=Math.max(0,left)+' <span class="u">天后到期</span>';line=entitleSub(a);}
+    else{big=entitleUnit(a);line=entitleSub(a);}
     hero='<div class="dhero'+(a.photo?' has-photo':'')+'">'+heroVisual+'<div class="nm">'+a.name+'</div>'+
       '<div class="dailybig num">'+big+'</div><div class="line">'+line+'</div>'+rulerHTML(a,true)+'</div>';
   }else{ // physical
@@ -834,13 +869,15 @@ function viewAssetDetail(){
   // actions
   let acts='';
   if(S.edit){
-    acts='<div class="editbar"><input id="editInput" inputmode="decimal" value="'+S.edit.value+'" aria-label="'+S.edit.label+'"/><button class="ok" data-act="edit-ok">确认</button><button class="cancel" data-act="edit-cancel">取消</button></div>';
+    const editType=S.edit.field==='bought'?'date':'text';
+    const inputMode=S.edit.field==='bought'?'':' inputmode="decimal"';
+    acts='<div class="editbar"><input id="editInput" type="'+editType+'"'+inputMode+' value="'+S.edit.value+'" aria-label="'+S.edit.label+'"/><button class="ok" data-act="edit-ok">确认</button><button class="cancel" data-act="edit-cancel">取消</button></div>';
   }else if(a.group==='cash'){
     acts='<div class="detail-actions"><button class="primary" data-act="edit" data-arg="balance">改余额</button><button data-act="noop">转账记录</button></div>';
-  }else if(a.group==='entitle'){
+  }else if(isEntitleLike(a)){
     const m=a.meter;
-    if(m.type==='discrete')acts='<div class="detail-actions"><button class="primary" data-act="use" data-arg="'+a.id+'"'+(m.remaining<=0?' disabled':'')+'>'+(m.remaining<=0?'已用完':'用掉一'+a.unitName)+'</button><button data-act="renew" data-arg="'+a.id+'">续期</button></div>';
-    else if(m.type==='cont')acts='<div class="detail-actions"><button class="primary" data-act="edit" data-arg="cont">改余额</button><button data-act="renew" data-arg="'+a.id+'">续期</button></div>';
+    if(m&&m.type==='discrete')acts='<div class="detail-actions"><button class="primary" data-act="use" data-arg="'+a.id+'"'+(m.remaining<=0?' disabled':'')+'>'+(m.remaining<=0?'已用完':'用掉一'+a.unitName)+'</button><button data-act="renew" data-arg="'+a.id+'">续期</button></div>';
+    else if(m&&m.type==='cont')acts='<div class="detail-actions"><button class="primary" data-act="edit" data-arg="cont">改余额</button><button data-act="renew" data-arg="'+a.id+'">续期</button></div>';
     else acts='<div class="detail-actions"><button class="primary" data-act="renew" data-arg="'+a.id+'">续期一年</button><button data-act="noop">核对会籍</button></div>';
   }else if(a.status==='retired'){
     acts='<div class="detail-actions"><button class="primary" data-act="sell" data-arg="'+a.id+'">标记已售</button><button data-act="setstatus" data-arg="active">恢复服役</button></div>';
@@ -849,7 +886,7 @@ function viewAssetDetail(){
   }else{
     acts='<div class="detail-actions"><button class="primary" data-act="edit" data-arg="value">更新估值</button>'+
       (a.status==='idle'?'<button data-act="setstatus" data-arg="active">恢复服役</button>':'<button data-act="setstatus" data-arg="idle">标记闲置</button>')+
-      '<button data-act="sell" data-arg="'+a.id+'">标记已售</button><button data-act="setstatus" data-arg="retired">标记退役</button></div>';
+      '<button data-act="edit" data-arg="bought">改购入日</button><button data-act="sell" data-arg="'+a.id+'">标记已售</button><button data-act="setstatus" data-arg="retired">标记退役</button></div>';
   }
   const meta=a.meta.map(r=>'<div class="metarow"><span class="mk">'+r[0]+'</span><span class="mv'+(/[¥0-9]/.test(r[1])?'':' cn')+'">'+r[1]+'</span></div>').join('');
   const evs=a.events.map(e=>{const down=/^[−-]/.test(e.delta),up=/^[+]/.test(e.delta);
@@ -887,9 +924,9 @@ function viewTodos(){
 /* ---------- Action ---------- */
 function viewAction(){
   appbar('记一次变动',{back:'overview'});
-  const tmpls=[['plane','航段'],['card','礼品卡'],['car','车辆'],['laptop','数码'],['member','会员'],['watch','腕表'],['ticket','票券'],['bank','现金账户']];
+  const tmpls=[['plane','航段'],['card','礼品卡'],['car','车辆'],['laptop','数码'],['member','会员'],['ticket','票券'],['bank','现金账户']];
   const tg=tmpls.map(t=>'<button class="tmpl" data-act="addtmpl" data-arg="'+t[1]+'"><div class="ic">'+svg(t[0])+'</div><div class="l">'+t[1]+'</div></button>').join('');
-  const quick=liveAssets().filter(a=>a.group!=='cash').slice(0,6).map(itemCard).join('');
+  const quick=liveAssets().filter(a=>a.group!=='cash').slice(0,6).map(itemCard).join('')||'<div class="empty">添加资产后，快捷变动会出现在这里。</div>';
   setScreen(
     smartAddCard()+
     '<div class="action-hero"><button data-act="addtmpl" data-arg="资产"><div class="ic">'+svg('plus')+'</div><div class="t">添加资产</div><div class="d">登记一件新资产或账户</div></button>'+
@@ -922,7 +959,7 @@ function viewMe(){
     '<div class="section-label">关于</div><div class="block">'+
       '<div class="me-row" data-act="noop"><div class="ic">'+svg('shield')+'</div><div class="t">本地存储 · 不上传</div></div>'+
       '<div class="me-row" data-act="noop"><div class="ic">'+svg('gear')+'</div><div class="t">设置</div></div>'+
-      '<div class="me-row" data-act="reset-data" role="button" tabindex="0"><div class="ic" style="background:#FBF1E2;color:#C77A12;border-color:#F0DEC0">'+svg('refresh')+'</div><div class="t">重置示例数据</div><div class="v" style="color:var(--amber-ink)">清除并恢复</div></div>'+
+      '<div class="me-row" data-act="reset-data" role="button" tabindex="0"><div class="ic" style="background:#FBF1E2;color:#C77A12;border-color:#F0DEC0">'+svg('refresh')+'</div><div class="t">恢复初始化数据</div><div class="v" style="color:var(--amber-ink)">覆盖本机</div></div>'+
     '</div><div class="empty" style="padding:20px">持有 · 个人资产台账</div>'
   );
 }
@@ -944,6 +981,17 @@ function applyEdit(){const a=ASSETS.find(x=>x.id===S.currentAsset);const inp=doc
   if(f==='balance'){a.value=v;if(a.meta)a.meta=a.meta.map(r=>/余额/.test(r[0])?[r[0],money(v)]:r);a.events.unshift({date:TODAY,title:'改余额',delta:money(v),sub:'手动核对',kind:'val'});}
   else if(f==='cont'){a.meter.remaining=Math.min(v,a.meter.total);a.value=a.meter.remaining;a.events.unshift({date:TODAY,title:'改余额',delta:money(a.meter.remaining),sub:'',kind:'val'});}
   else if(f==='value'){a.value=v;if(a.meta)a.meta=a.meta.map(r=>/估值/.test(r[0])?[r[0],money(v)]:r);a.events.unshift({date:TODAY,title:'更新估值',delta:money(v),sub:'按行情评估',kind:'val'});}
+  else if(f==='bought'){
+    const next=(inp.value||'').trim();
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(next)){showStamp('日期格式不对');return;}
+    const old=a.bought;
+    a.bought=next;
+    if(a.meta)a.meta=a.meta.map(r=>r[0]==='购入日'?[r[0],next]:r);
+    if(next!==old){
+      if(a.events)a.events=a.events.map(e=>(e.kind==='buy'&&(!old||e.date===old))?{...e,date:next}:e);
+      a.events.unshift({date:TODAY,title:'修改购入日',delta:'',sub:next,kind:'val'});
+    }
+  }
   else if(f==='sell'){a.soldPrice=v;a.status='sold';a.value=0;a.events.unshift({date:TODAY,title:'已出售',delta:money(v,{sign:true}),sub:'折旧 '+money(v-(a.price||0),{sign:true}),kind:'sell'});}
   S.edit=null;saveAssets();showStamp('已更新');setTimeout(()=>{viewAssetDetail();renderTabs();},300);}
 
@@ -960,7 +1008,7 @@ async function llmExtract(text, image){
   const b=loadByok();
   const url=(b.base||'').replace(/\/+$/,'')+'/chat/completions';
   const sys='今天是'+TODAY+'。你是资产录入助手。从用户的一句话或一张图片里抽取"一件资产"，只输出一个 JSON 对象：'+
-    '{"name":"物品名（简洁）","category":"数码|家居|交通|腕表|权益|现金|其他 之一","price":购入价数字,"est_value":当前估值数字,"bought_date":"YYYY-MM-DD","note":""}。'+
+    '{"name":"物品名（简洁）","category":"数码|家居|交通|权益|会员|现金|其他 之一","price":购入价数字,"est_value":当前估值数字,"bought_date":"YYYY-MM-DD","note":""}。'+
     '把相对日期（上个月/上月/去年X月/前年/今年X月/X月X日）按今天解析为 YYYY-MM-DD。若文字或图片中出现购买/下单日期，务必用它作为 bought_date，否则才用今天。缺失字段给合理默认或空字符串/0。只返回 JSON，不要解释。';
   const userContent = image ? [{type:'text',text:text||'识别图片里的这件资产'},{type:'image_url',image_url:{url:image}}] : text;
   const res=await fetch(url,{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+(b.key||'')},
@@ -984,7 +1032,7 @@ function localExtract(text){
   else if(/上(?:个)?月/.test(text)){let mm=M-1,yy=Y;if(mm<1){mm=12;yy--;}d=yy+'-'+String(mm).padStart(2,'0')+'-15';}
   else if((m=text.match(/(\d{4})\s*[-./年]\s*(\d{1,2})/)))d=m[1]+'-'+String(+m[2]).padStart(2,'0')+'-01';
   else if((m=text.match(/(\d{1,2})\s*月/)))d=Y+'-'+String(+m[1]).padStart(2,'0')+'-01';
-  const kw=[['交通',/汽车|电动车|自行车|摩托|思域|特斯拉|比亚迪|byd|小米su7|车\b/i],['腕表',/腕表|手表|劳力士|浪琴|欧米茄|卡西欧|手錶/],['数码',/手机|iphone|安卓|电脑|笔记本|mac|平板|ipad|相机|镜头|耳机|switch|显示器|键盘|路由|手环|耳麦|gpu|显卡/i],['家居',/沙发|餐桌|椅|床|冰箱|空调|洗衣机|吸尘器|戴森|家具|厨|扫地机|按摩椅/],['权益',/航段|机票|礼品卡|会员|年卡|月卡|票|券|储值|积分/],['现金',/银行卡|储蓄|余额宝?|现金|存款|账户|钱包/]];
+  const kw=[['交通',/汽车|电动车|自行车|摩托|思域|特斯拉|比亚迪|byd|小米su7|车\b/i],['数码',/手机|iphone|安卓|电脑|笔记本|mac|平板|ipad|相机|镜头|耳机|switch|显示器|键盘|路由|手环|手表|腕表|耳麦|gpu|显卡/i],['家居',/沙发|餐桌|椅|床|冰箱|空调|洗衣机|吸尘器|戴森|家具|厨|扫地机|按摩椅/],['会员',/会员|订阅|年卡|月卡|plus|vip/i],['权益',/航段|机票|礼品卡|票|券|储值|积分|里程/],['现金',/银行卡|储蓄|余额宝?|现金|存款|账户|钱包/]];
   let category='其他';for(const [c,re] of kw){if(re.test(text)){category=c;break;}}
   let name=text.replace(/¥\s*[\d,]+(?:\.\d+)?/g,'').replace(/[\d,]+(?:\.\d+)?\s*(?:块|元|rmb|RMB)/g,'')
     .replace(/前年|去年|今年|上(?:个)?月|\d{4}\s*[-./年]\s*\d{1,2}(?:\s*[-./月]\s*\d{1,2})?|\d{1,2}\s*月(?:\s*\d{1,2}\s*日?)?/g,'')
@@ -1021,7 +1069,7 @@ function smartAddCard(){
   return '<div class="block" style="margin-top:16px;padding:14px 16px">'+
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-family:var(--cn);font-weight:600;font-size:15px">智能添加 · 文字 / 图片</div>'+
       '<button class="pill '+(ready?'active':'')+'" data-act="nav" data-arg="byok"><span class="dot"></span>'+(ready?'AI 已接入':'本地解析 · 接入 AI')+'</button></div>'+
-    '<textarea id="nlInput" class="nl-ta" placeholder="一句话，如：上个月 4290 买的戴森 V12 吸尘器">'+((nl.text||'').replace(/</g,'&lt;'))+'</textarea>'+
+    '<textarea id="nlInput" class="nl-ta" placeholder="一句话，如：昨天好利来礼品卡还剩 80 元">'+((nl.text||'').replace(/</g,'&lt;'))+'</textarea>'+
     (nl.image?'<div class="nl-img"><img src="'+nl.image+'"/><span>已选图片 · 点「传图」可换图</span></div>':'')+
     '<div style="display:flex;gap:8px;margin-top:9px">'+
       '<button class="nl-go" style="flex:1" data-act="nl-go">'+(nl.loading?'识别中…':'✨ 智能添加')+'</button>'+
@@ -1033,7 +1081,7 @@ function smartAddCard(){
   '</div>';
 }
 function addAssetFromNL(r){
-  const cm={'数码':{group:'physical',icon:'box',tint:'#E1E6EC'},'家居':{group:'physical',icon:'box',tint:'#E9E4DA'},'交通':{group:'physical',icon:'car',tint:'#DBE8DF'},'腕表':{group:'physical',icon:'watch',tint:'#E8E4D7'},'权益':{group:'entitle',icon:'ticket',tint:'#DBE8DF'},'现金':{group:'cash',icon:'cash',tint:'#DDE7EC'},'其他':{group:'physical',icon:'box',tint:'#E7E9E4'}};
+  const cm={'数码':{group:'physical',icon:'box',tint:'#E1E6EC'},'家居':{group:'physical',icon:'box',tint:'#E9E4DA'},'交通':{group:'physical',icon:'car',tint:'#DBE8DF'},'权益':{group:'entitle',icon:'ticket',tint:'#DBE8DF'},'会员':{group:'member',icon:'member',tint:'#E4E8DC'},'现金':{group:'cash',icon:'cash',tint:'#DDE7EC'},'其他':{group:'physical',icon:'box',tint:'#E7E9E4'}};
   const c=cm[r.category]||cm['其他'];
   const price=Math.round((r.price||0)*100)/100, value=Math.round((r.est_value||r.price||0)*100)/100;
   const id='nl'+(nlSeq++);
@@ -1057,7 +1105,7 @@ function viewByok(){
     '<div class="section-label">服务商</div>'+
     '<div class="chips" style="padding-top:0">'+presets+'</div>'+
     '<div class="block" style="padding:14px 16px;margin-top:6px">'+
-      '<div class="byok-note">自然语言添加会把"上个月 4290 买的戴森 V12"这类话，调用大模型（OpenAI 兼容接口）解析成结构化资产；不填则用本地规则解析。<br/>· 小米 MiMo 已默认 <b>国内区 token-plan-cn + mimo-v2.5</b>（已实测可用）：<b>只需粘贴 token</b> 保存即可。<br/>· 浏览器直连小米常被 CORS 拦 → 想在浏览器里真用 AI：跑 <code>node demo/mimo-proxy.mjs</code>，把上面 Base URL 改成 <code>http://localhost:8787/v1</code> 即可。</div>'+
+      '<div class="byok-note">自然语言添加会把"昨天好利来礼品卡还剩 80 元"这类话，调用大模型（OpenAI 兼容接口）解析成结构化资产；不填则用本地规则解析。<br/>· 小米 MiMo 已默认 <b>国内区 token-plan-cn + mimo-v2.5</b>（已实测可用）：<b>只需粘贴 token</b> 保存即可。<br/>· 浏览器直连小米常被 CORS 拦 → 想在浏览器里真用 AI：跑 <code>node demo/mimo-proxy.mjs</code>，把上面 Base URL 改成 <code>http://localhost:8787/v1</code> 即可。</div>'+
       '<label class="byok-l">Base URL（到 /v1 即可）</label><input id="byokBase" class="byok-in" placeholder="https://token-plan-cn.xiaomimimo.com/v1" value="'+(baseV.replace(/"/g,'&quot;'))+'"/>'+
       '<label class="byok-l">API Key（粘贴你的 token）</label><input id="byokKey" class="byok-in" type="password" placeholder="粘贴小米 token…" value="'+(keyV.replace(/"/g,'&quot;'))+'"/>'+
       '<label class="byok-l">模型</label><input id="byokModel" class="byok-in" placeholder="mimo-v2.5" value="'+(modelV.replace(/"/g,'&quot;'))+'"/>'+
@@ -1071,7 +1119,7 @@ function viewByok(){
 document.getElementById('app').addEventListener('click',e=>{
   const t=e.target.closest('[data-act]');if(!t)return;const act=t.dataset.act,arg=t.dataset.arg;
   if(act==='nav')route(arg);
-  else if(act==='group'){S.cat=({cash:'现金',physical:'数码',entitle:'权益'})[arg]||'全部';S.status='全部';route('assets');}
+  else if(act==='group'){S.cat=({financial:'现金',physical:'数码',entitle:'权益',member:'会员'})[arg]||'全部';S.status='全部';route('assets');}
   else if(act==='cat'){S.cat=arg;const l=document.getElementById('itemList');if(l)l.innerHTML=itemsHTML();document.querySelectorAll('.cat-tab').forEach(x=>x.classList.toggle('on',x.dataset.arg===arg));}
   else if(act==='status'){S.status=arg;const l=document.getElementById('itemList');if(l)l.innerHTML=itemsHTML();document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x.dataset.arg===arg));}
   else if(act==='viewmode'){S.viewMode=arg;const l=document.getElementById('itemList');if(l)l.innerHTML=itemsHTML();document.querySelectorAll('.view-toggle button').forEach(x=>x.classList.toggle('on',x.dataset.arg===arg));}
@@ -1080,7 +1128,7 @@ document.getElementById('app').addEventListener('click',e=>{
   else if(act==='renew')renew(arg);
   else if(act==='sell')sell(arg);
   else if(act==='setstatus')setStatus(arg);
-  else if(act==='edit'){const a=ASSETS.find(x=>x.id===S.currentAsset);S.edit={field:arg,label:arg==='value'?'当前估值':'当前余额',value:String(arg==='cont'?a.meter.remaining:a.value)};viewAssetDetail();}
+  else if(act==='edit'){const a=ASSETS.find(x=>x.id===S.currentAsset);S.edit={field:arg,label:arg==='value'?'当前估值':(arg==='bought'?'购入日':'当前余额'),value:String(arg==='cont'?a.meter.remaining:(arg==='bought'?(a.bought||TODAY):a.value))};viewAssetDetail();}
   else if(act==='edit-ok')applyEdit();
   else if(act==='edit-cancel'){S.edit=null;viewAssetDetail();}
   else if(act==='valmode'){S.valueMode=S.valueMode==='all'?'cashOnly':'all';viewOverview();}
@@ -1094,7 +1142,7 @@ document.getElementById('app').addEventListener('click',e=>{
   else if(act==='byok-preset'){const p=BYOK_PRESETS[arg]||BYOK_PRESETS.kimi;const cur=loadByok();saveByok({provider:arg,base:p.base||cur.base||'',model:p.model||cur.model||'',key:cur.key||''});viewByok();}
   else if(act==='byok-save'){const base=(document.getElementById('byokBase').value||'').trim();const key=(document.getElementById('byokKey').value||'').trim();const model=(document.getElementById('byokModel').value||'').trim()||'kimi-latest';const cur=loadByok();saveByok({provider:cur.provider||'kimi',base,key,model});showStamp(key&&base?'已启用 AI':'已保存');setTimeout(()=>route('me'),440);}
   else if(act==='byok-clear'){saveByok({});showStamp('已清除');viewByok();}
-  else if(act==='reset-data'){if(confirm('确定要重置所有数据为示例数据吗？')){ASSETS=DEFAULT_ASSETS.map(a=>({...a}));dbPutAll(ASSETS);ensureThumbs();showStamp('已重置');setTimeout(()=>route('overview'),400);}}
+  else if(act==='reset-data'){if(confirm('确定要恢复初始化资产数据吗？这会覆盖本机当前修改。')){ASSETS=cloneAssets(DEFAULT_ASSETS);dbPutAll(ASSETS);ensureThumbs();showStamp('已恢复');setTimeout(()=>route('overview'),400);}}
   else if(act==='pickphoto'){const i=document.getElementById('assetPhoto');if(i)i.click();}
   else if(act==='noop')showStamp('演示中暂未开放');
 });
@@ -1109,8 +1157,8 @@ function saveAssets(){debouncedSave();}
   if(h&&VIEWS[h])S.screen=h;
   try{
     const saved=await dbGetAll();
-    if(saved&&saved.length){ASSETS=saved;}else{ASSETS=DEFAULT_ASSETS;await dbPutAll(ASSETS);}
-  }catch(e){console.warn('[boot] IndexedDB load failed, using defaults',e);ASSETS=DEFAULT_ASSETS;}
+    if(saved&&saved.length){ASSETS=saved;}else{ASSETS=cloneAssets(DEFAULT_ASSETS);await dbPutAll(ASSETS);}
+  }catch(e){console.warn('[boot] IndexedDB load failed, using defaults',e);ASSETS=cloneAssets(DEFAULT_ASSETS);}
   ensureThumbs();
   /* 注册 Service Worker */
   if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
