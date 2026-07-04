@@ -3,6 +3,7 @@ node_modules/
 dist/
 build/icon.iconset/
 index.html
+.claude/handoffs/
 reports/photo-candidates/
 reports/screenshots/*
 !reports/screenshots/seeded_initialization_overview.png
