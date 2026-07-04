@@ -24,6 +24,7 @@
 | 资产排序 | Ready for trial | 默认、价值最高、最近购入、日均最高、到期最近 |
 | 待办提醒 | Ready for trial | 已过期、30 天内、60 天内分组 |
 | 智能添加确认 | Ready for trial | 解析后可编辑名称、分类、购入价、购入日、估值、备注 |
+| 图片来源策略 | Ready for trial | `photoSource` 标注、详情展示、JSON 导出和策略报告 |
 | 金融资产 | Deferred | 当前显示为「暂未开发」 |
 | 实物资产 | Ready for trial | 数码、家居、交通 |
 | 权益票券 | Ready for trial | 里程、礼品卡、票券 |
@@ -66,6 +67,7 @@
 | Apple Developer ID signing | Avoid first-launch trust friction |
 | Apple notarization | Required for smooth external macOS distribution |
 | Image BYOK live test | Text path is live-tested; image path still needs provider capability validation |
+| Demo image rights audit/replacement | Bundled demo thumbnails are labelled, not yet rights-cleared for public stable distribution |
 
 ### P1 Before Wider Beta
 
@@ -73,7 +75,6 @@
 | --- | --- |
 | Data model migrations | Future category changes should not require manual repair |
 | Richer due-date actions | Users should be able to edit dates or mark reminders handled |
-| Photo/source cleanup | Candidate assets should stay out of product repo |
 
 ### P2 Later
 

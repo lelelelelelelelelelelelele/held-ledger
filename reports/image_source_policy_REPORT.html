@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Image Source Policy Report</title>
+<style>
+  :root {
+    --paper: #f7f8f4;
+    --ink: #1c211d;
+    --muted: #637067;
+    --line: #dfe5dc;
+    --green: #2e7d5b;
+    --amber: #8a5408;
+    --white: #fffefb;
+  }
+  body { margin: 0; font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Noto Sans SC", "PingFang SC", sans-serif; color: var(--ink); background: var(--paper); }
+  main { max-width: 1080px; margin: 0 auto; padding: 40px 22px 56px; }
+  header { border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 26px; }
+  h1 { margin: 0 0 10px; font-size: 31px; letter-spacing: 0; }
+  h2 { margin: 30px 0 12px; font-size: 19px; }
+  p { margin: 0 0 12px; }
+  ul { margin: 0 0 18px 20px; padding: 0; }
+  li { margin: 4px 0; }
+  .verdict { display: inline-flex; align-items: center; gap: 8px; color: var(--amber); font-weight: 700; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--amber); }
+  table { width: 100%; border-collapse: collapse; background: var(--white); border: 1px solid var(--line); margin: 10px 0 18px; }
+  th, td { text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); padding: 10px 12px; }
+  th { font-size: 13px; color: var(--muted); background: #eef3ec; }
+  tr:last-child td { border-bottom: 0; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; background: #eef3ec; padding: 1px 5px; border-radius: 5px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Image Source Policy Report</h1>
+    <p class="verdict"><span class="dot"></span>有条件通过：Alpha 已能追踪图片来源，公开稳定版前仍需审核或替换演示缩略图。</p>
+  </header>
+
+  <h2>Report Boundary</h2>
+  <p>本报告说明图片来源追踪策略和当前实现状态；它不是图片版权审计结论。</p>
+  <ul>
+    <li>发布准入风险见 <code>reports/release_readiness_REPORT.md</code>。</li>
+    <li>可编辑策略源见 <code>docs/image-source-policy.md</code>。</li>
+    <li>P1 功能迭代差异见 <code>reports/p1_iteration_REPORT.md</code>。</li>
+  </ul>
+
+  <h2>Source Taxonomy</h2>
+  <table>
+    <thead><tr><th>Source</th><th>Code</th><th>Used By</th><th>Export Behavior</th><th>Risk</th></tr></thead>
+    <tbody>
+      <tr><td>内置演示图</td><td><code>bundled_demo</code></td><td>默认种子资产缩略图</td><td>保留相对路径与来源字段</td><td>公开分发前需确认授权或替换</td></tr>
+      <tr><td>用户上传</td><td><code>user_upload</code></td><td>资产详情照片上传</td><td>保留 data URL 与来源字段</td><td>属于本机用户数据，体积可能较大</td></tr>
+      <tr><td>AI 识别输入图</td><td><code>ai_input_upload</code></td><td>智能添加传图确认</td><td>保留 data URL 与来源字段</td><td>图片识别 live test 尚未完成</td></tr>
+      <tr><td>生成占位图</td><td><code>generated_placeholder</code></td><td>无照片资产运行时占位</td><td>不导出 SVG 图片内容，只保留来源</td><td>无版权风险，但不是实物照片</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Implementation Evidence</h2>
+  <table>
+    <thead><tr><th>Check</th><th>Result</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>默认图片标注</td><td>Pass</td><td><code>macair</code>、<code>pc</code>、<code>zeekr</code> 使用 <code>photoSource: "bundled_demo"</code></td></tr>
+      <tr><td>详情页可见</td><td>Pass</td><td>资产详情显示“图片来源：内置演示图”等来源</td></tr>
+      <tr><td>用户上传追踪</td><td>Pass</td><td>详情页上传照片写入 <code>photoSource: "user_upload"</code> 和 <code>photoUpdated</code></td></tr>
+      <tr><td>AI 传图追踪</td><td>Pass</td><td>智能添加传图确认写入 <code>photoSource: "ai_input_upload"</code> 和 <code>photoUpdated</code></td></tr>
+      <tr><td>导出追踪</td><td>Pass</td><td><code>npm run test:seeded-flow</code> 验证 JSON 导出包含 <code>photoSource</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Policy Decisions</h2>
+  <table>
+    <thead><tr><th>Decision</th><th>Rationale</th></tr></thead>
+    <tbody>
+      <tr><td>不把生成占位 SVG 当作真实照片</td><td>占位图只是 UI fallback，不应被误认为用户素材</td></tr>
+      <tr><td>内置演示图保留但标注风险</td><td>Alpha 需要可视化资产卡片，但公开分发前必须完成素材来源确认</td></tr>
+      <tr><td>用户上传和 AI 输入图都视作本机用户数据</td><td>不上传云端，导出时由用户自己控制备份</td></tr>
+      <tr><td>图片识别能力与图片素材授权分开管理</td><td>BYOK live test 证明识别链路，不证明素材可商用</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Remaining Work</h2>
+  <table>
+    <thead><tr><th>Item</th><th>Priority</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>demo/thumbs/*.jpg</code> 版权审核或替换</td><td>Before public stable</td><td>当前只标注为演示图，不声明可商用</td></tr>
+      <tr><td>图片 BYOK live test</td><td>Before external stable</td><td>文本 Kimi BYOK 已通过，图片路径尚未 live test</td></tr>
+      <tr><td>大图压缩和导出体积限制</td><td>Later</td><td>当前缩略图压缩为 360px JPEG，但没有导出体积提示</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Conclusion</h2>
+  <p>图片来源策略已经从“待整理”变成可追踪字段和可验收行为。下一步不是继续改字段，而是完成公开分发前的演示素材授权审核或替换。</p>
+</main>
+</body>
+</html>

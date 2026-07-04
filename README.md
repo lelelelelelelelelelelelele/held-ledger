@@ -16,6 +16,7 @@
 
 - `docs/product-brief.md`：产品方向、用户场景、核心功能边界
 - `docs/design-notes.md`：参考产品观察、交互和视觉方向记录
+- `docs/image-source-policy.md`：图片来源标注、导出和公开分发前替换策略
 - `docs/todo.md`：后续开发前需要确认和执行的事项
 - `docs/demo/open-source-demos.md`：可参考的开源项目与 demo 方向
 

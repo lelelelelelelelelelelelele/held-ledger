@@ -78,6 +78,9 @@ try {
   if (!zeekrText.includes('购入日') || !zeekrText.includes('2026-06-25') || !zeekrText.includes('改购入日')) {
     throw new Error(`Zeekr purchase date editor is missing or wrong: ${zeekrText}`);
   }
+  if (!zeekrText.includes('图片来源') || !zeekrText.includes('内置演示图')) {
+    throw new Error(`Zeekr photo source policy is missing from detail: ${zeekrText}`);
+  }
   await page.locator('[data-act="edit"][data-arg="bought"]').click();
   await page.locator('#editInput').fill('2026-06-25');
   await page.locator('[data-act="edit-ok"]').click();
@@ -144,6 +147,10 @@ try {
   const editedAsset = exported.assets.find(asset => asset.name === '佳能 R8 Mark II');
   if (!editedAsset || editedAsset.price !== 7200 || editedAsset.value !== 6900 || editedAsset.bought !== '2026-05-20') {
     throw new Error(`Edited smart-add asset missing from export: ${JSON.stringify(editedAsset)}`);
+  }
+  const seededPhotoAsset = exported.assets.find(asset => asset.id === 'zeekr');
+  if (!seededPhotoAsset || seededPhotoAsset.photoSource !== 'bundled_demo') {
+    throw new Error(`Seeded photo source missing from export: ${JSON.stringify(seededPhotoAsset)}`);
   }
 
   exported.assets.unshift({

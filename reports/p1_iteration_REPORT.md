@@ -39,9 +39,9 @@
 | Gap | Why It Remains | Suggested Next Check |
 | --- | --- | --- |
 | 数据模型版本迁移策略 | IndexedDB schema has moved to config/assets stores, but asset schema migration is still ad hoc | Add explicit export schema version and import migration tests |
-| 图片/照片资产来源整理 | 当前 thumb assets and user-uploaded photos coexist without provenance policy | Decide which images are demo assets, generated placeholders, or user-owned |
 | 更完整到期处理动作 | 已能看到逾期，但不能直接改有效期或标记已处理 | Add due-date edit/handled action and acceptance coverage |
 | 搜索入口 | 排序完成，搜索图标仍未展开为真实搜索 | Add name/category/meta search with clear-filter state |
+| 演示图片版权审核或替换 | 已有来源标注策略，但未完成公开稳定版素材授权审计 | Replace or clear `demo/thumbs/*.jpg` before public stable release |
 
 ## Conclusion
 

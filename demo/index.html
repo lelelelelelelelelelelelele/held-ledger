@@ -508,13 +508,13 @@ let ASSETS=[];
 let LAST_DELETED=null;
 const DEFAULT_ASSETS=[
   // 数码与实物
-  {id:'macair',group:'physical',cat:'数码',name:'MacBook Air 13"',icon:'laptop',tint:'#E2E8EC',photo:'thumbs/macair.jpg',status:'active',countable:true,price:5700,bought:'2026-06-11',value:5700,
+  {id:'macair',group:'physical',cat:'数码',name:'MacBook Air 13"',icon:'laptop',tint:'#E2E8EC',photo:'thumbs/macair.jpg',photoSource:'bundled_demo',status:'active',countable:true,price:5700,bought:'2026-06-11',value:5700,
    meta:[['购入价','¥5,700'],['购入日','2026-06-11'],['当前估值','¥5,700'],['状态','新购入 · 用了约三周']],
    events:[{date:'2026-06-11',title:'录入资产',delta:'−¥5,700',sub:'新购入 · 约三周',kind:'buy'}]},
-  {id:'pc',group:'physical',cat:'数码',name:'9700X + 5070 主机',icon:'box',tint:'#E1E6EC',photo:'thumbs/pc.jpg',status:'active',countable:true,price:11000,bought:'2026-05-16',value:11000,
+  {id:'pc',group:'physical',cat:'数码',name:'9700X + 5070 主机',icon:'box',tint:'#E1E6EC',photo:'thumbs/pc.jpg',photoSource:'bundled_demo',status:'active',countable:true,price:11000,bought:'2026-05-16',value:11000,
    meta:[['配置','Ryzen 9700X + RTX 5070'],['购入价','¥11,000'],['购入日','2026-05-16'],['当前估值','¥11,000']],
    events:[{date:'2026-05-16',title:'录入资产',delta:'−¥11,000',sub:'装机 · 9700X + 5070',kind:'buy'}]},
-  {id:'zeekr',group:'physical',cat:'交通',name:'极氪001',icon:'car',tint:'#D7E0E6',photo:'thumbs/zeekr.jpg',status:'active',countable:true,price:296000,bought:'2026-06-25',value:228000,
+  {id:'zeekr',group:'physical',cat:'交通',name:'极氪001',icon:'car',tint:'#D7E0E6',photo:'thumbs/zeekr.jpg',photoSource:'bundled_demo',status:'active',countable:true,price:296000,bought:'2026-06-25',value:228000,
    due:[{label:'车险到期',date:'2026-08-05'}],
    meta:[['购入价','¥296,000'],['购入日','2026-06-25'],['当前估值','¥228,000'],['续航','WLTP 656km'],['车险到期','2026-08-05']],
    events:[{date:'2026-06-10',title:'充电',delta:'−¥58',sub:'家充 · 42 度',kind:'spend'},{date:'2026-06-25',title:'购入',delta:'−¥296,000',sub:'极氪001 WE 版',kind:'buy'}]},
@@ -559,8 +559,18 @@ function validateImportAssets(input){
     a.value=Number(a.value)||0;
     a.meta=Array.isArray(a.meta)?a.meta:[];
     a.events=Array.isArray(a.events)?a.events:[{date:TODAY,title:'导入资产',delta:'',sub:'JSON',kind:'in'}];
+    if(a.photo&&!a.photoSource)a.photoSource=/^data:image\//.test(a.photo)?'user_upload':'bundled_demo';
     return a;
   });
+}
+function photoSourceLabel(src){
+  const map={
+    bundled_demo:'内置演示图',
+    user_upload:'用户上传',
+    ai_input_upload:'AI 识别输入图',
+    generated_placeholder:'生成占位图',
+  };
+  return map[src]||'未标注';
 }
 
 /* ---------- 缩略图流程：上传 → 居中裁切缩放 → 存储 → 展示 ---------- */
@@ -597,7 +607,7 @@ function svgThumb(a){
   return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg).replace(/\(/g,'%28').replace(/\)/g,'%29');
 }
 // 启动后：给没有真实照片的实物/权益资产补一张生成缩略图（仅内存，不写库）
-function ensureThumbs(){ASSETS.forEach(a=>{if(a.group!=='cash'&&!a.photo)a.photo=svgThumb(a);});}
+function ensureThumbs(){ASSETS.forEach(a=>{if(a.group!=='cash'&&!a.photo){a.photo=svgThumb(a);a.photoSource='generated_placeholder';}});}
 
 const S={screen:'overview',currentAsset:null,cat:'全部',status:'全部',sort:'default',valueMode:'all',edit:null,nl:null,viewMode:'card',ovMode:'list'};
 let nlSeq=1;
@@ -953,7 +963,9 @@ function viewAssetDetail(){
       (a.status==='idle'?'<button data-act="setstatus" data-arg="active">恢复服役</button>':'<button data-act="setstatus" data-arg="idle">标记闲置</button>')+
       '<button data-act="edit" data-arg="bought">改购入日</button><button data-act="sell" data-arg="'+a.id+'">标记已售</button><button data-act="setstatus" data-arg="retired">标记退役</button><button class="danger" data-act="delete-asset" data-arg="'+a.id+'">删除</button></div>';
   }
-  const meta=a.meta.map(r=>'<div class="metarow"><span class="mk">'+r[0]+'</span><span class="mv'+(/[¥0-9]/.test(r[1])?'':' cn')+'">'+r[1]+'</span></div>').join('');
+  const metaRows=a.meta.slice();
+  if(a.photoSource)metaRows.push(['图片来源',photoSourceLabel(a.photoSource)]);
+  const meta=metaRows.map(r=>'<div class="metarow"><span class="mk">'+r[0]+'</span><span class="mv'+(/[¥0-9]/.test(r[1])?'':' cn')+'">'+r[1]+'</span></div>').join('');
   const evs=a.events.map(e=>{const down=/^[−-]/.test(e.delta),up=/^[+]/.test(e.delta);
     return '<div class="tlrow"><div class="rail"><span class="dot'+(e.kind==='spend'||e.kind==='retire'||e.kind==='sell'?' spent':'')+'"></span><span class="line"></span></div><div class="c"><div class="t1"><span>'+e.title+'</span><span class="delta'+(down?' down':(up?' up':''))+'">'+(e.delta||'')+'</span></div><div class="t2">'+mdLabel(e.date)+(e.sub?' · '+e.sub:'')+'</div></div></div>';}).join('');
   const hasRealPhoto=a.photo&&a.photo.indexOf('data:image/svg')!==0; // 生成占位图(svg) 视为「未设照片」
@@ -969,7 +981,7 @@ function viewAssetDetail(){
   if(pin)pin.addEventListener('change',ev=>{
     const f=ev.target.files&&ev.target.files[0];if(!f)return;
     const rd=new FileReader();
-    rd.onload=async()=>{a.photo=await makeThumb(rd.result);saveAssets();showStamp('已更新照片');viewAssetDetail();};
+    rd.onload=async()=>{a.photo=await makeThumb(rd.result);a.photoSource='user_upload';a.photoUpdated=TODAY;saveAssets();showStamp('已更新照片');viewAssetDetail();};
     rd.readAsDataURL(f);
   });
 }
@@ -1227,7 +1239,7 @@ function addAssetFromNL(r){
   const id='nl'+(nlSeq++);
   const a={id,group:c.group,cat:r.category||'其他',name:r.name||'新资产',icon:c.icon,tint:c.tint,status:'active',countable:true,value,
     meta:[],events:[{date:r.bought_date||TODAY,title:'录入资产',delta:price?'−'+money(price):'',sub:r._src||'手动录入',kind:'buy'}]};
-  if(S.nl&&S.nl.image)a.photo=S.nl.image;
+  if(S.nl&&S.nl.image){a.photo=S.nl.image;a.photoSource='ai_input_upload';a.photoUpdated=TODAY;}
   if(c.group==='physical'){a.price=price;a.bought=r.bought_date||TODAY;a.meta=[['购入价',price?money(price):'—'],['购入日',a.bought],['当前估值',money(value)],['录入方式',r._src||'手动']];if(r.note)a.meta.push(['备注',r.note]);}
   else if(c.group==='cash'){a.value=value;a.meta=[['账户',a.name],['当前余额',money(value)]];}
   else {a.value=value;a.meta=[['当前价值',money(value)],['录入方式',r._src||'手动']];if(r.note)a.meta.push(['备注',r.note]);}

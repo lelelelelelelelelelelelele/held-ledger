@@ -21,6 +21,7 @@
 - [x] 逾期提醒闭环：已过期权益进入总览和待办页，并在临期筛选/到期排序中可见
 - [x] 智能添加确认页支持编辑字段：名称、分类、购入价、购入日、当前估值、备注
 - [x] API 错误状态和重试提示：失败后本地兜底、重试 AI、改 API 设置
+- [x] 图像/照片资产来源策略：`photoSource` 标注、详情展示、JSON 导出、策略报告
 - [x] README 明确本地存储、无云同步、BYOK 密钥存储、未签名安装说明和已知限制
 - [x] Release 标记为 Alpha（`0.1.0-alpha.0`）
 - [x] 发布前验证重跑：desktop、seeded-flow、byok-api、packaged
@@ -34,7 +35,6 @@
 ### P1 Before Wider Beta
 
 - [ ] 数据模型版本迁移策略
-- [ ] 图像/照片资产来源整理和替换策略
 - [ ] 更完整的会员、权益到期处理动作：改有效期、标记已处理、批量视图
 
 ### P2 Before External Stable Release
@@ -42,6 +42,7 @@
 - [ ] Apple Developer ID 签名
 - [ ] Apple notarization 公证
 - [ ] 图片 BYOK live test
+- [ ] `demo/thumbs/*.jpg` 版权审核或替换
 - [ ] 更完整的数据备份/恢复策略
 
 ### P3 Later
