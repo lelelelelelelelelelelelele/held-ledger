@@ -43,6 +43,12 @@ npm run test:packaged
 npm run test:seeded-flow
 ```
 
+验证 BYOK / OpenAI-compatible API 调用链路：
+
+```sh
+npm run test:byok-api
+```
+
 当前构建产物：
 
 - `dist/mac-arm64/持有.app`

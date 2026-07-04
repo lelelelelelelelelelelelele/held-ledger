@@ -9,7 +9,8 @@
     "pack:desktop": "electron-builder --mac dir",
     "test:desktop": "node tools/smoke-electron.mjs",
     "test:packaged": "node tools/smoke-packaged.mjs",
-    "test:seeded-flow": "node tools/acceptance-seeded-flow.mjs"
+    "test:seeded-flow": "node tools/acceptance-seeded-flow.mjs",
+    "test:byok-api": "node tools/smoke-byok-api.mjs"
   },
   "keywords": [],
   "author": "",

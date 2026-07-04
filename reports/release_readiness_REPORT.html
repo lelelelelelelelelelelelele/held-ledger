@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Release Readiness Report</title>
+<style>
+  :root {
+    --paper: #f7f8f4;
+    --ink: #1c211d;
+    --muted: #637067;
+    --line: #dfe5dc;
+    --green: #2e7d5b;
+    --amber: #8a5408;
+    --white: #fffefb;
+  }
+  body {
+    margin: 0;
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Noto Sans SC", "PingFang SC", sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+  }
+  main {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 40px 22px 56px;
+  }
+  header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 26px;
+  }
+  h1 {
+    margin: 0 0 10px;
+    font-size: 31px;
+    letter-spacing: 0;
+  }
+  h2 {
+    margin: 30px 0 12px;
+    font-size: 19px;
+  }
+  h3 {
+    margin: 22px 0 10px;
+    font-size: 16px;
+  }
+  p {
+    margin: 0 0 12px;
+  }
+  ul {
+    margin: 0 0 18px 20px;
+    padding: 0;
+  }
+  li {
+    margin: 4px 0;
+  }
+  .verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--amber);
+    font-weight: 700;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--amber);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border: 1px solid var(--line);
+    margin: 10px 0 18px;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 12px;
+  }
+  th {
+    font-size: 13px;
+    color: var(--muted);
+    background: #eef3ec;
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    background: #eef3ec;
+    padding: 1px 5px;
+    border-radius: 5px;
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Release Readiness Report</h1>
+    <p class="verdict"><span class="dot"></span>有条件通过：可作为本机/内部试用版发布；不建议直接外部分发。</p>
+  </header>
+
+  <h2>Verdict</h2>
+  <ul>
+    <li>桌面 App、初始化资产、自然语言添加、打包 App smoke test 均已通过。</li>
+    <li>BYOK / OpenAI-compatible API 链路已用本地 mock server 验收。</li>
+    <li>真实服务商 token 的 live API 验收尚未在本轮执行。</li>
+    <li>macOS 包仍未签名、未公证，外发会遇到 Gatekeeper 摩擦。</li>
+  </ul>
+
+  <h2>Current Scope</h2>
+  <table>
+    <thead><tr><th>Area</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>本机桌面 App</td><td>Ready for local/internal trial</td><td>Electron 包装 <code>demo/index.html</code></td></tr>
+      <tr><td>macOS packaged app</td><td>Ready for local/internal trial</td><td><code>dist/mac-arm64/持有.app</code> 可启动</td></tr>
+      <tr><td>DMG</td><td>Build-supported</td><td>需要外发前重新构建并签名/公证</td></tr>
+      <tr><td>初始化资产</td><td>Ready</td><td>新用户目录会加载基础资产集合</td></tr>
+      <tr><td>本机真实数据</td><td>Not versioned</td><td>IndexedDB 本机数据不进 Git</td></tr>
+      <tr><td>金融资产</td><td>Deferred</td><td>当前显示为「暂未开发」</td></tr>
+      <tr><td>实物资产</td><td>Ready for trial</td><td>数码、家居、交通</td></tr>
+      <tr><td>权益票券</td><td>Ready for trial</td><td>里程、礼品卡、票券</td></tr>
+      <tr><td>会员订阅</td><td>Ready for trial</td><td>独立到期提醒类</td></tr>
+      <tr><td>BYOK API</td><td>Mock-tested</td><td>真实服务商 token 尚未 live test</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Validation Results</h2>
+  <table>
+    <thead><tr><th>Check</th><th>Result</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>Source Electron smoke</td><td>Pass</td><td><code>npm run test:desktop</code></td></tr>
+      <tr><td>Seeded flow acceptance</td><td>Pass</td><td><code>npm run test:seeded-flow</code></td></tr>
+      <tr><td>BYOK mock API smoke</td><td>Pass</td><td><code>npm run test:byok-api</code></td></tr>
+      <tr><td>Packaged app smoke</td><td>Pass</td><td><code>npm run test:packaged</code></td></tr>
+      <tr><td>Computer Use visual check</td><td>Pass</td><td>总览显示金融资产暂未开发、权益估值、会员订阅</td></tr>
+    </tbody>
+  </table>
+
+  <h2>API Readiness</h2>
+  <table>
+    <thead><tr><th>Item</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Request path</td><td>Pass</td><td>mock server received <code>/v1/chat/completions</code></td></tr>
+      <tr><td>Authorization header</td><td>Pass</td><td>script verifies <code>Bearer test-token</code></td></tr>
+      <tr><td>Model field</td><td>Pass</td><td>script verifies configured model is sent</td></tr>
+      <tr><td>JSON response parsing</td><td>Pass</td><td>mock response becomes smart-add preview</td></tr>
+      <tr><td>Confirm add after API result</td><td>Pass</td><td>preview can be confirmed into asset detail</td></tr>
+      <tr><td>Real provider live test</td><td>Gap</td><td>needs an actual token and network-provider verification</td></tr>
+      <tr><td>Image API path</td><td>Gap</td><td>text API is tested; image upload path still depends on real model support</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Open TODO</h2>
+  <h3>P0 Before External Release</h3>
+  <table>
+    <thead><tr><th>Task</th><th>Why It Matters</th></tr></thead>
+    <tbody>
+      <tr><td>Apple Developer ID signing</td><td>Avoid first-launch trust friction</td></tr>
+      <tr><td>Apple notarization</td><td>Required for smooth external macOS distribution</td></tr>
+      <tr><td>Real provider BYOK live test</td><td>Mock proves integration shape, not provider behavior</td></tr>
+      <tr><td>Data export/backup</td><td>IndexedDB-only storage is fragile for real use</td></tr>
+      <tr><td>Stronger reset warning</td><td>「恢复初始化数据」 can overwrite local ledger state</td></tr>
+    </tbody>
+  </table>
+
+  <h3>P1 Before Wider Beta</h3>
+  <table>
+    <thead><tr><th>Task</th><th>Why It Matters</th></tr></thead>
+    <tbody>
+      <tr><td>Single asset delete/undo</td><td>Needed for mistaken entries</td></tr>
+      <tr><td>Editable smart-add confirmation</td><td>Avoid confirm-then-fix workflow</td></tr>
+      <tr><td>Import/export</td><td>Makes user data portable</td></tr>
+      <tr><td>API error and retry UI</td><td>BYOK failures should be understandable</td></tr>
+      <tr><td>Data model migrations</td><td>Future category changes should not require manual repair</td></tr>
+      <tr><td>Photo/source cleanup</td><td>Candidate assets should stay out of product repo</td></tr>
+    </tbody>
+  </table>
+
+  <h3>P2 Later</h3>
+  <table>
+    <thead><tr><th>Task</th><th>Why It Matters</th></tr></thead>
+    <tbody>
+      <tr><td>Financial asset module</td><td>Cash, deposits, funds and holdings need a different model</td></tr>
+      <tr><td>Architecture diagram</td><td>Helpful for handoff, not a release blocker</td></tr>
+      <tr><td>Cloud sync or backup</td><td>Useful after local trial proves value</td></tr>
+      <tr><td>Monthly bills / transaction module</td><td>Expands from asset ledger to full ledger app</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Release Recommendation</h2>
+  <p>可以发布为：本机试用版、内部验收版、给自己持续录入资产的桌面版。</p>
+  <p>暂不建议发布为：公开下载版、面向外部用户的正式安装包、依赖真实 AI 服务商的稳定功能版。</p>
+
+  <h2>Suggested Acceptance Call</h2>
+  <p>本轮可以验收为「本机资产台账桌面试用版」。验收边界是：资产、权益、会员的本机管理体验成立；金融资产和外部分发能力明确留到下一阶段。</p>
+</main>
+</body>
+</html>
