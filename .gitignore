@@ -2,3 +2,8 @@ node_modules/
 .DS_Store
 dist/
 build/icon.iconset/
+index.html
+reports/photo-candidates/
+reports/screenshots/*
+!reports/screenshots/seeded_initialization_overview.png
+!reports/screenshots/computer_use_zeekr_purchase_date_editor.png

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Seeded Initialization Acceptance Report</title>
+<style>
+  :root {
+    --paper: #f7f8f4;
+    --ink: #1c211d;
+    --muted: #637067;
+    --line: #dfe5dc;
+    --green: #2e7d5b;
+    --amber: #8a5408;
+    --white: #fffefb;
+  }
+  body {
+    margin: 0;
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Noto Sans SC", "PingFang SC", sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+  }
+  main {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 40px 22px 56px;
+  }
+  header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 26px;
+  }
+  h1 {
+    margin: 0 0 10px;
+    font-size: 31px;
+    letter-spacing: 0;
+  }
+  h2 {
+    margin: 30px 0 12px;
+    font-size: 19px;
+  }
+  p {
+    margin: 0 0 12px;
+  }
+  .verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--green);
+    font-weight: 700;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border: 1px solid var(--line);
+    margin: 10px 0 18px;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 12px;
+  }
+  th {
+    font-size: 13px;
+    color: var(--muted);
+    background: #eef3ec;
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    background: #eef3ec;
+    padding: 1px 5px;
+    border-radius: 5px;
+  }
+  .risk {
+    color: var(--amber);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Seeded Initialization Acceptance Report</h1>
+    <p class="verdict"><span class="dot"></span>通过：本机版已默认初始化资产，并可继续智能添加新资产。</p>
+  </header>
+
+  <h2>Current Seeded State</h2>
+  <table>
+    <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>总资产净值</td><td><code>¥256,530.00</code></td></tr>
+      <tr><td>金融资产</td><td><code>0 项 · ¥0.00</code></td></tr>
+      <tr><td>实物资产</td><td><code>5 项 · ¥256,450.00</code></td></tr>
+      <tr><td>权益票券</td><td><code>1 项 · ¥80.00</code></td></tr>
+      <tr><td>会员订阅</td><td><code>0 项 · 到期提醒</code></td></tr>
+      <tr><td>生命周期状态</td><td><code>服役中 5 · 闲置 0 · 已退役 0 · 已卖出 0</code></td></tr>
+      <tr><td>待办</td><td><code>1 项</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Initialized Assets</h2>
+  <table>
+    <thead><tr><th>Group</th><th>Assets</th></tr></thead>
+    <tbody>
+      <tr><td>数码/实物</td><td>MacBook Air 13", 9700X + 5070 主机, Mate 70 Pro+</td></tr>
+      <tr><td>家居/实物</td><td>T90 Pro 扫地机器人</td></tr>
+      <tr><td>交通/实物</td><td>极氪001</td></tr>
+      <tr><td>权益票券</td><td>好利来礼品卡</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Product Changes</h2>
+  <table>
+    <thead><tr><th>Area</th><th>Change</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>初始化数据</td><td><code>DEFAULT_ASSETS</code> 改为此前记录过的资产集合</td><td>新安装/新用户目录首次打开即显示资产台账</td></tr>
+      <tr><td>资产分组</td><td>现金类并入「金融资产」，会员从「权益票券」拆到「会员订阅」</td><td>总览分类更贴近真实资产管理口径</td></tr>
+      <tr><td>实物分类</td><td>智能表归入「数码」，取消单独「腕表」筛选</td><td>GT 6 等可穿戴设备与数码资产保持一致</td></tr>
+      <tr><td>本机数据隔离</td><td>IndexedDB 名称改为 <code>youshu_ledger_seeded_v4</code></td><td>避免混入前几轮误初始化数据</td></tr>
+      <tr><td>重置入口</td><td>「清空本机数据」改为「恢复初始化数据」</td><td>语义匹配当前初始化版本</td></tr>
+      <tr><td>详情编辑</td><td>实物资产详情页增加「改购入日」按钮</td><td>极氪001 可在 App 内直接编辑购入日期</td></tr>
+      <tr><td>验收脚本</td><td><code>test:empty-flow</code> 改为 <code>test:seeded-flow</code></td><td>自动化复验初始化资产和新增录入</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Validation Results</h2>
+  <table>
+    <thead><tr><th>Check</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td><code>npm run test:seeded-flow</code></td><td>Pass</td></tr>
+      <tr><td><code>npm run test:desktop</code></td><td>Pass</td></tr>
+      <tr><td><code>npm run build:desktop</code></td><td>Pass</td></tr>
+      <tr><td><code>npm run test:packaged</code></td><td>Pass</td></tr>
+      <tr><td>默认本机目录启动打包 App</td><td>Pass</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Screenshot Evidence</h2>
+  <table>
+    <thead><tr><th>Screenshot</th><th>What It Shows</th></tr></thead>
+    <tbody>
+      <tr><td><code>reports/screenshots/seeded_initialization_overview.png</code></td><td>本机打包 App 打开后，总览显示 6 项初始化资产、<code>¥256,530.00</code> 总净值和 1 项待办</td></tr>
+      <tr><td><code>reports/screenshots/computer_use_zeekr_purchase_date_editor.png</code></td><td>Computer Use 验证极氪001 详情页可通过「改购入日」编辑 <code>2026-06-25</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Packaged Artifacts</h2>
+  <table>
+    <thead><tr><th>Artifact</th><th>Path</th></tr></thead>
+    <tbody>
+      <tr><td>macOS App</td><td><code>dist/mac-arm64/持有.app</code></td></tr>
+      <tr><td>macOS DMG</td><td><code>dist/持有-1.0.0-arm64.dmg</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Known Gaps</h2>
+  <table>
+    <thead><tr><th>Gap</th><th>Impact</th><th>Suggested Follow-up</th></tr></thead>
+    <tbody>
+      <tr><td class="risk">当前仍是本机未签名包</td><td>本机试用可接受，外发会有 Gatekeeper 提示</td><td>仅外发时再做签名/公证</td></tr>
+      <tr><td class="risk">初始化资产来自现有记录集合，尚未做逐项用户确认</td><td>个别金额/日期可能仍需人工校准</td><td>后续在 App 里逐项编辑修正</td></tr>
+      <tr><td class="risk">确认预览仍不可直接编辑字段</td><td>智能添加解析错时需要先确认后再改</td><td>增加可编辑确认表单</td></tr>
+      <tr><td class="risk">单项资产缺少删除/撤销</td><td>误录后清理不够顺手</td><td>增加单项删除和撤销</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Conclusion</h2>
+  <p>本机版可以结项：它已经是可安装、可打开、带初始化资产数据、可继续录入的桌面试用版。</p>
+</main>
+</body>
+</html>

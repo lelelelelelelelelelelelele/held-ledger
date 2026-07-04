@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Desktop Packaging Report</title>
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #f7f8f4;
+    --ink: #1c211d;
+    --muted: #657066;
+    --line: #dfe5dc;
+    --green: #2e7d5b;
+    --amber: #8a5408;
+    --white: #fffefb;
+  }
+  body {
+    margin: 0;
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Noto Sans SC", "PingFang SC", sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+  }
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 40px 22px 56px;
+  }
+  header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+  }
+  h1 {
+    margin: 0 0 10px;
+    font-size: 32px;
+    letter-spacing: 0;
+  }
+  h2 {
+    margin: 30px 0 12px;
+    font-size: 19px;
+  }
+  p {
+    margin: 0 0 12px;
+  }
+  .verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--green);
+    font-weight: 700;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border: 1px solid var(--line);
+    margin: 10px 0 18px;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 12px;
+  }
+  th {
+    font-size: 13px;
+    color: var(--muted);
+    background: #eef3ec;
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    background: #eef3ec;
+    padding: 1px 5px;
+    border-radius: 5px;
+  }
+  ol {
+    padding-left: 22px;
+  }
+  .risk {
+    color: var(--amber);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Desktop Packaging Report</h1>
+    <p class="verdict"><span class="dot"></span>通过：已生成并验证 macOS arm64 桌面安装包。</p>
+  </header>
+
+  <h2>Artifacts</h2>
+  <table>
+    <thead><tr><th>Artifact</th><th>Path</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>macOS app bundle</td><td><code>dist/mac-arm64/持有.app</code></td><td>Generated</td></tr>
+      <tr><td>macOS installer image</td><td><code>dist/持有-1.0.0-arm64.dmg</code></td><td>Generated</td></tr>
+      <tr><td>DMG block map</td><td><code>dist/持有-1.0.0-arm64.dmg.blockmap</code></td><td>Generated</td></tr>
+      <tr><td>Desktop entry</td><td><code>desktop/main.cjs</code></td><td>Added</td></tr>
+      <tr><td>Source smoke test</td><td><code>tools/smoke-electron.mjs</code></td><td>Added</td></tr>
+      <tr><td>Packaged smoke test</td><td><code>tools/smoke-packaged.mjs</code></td><td>Added</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Validation Results</h2>
+  <table>
+    <thead><tr><th>Check</th><th>Result</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>Source Electron app loads</td><td>Pass</td><td><code>npm run test:desktop</code> returned <code>ok: true</code></td></tr>
+      <tr><td>Source app uses local file content</td><td>Pass</td><td>URL was <code>file:///Users/lele/Documents/Projects/youshu-ledger-app/demo/index.html#overview</code></td></tr>
+      <tr><td>Packaged app loads from build output</td><td>Pass</td><td><code>npm run test:packaged</code> returned <code>ok: true</code></td></tr>
+      <tr><td>Packaged app uses asar content</td><td>Pass</td><td>URL included <code>dist/mac-arm64/持有.app/Contents/Resources/app.asar/demo/index.html#overview</code></td></tr>
+      <tr><td>DMG mounts successfully</td><td>Pass</td><td><code>hdiutil attach dist/持有-1.0.0-arm64.dmg</code> mounted <code>/Volumes/持有 1.0.0-arm64</code></td></tr>
+      <tr><td>App launches from mounted DMG</td><td>Pass</td><td><code>PACKAGED_APP_EXECUTABLE="/Volumes/持有 1.0.0-arm64/持有.app/Contents/MacOS/持有" npm run test:packaged</code> returned <code>ok: true</code></td></tr>
+      <tr><td>Mounted DMG cleanup</td><td>Pass</td><td><code>hdiutil detach "/Volumes/持有 1.0.0-arm64"</code> ejected <code>disk4</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Key Build Settings</h2>
+  <table>
+    <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Framework</td><td>Electron</td></tr>
+      <tr><td>Builder</td><td>electron-builder</td></tr>
+      <tr><td>Product name</td><td><code>持有</code></td></tr>
+      <tr><td>App ID</td><td><code>com.youshu.ledger</code></td></tr>
+      <tr><td>macOS category</td><td><code>public.app-category.finance</code></td></tr>
+      <tr><td>Target</td><td><code>dmg</code>, <code>arm64</code></td></tr>
+      <tr><td>App content</td><td><code>demo/**/*</code>, <code>desktop/**/*</code>, <code>package.json</code></td></tr>
+      <tr><td>Packaging mode</td><td><code>asar: true</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Known Gaps and Risks</h2>
+  <table>
+    <thead><tr><th>Risk</th><th>Impact</th><th>Next Step</th></tr></thead>
+    <tbody>
+      <tr><td class="risk">App is unsigned</td><td>macOS Gatekeeper may warn on first launch</td><td>Sign with Apple Developer ID before external distribution</td></tr>
+      <tr><td class="risk">App is not notarized</td><td>External users may see additional security friction</td><td>Add notarization once signing credentials are available</td></tr>
+      <tr><td class="risk">Target is arm64 only</td><td>Intel Macs are not covered</td><td>Add <code>x64</code> or universal build if needed</td></tr>
+      <tr><td class="risk">BYOK provider calls depend on CORS/network</td><td>Some AI parsing requests may fall back to local parsing</td><td>Keep or replace with a desktop-safe local proxy/API layer</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Next Steps</h2>
+  <ol>
+    <li>Decide whether this package is only for local/internal testing or external distribution.</li>
+    <li>If external, add Apple Developer ID signing and notarization.</li>
+    <li>Consider building universal macOS output if Intel Mac support matters.</li>
+    <li>Add a small desktop-specific preferences/storage plan before treating the app as production.</li>
+  </ol>
+</main>
+</body>
+</html>
