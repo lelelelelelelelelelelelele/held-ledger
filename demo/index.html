@@ -466,7 +466,7 @@ function svg(n){return '<svg aria-hidden="true" focusable="false" viewBox="0 0 2
 
 /* groups */
 const GROUPS=[
-  {id:'financial',name:'金融资产',icon:'bank',sub:'现金 · 存款 · 投资理财'},
+  {id:'financial',name:'金融资产',icon:'bank',sub:'现金 · 存款 · 投资理财',placeholder:true,placeholderText:'暂未开发'},
   {id:'physical',name:'实物资产',icon:'box',sub:'数码 · 家居 · 交通'},
   {id:'entitle',name:'权益票券',icon:'ticket',sub:'里程 · 礼品卡 · 票券'},
   {id:'member',name:'会员订阅',icon:'member',sub:'会员 · 订阅 · 到期提醒'},
@@ -684,12 +684,12 @@ function viewOverview(){
   const legend=['active','idle','retired','sold'].map(k=>'<span class="it"><span class="d" style="background:'+segColor[k]+'"></span>'+STATUS[k].label+' <span class="n">'+sc[k]+'</span></span>').join('');
   const nw=netWorth();
   const groups=GROUPS.map(g=>{
-    if(g.placeholder)return '<div class="group-row ph" data-act="nav" data-arg="invest" role="button" tabindex="0" aria-label="投资理财，即将上线"><div class="ic">'+svg(g.icon)+'</div><div class="body"><div class="nm">'+g.name+'</div><div class="sub">'+g.sub+'</div></div><div class="right"><div class="val">即将上线</div></div><div class="chev">'+svg('chevR')+'</div></div>';
+    if(g.placeholder){const p=g.placeholderText||'即将上线';return '<div class="group-row ph" data-act="nav" data-arg="invest" role="button" tabindex="0" aria-label="'+g.name+'，'+p+'"><div class="ic">'+svg(g.icon)+'</div><div class="body"><div class="nm">'+g.name+'</div><div class="sub">'+g.sub+'</div></div><div class="right"><div class="val">'+p+'</div></div><div class="chev">'+svg('chevR')+'</div></div>';}
     const v=groupValue(g.id),cnt=groupAssets(g.id).length,pct=pctOf(v,nw);
     return '<div class="group-row" data-act="group" data-arg="'+g.id+'" role="button" tabindex="0" aria-label="'+g.name+'，'+groupValueText(g.id,v)+'"><div class="ic">'+svg(g.icon)+'</div><div class="body"><div class="nm">'+g.name+'</div><div class="sub">'+groupSubText(g.id,cnt,pct)+'</div><div class="sharebar"><i style="width:'+pct+'%"></i></div></div><div class="right"><div class="val">'+groupValueText(g.id,v)+'</div></div><div class="chev">'+svg('chevR')+'</div></div>';
   }).join('');
   const groupCards=GROUPS.map(g=>{
-    if(g.placeholder)return '<div class="gcard ph" data-act="nav" data-arg="invest" role="button" tabindex="0" aria-label="投资理财，即将上线"><div class="top"><div class="ic">'+svg(g.icon)+'</div><div class="pct">即将上线</div></div><div class="nm">'+g.name+'</div><div class="cnt">'+g.sub+'</div><div class="val">— —</div><div class="sharebar"><i style="width:0%"></i></div></div>';
+    if(g.placeholder){const p=g.placeholderText||'即将上线';return '<div class="gcard ph" data-act="nav" data-arg="invest" role="button" tabindex="0" aria-label="'+g.name+'，'+p+'"><div class="top"><div class="ic">'+svg(g.icon)+'</div><div class="pct">'+p+'</div></div><div class="nm">'+g.name+'</div><div class="cnt">'+g.sub+'</div><div class="val">— —</div><div class="sharebar"><i style="width:0%"></i></div></div>';}
     const v=groupValue(g.id),cnt=groupAssets(g.id).length,pct=pctOf(v,nw);
     return '<div class="gcard" data-act="group" data-arg="'+g.id+'" role="button" tabindex="0" aria-label="'+g.name+'，'+groupValueText(g.id,v)+'"><div class="top"><div class="ic">'+svg(g.icon)+'</div><div class="pct">'+groupPctText(g.id,pct,v)+'</div></div><div class="nm">'+g.name+'</div><div class="cnt">'+groupSubText(g.id,cnt,pct)+'</div><div class="val num">'+groupValueText(g.id,v)+'</div><div class="sharebar"><i style="width:'+pct+'%"></i></div></div>';
   }).join('');
@@ -941,8 +941,8 @@ function viewAction(){
 
 /* ---------- Invest placeholder ---------- */
 function viewInvest(){
-  appbar('投资理财',{back:'overview'});
-  setScreen('<div class="empty-big"><div class="ic">'+svg('invest')+'</div><div class="t">投资理财 · 即将上线</div><div class="d">持仓、成本、市值与盈亏的统一视图，<br/>正在路上。先添加现金、实物与权益资产吧。</div><a class="cta" data-act="nav" data-arg="action" role="button" tabindex="0">去添加资产</a></div>');
+  appbar('金融资产',{back:'overview'});
+  setScreen('<div class="empty-big"><div class="ic">'+svg('bank')+'</div><div class="t">金融资产 · 暂未开发</div><div class="d">现金、存款、基金和持仓需要单独的账户与收益口径，<br/>暂不混入当前资产生命周期视图。</div></div>');
 }
 
 /* ---------- Me ---------- */

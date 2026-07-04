@@ -101,7 +101,7 @@
     <thead><tr><th>Metric</th><th>Value</th></tr></thead>
     <tbody>
       <tr><td>总资产净值</td><td><code>¥256,530.00</code></td></tr>
-      <tr><td>金融资产</td><td><code>0 项 · ¥0.00</code></td></tr>
+      <tr><td>金融资产</td><td><code>暂未开发</code></td></tr>
       <tr><td>实物资产</td><td><code>5 项 · ¥256,450.00</code></td></tr>
       <tr><td>权益票券</td><td><code>1 项 · ¥80.00</code></td></tr>
       <tr><td>会员订阅</td><td><code>0 项 · 到期提醒</code></td></tr>
@@ -126,7 +126,7 @@
     <thead><tr><th>Area</th><th>Change</th><th>Result</th></tr></thead>
     <tbody>
       <tr><td>初始化数据</td><td><code>DEFAULT_ASSETS</code> 改为此前记录过的资产集合</td><td>新安装/新用户目录首次打开即显示资产台账</td></tr>
-      <tr><td>资产分组</td><td>现金类并入「金融资产」，会员从「权益票券」拆到「会员订阅」</td><td>总览分类更贴近真实资产管理口径</td></tr>
+      <tr><td>资产分组</td><td>金融资产设为「暂未开发」，会员从「权益票券」拆到「会员订阅」</td><td>金融资产不混入当前实物/权益生命周期口径</td></tr>
       <tr><td>实物分类</td><td>智能表归入「数码」，取消单独「腕表」筛选</td><td>GT 6 等可穿戴设备与数码资产保持一致</td></tr>
       <tr><td>本机数据隔离</td><td>IndexedDB 名称改为 <code>youshu_ledger_seeded_v4</code></td><td>避免混入前几轮误初始化数据</td></tr>
       <tr><td>重置入口</td><td>「清空本机数据」改为「恢复初始化数据」</td><td>语义匹配当前初始化版本</td></tr>
