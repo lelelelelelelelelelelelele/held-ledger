@@ -195,6 +195,7 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .pill.active{background:var(--green-soft);color:var(--green-deep);border-color:#CDE6D7;}
 .pill.idle{background:var(--idle-soft);color:var(--idle);border-color:#ECE4C5;}
 .pill.expiring{background:var(--amber-soft);color:var(--amber-ink);border-color:#F0DEC0;}
+.pill.overdue{background:#FFF2EE;color:#A33C24;border-color:#F0D2C8;}
 .pill.retired{background:var(--card-2);color:var(--slate-2);border-color:var(--hair);}
 .pill.sold{background:#EAEFF4;color:var(--sold);border-color:#D5E0EA;}
 .pill.mono{font-family:var(--mono);}
@@ -222,6 +223,9 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .chips::-webkit-scrollbar{display:none;}
 .chip{font-family:var(--cn);font-size:12.5px;color:var(--slate);background:var(--card);border:1px solid var(--hair);border-radius:99px;padding:5px 13px;white-space:nowrap;flex:none;}
 .chip.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+.sortbar{display:flex;justify-content:flex-end;padding:7px 18px 4px;}
+.sort-select{max-width:176px;font-family:var(--cn);font-size:12.5px;color:var(--ink);background:var(--card);border:1px solid var(--hair);border-radius:10px;padding:7px 30px 7px 11px;box-shadow:var(--shadow-soft);outline:none;}
+.sort-select:focus{border-color:var(--green);}
 .items{padding:6px 18px 0;display:flex;flex-direction:column;gap:10px;}
 .icard{display:flex;gap:13px;padding:13px;background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);box-shadow:var(--shadow-soft);align-items:center;}
 .icard:active{background:var(--card-2);}
@@ -252,6 +256,7 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .detail-actions{display:flex;gap:10px;margin:12px 18px 0;flex-wrap:wrap;}
 .detail-actions button{flex:1;min-width:calc(50% - 5px);font-family:var(--cn);font-size:14px;font-weight:500;padding:12px 0;border-radius:12px;border:1px solid var(--hair);background:var(--card);box-shadow:var(--shadow-soft);}
 .detail-actions button.primary{background:var(--green);color:#fff;border-color:var(--green);}
+.detail-actions button.danger{color:#A33C24;border-color:#F0D2C8;background:#FFF8F5;}
 .detail-actions button:active{transform:scale(.985);}
 .detail-actions button:disabled{opacity:.4;}
 .photo-row{margin:10px 18px 0;}
@@ -322,6 +327,12 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .me-row .seg2 button{font-family:var(--cn);font-size:12px;padding:5px 11px;border-radius:7px;color:var(--slate);}
 .me-row .seg2 button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow-soft);font-weight:500;}
 
+/* ---------- Undo toast ---------- */
+.undo-toast{position:absolute;left:18px;right:18px;bottom:calc(var(--tabh) + env(safe-area-inset-bottom) + 14px);z-index:70;background:rgba(28,33,29,.96);color:#fff;border-radius:13px;padding:11px 12px 11px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 12px 28px rgba(28,33,29,.24);font-family:var(--cn);font-size:13.5px;pointer-events:auto;}
+.undo-toast .msg{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.undo-toast button{font-family:var(--cn);font-size:13px;font-weight:600;color:#AEE1C1;background:transparent;padding:6px 8px;border-radius:8px;}
+.undo-toast button:active{background:rgba(255,255,255,.1);}
+
 /* ---------- Smart add (NL) + BYOK ---------- */
 .nl-ta{width:100%;min-height:52px;resize:none;border:1px solid var(--hair);border-radius:11px;padding:11px 12px;font-family:var(--cn);font-size:14px;background:var(--card-2);outline:none;color:var(--ink);line-height:1.5;}
 .nl-ta:focus{border-color:var(--green);}
@@ -334,6 +345,14 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .nl-row span{color:var(--slate);}
 .nl-row b{font-family:var(--mono);font-weight:600;color:var(--ink);}
 .nl-row.src{color:var(--slate-2);font-size:11.5px;justify-content:flex-start;gap:5px;}
+.nl-edit{display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px;align-items:center;font-family:var(--cn);font-size:13.5px;padding:5px 0;}
+.nl-edit label{color:var(--slate);}
+.nl-edit input,.nl-edit select{width:100%;border:1px solid var(--hair);border-radius:9px;padding:8px 10px;font-family:var(--cn);font-size:13px;background:var(--card-2);outline:none;color:var(--ink);min-width:0;}
+.nl-edit input.num{font-family:var(--mono);}
+.nl-edit input:focus,.nl-edit select:focus{border-color:var(--green);}
+.nl-err-actions{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;}
+.nl-err-actions button{font-family:var(--cn);font-size:12.5px;font-weight:500;padding:7px 10px;border-radius:9px;border:1px solid #F0DEC0;background:#fff;color:var(--amber-ink);}
+.nl-err-actions button.primary{background:var(--amber);border-color:var(--amber);color:#fff;}
 .byok-note{font-family:var(--cn);font-size:12.5px;color:var(--slate);line-height:1.65;margin-bottom:12px;}
 .byok-l{font-family:var(--cn);font-size:12px;color:var(--slate);display:block;margin:9px 0 5px;}
 .byok-in{width:100%;border:1px solid var(--hair);border-radius:10px;padding:10px 12px;font-family:var(--mono);font-size:13px;background:var(--card-2);outline:none;color:var(--ink);}
@@ -408,11 +427,15 @@ const TODAY=new Date().toISOString().slice(0,10);
 
 /* ---------- IndexedDB 持久化层 ---------- */
 const DB_NAME='youshu_ledger_seeded_v4';
-const DB_VER=1;
-const STORE='assets';
-function openDB(){return new Promise((ok,fail)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:'id'});};r.onsuccess=e=>ok(e.target.result);r.onerror=e=>fail(e.target.error);});}
-async function dbGetAll(){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(STORE,'readonly');const st=tx.objectStore(STORE);const req=getAll_compat(st);req.onsuccess=e=>ok(e.target.result);req.onerror=e=>fail(e.target.error);});}
-async function dbPutAll(assets){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(STORE,'readwrite');const st=tx.objectStore(STORE);st.clear();assets.forEach(a=>st.put(a));tx.oncomplete=()=>ok();tx.onerror=e=>fail(e.target.error);});}
+const DB_VER=2;
+const ASSET_STORE='assets';
+const CONFIG_STORE='config';
+function openDB(){return new Promise((ok,fail)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(ASSET_STORE))db.createObjectStore(ASSET_STORE,{keyPath:'id'});if(!db.objectStoreNames.contains(CONFIG_STORE))db.createObjectStore(CONFIG_STORE,{keyPath:'id'});};r.onsuccess=e=>ok(e.target.result);r.onerror=e=>fail(e.target.error);});}
+async function dbGetAll(){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(ASSET_STORE,'readonly');const st=tx.objectStore(ASSET_STORE);const req=getAll_compat(st);req.onsuccess=e=>ok(e.target.result);req.onerror=e=>fail(e.target.error);});}
+async function dbPutAll(assets){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(ASSET_STORE,'readwrite');const st=tx.objectStore(ASSET_STORE);st.clear();assets.forEach(a=>st.put(a));tx.oncomplete=()=>ok();tx.onerror=e=>fail(e.target.error);});}
+async function dbGetConfig(id){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(CONFIG_STORE,'readonly');const req=tx.objectStore(CONFIG_STORE).get(id);req.onsuccess=e=>ok(e.target.result&&e.target.result.value);req.onerror=e=>fail(e.target.error);});}
+async function dbPutConfig(id,value){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(CONFIG_STORE,'readwrite');tx.objectStore(CONFIG_STORE).put({id,value});tx.oncomplete=()=>ok();tx.onerror=e=>fail(e.target.error);});}
+async function dbDeleteConfig(id){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(CONFIG_STORE,'readwrite');tx.objectStore(CONFIG_STORE).delete(id);tx.oncomplete=()=>ok();tx.onerror=e=>fail(e.target.error);});}
 /* getAll 兼容（Safari 早期版本不支持 IDBObjectStore.getAll） */
 function getAll_compat(store){if(store.getAll)return store.getAll();return new Promise((ok,fail)=>{const r=store.openCursor();const out=[];r.onsuccess=e=>{const c=e.target.result;if(c){out.push(c.value);c.continue();}else ok(out);};r.onerror=e=>fail(e.target.error);});}
 
@@ -482,6 +505,7 @@ const STATUS={
 
 /* assets — 默认初始化为真实登记过的少量资产 */
 let ASSETS=[];
+let LAST_DELETED=null;
 const DEFAULT_ASSETS=[
   // 数码与实物
   {id:'macair',group:'physical',cat:'数码',name:'MacBook Air 13"',icon:'laptop',tint:'#E2E8EC',photo:'thumbs/macair.jpg',status:'active',countable:true,price:5700,bought:'2026-06-11',value:5700,
@@ -509,6 +533,7 @@ const DEFAULT_ASSETS=[
 
 /* ---------- helpers ---------- */
 function money(n,o){o=o||{};const neg=n<0;let v=Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:o.cents===false?0:2,maximumFractionDigits:o.cents===false?0:2});let s=(o.sym!==false?'¥':'')+v;if(o.sign)s=(neg?'−':'+')+s;else if(neg)s='−'+s;return s;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function parseDate(d){const[y,m,da]=d.split('-').map(Number);return new Date(y,m-1,da);}
 function daysBetween(a,b){return Math.round((parseDate(b)-parseDate(a))/86400000);}
 function addYears(d,n){const[y,m,da]=d.split('-').map(Number);return (y+n)+'-'+String(m).padStart(2,'0')+'-'+String(da).padStart(2,'0');}
@@ -517,6 +542,26 @@ function daysHeld(a){return a.bought?Math.max(1,daysBetween(a.bought,TODAY)):0;}
 function dailyCost(a){return (a.price&&a.bought)?a.price/daysHeld(a):0;}
 function heldText(a){const d=daysHeld(a);if(d>=365){return (d/365).toFixed(1)+' 年';}return d+' 天';}
 function cloneAssets(assets){return assets.map(a=>JSON.parse(JSON.stringify(a)));}
+function exportableAssets(){return cloneAssets(ASSETS).map(a=>{if(a.photo&&/^data:image\/svg/i.test(a.photo))delete a.photo;return a;});}
+function validateImportAssets(input){
+  const payload=Array.isArray(input)?input:(input&&input.assets);
+  if(!Array.isArray(payload)||!payload.length)throw new Error('JSON 中没有可导入的 assets 数组');
+  const ids=new Set();
+  return payload.map((raw,i)=>{
+    const a=raw&&typeof raw==='object'?JSON.parse(JSON.stringify(raw)):null;
+    if(!a||!a.id||!a.name)throw new Error('第 '+(i+1)+' 项缺少 id 或 name');
+    if(ids.has(a.id))throw new Error('资产 id 重复：'+a.id);
+    ids.add(a.id);
+    a.group=a.group||'physical';
+    a.cat=a.cat||'其他';
+    a.status=a.status||'active';
+    a.countable=a.countable!==false;
+    a.value=Number(a.value)||0;
+    a.meta=Array.isArray(a.meta)?a.meta:[];
+    a.events=Array.isArray(a.events)?a.events:[{date:TODAY,title:'导入资产',delta:'',sub:'JSON',kind:'in'}];
+    return a;
+  });
+}
 
 /* ---------- 缩略图流程：上传 → 居中裁切缩放 → 存储 → 展示 ---------- */
 // 把任意图片 dataURL 压成方形缩略图（默认 360px、JPEG），减小 IndexedDB 体积。
@@ -554,7 +599,7 @@ function svgThumb(a){
 // 启动后：给没有真实照片的实物/权益资产补一张生成缩略图（仅内存，不写库）
 function ensureThumbs(){ASSETS.forEach(a=>{if(a.group!=='cash'&&!a.photo)a.photo=svgThumb(a);});}
 
-const S={screen:'overview',currentAsset:null,cat:'全部',status:'全部',valueMode:'all',edit:null,nl:null,viewMode:'card',ovMode:'list'};
+const S={screen:'overview',currentAsset:null,cat:'全部',status:'全部',sort:'default',valueMode:'all',edit:null,nl:null,viewMode:'card',ovMode:'list'};
 let nlSeq=1;
 
 function liveAssets(){return ASSETS.filter(a=>a.status!=='sold'&&a.status!=='retired');}
@@ -573,12 +618,19 @@ function nonCashValue(){return netWorth()-cashValue()+ (S.valueMode==='cashOnly'
 function totalDaily(){return ASSETS.filter(a=>(a.status==='active'||a.status==='idle')&&a.price).reduce((s,a)=>s+dailyCost(a),0);}
 function physItems(){return ASSETS.filter(a=>a.group==='physical');}
 function statusCounts(){const c={active:0,idle:0,retired:0,sold:0};physItems().forEach(a=>{c[a.status]=(c[a.status]||0)+1;});return c;}
-function isExpiring(a){if(!a.validUntil)return false;const n=daysBetween(TODAY,a.validUntil);return n>=0&&n<=30;}
+function deadlineDays(a){
+  const ds=[];
+  if(a.validUntil)ds.push(daysBetween(TODAY,a.validUntil));
+  if(a.due)a.due.forEach(d=>ds.push(daysBetween(TODAY,d.date)));
+  return ds.length?Math.min(...ds):Number.POSITIVE_INFINITY;
+}
+function isExpiring(a){const n=deadlineDays(a);return Number.isFinite(n)&&n<=30;}
+function isOverdue(a){const n=deadlineDays(a);return Number.isFinite(n)&&n<0;}
 function todos(){
   const list=[];
   ASSETS.forEach(a=>{
-    if(a.validUntil){const n=daysBetween(TODAY,a.validUntil);if(n>=0&&n<=60)list.push({a,label:'有效期',date:a.validUntil,days:n});}
-    if(a.due)a.due.forEach(d=>{const n=daysBetween(TODAY,d.date);if(n>=0&&n<=60)list.push({a,label:d.label,date:d.date,days:n});});
+    if(a.validUntil){const n=daysBetween(TODAY,a.validUntil);if(n<=60)list.push({a,label:'有效期',date:a.validUntil,days:n});}
+    if(a.due)a.due.forEach(d=>{const n=daysBetween(TODAY,d.date);if(n<=60)list.push({a,label:d.label,date:d.date,days:n});});
   });
   return list.sort((x,y)=>x.days-y.days);
 }
@@ -598,7 +650,7 @@ function rulerHTML(a,full){
   return '';
 }
 function statusPill(a){
-  const st=isExpiring(a)&&(a.status==='active')&&a.validUntil?{label:'临期',cls:'expiring'}:{label:STATUS[a.status].label,cls:a.status};
+  const st=isOverdue(a)&&(a.status==='active')?{label:'已过期',cls:'overdue'}:(isExpiring(a)&&(a.status==='active')?{label:'临期',cls:'expiring'}:{label:STATUS[a.status].label,cls:a.status});
   return '<span class="pill '+st.cls+'"><span class="dot"></span>'+st.label+'</span>';
 }
 function entitleTotal(a){
@@ -720,9 +772,10 @@ function viewOverview(){
 }
 function remindCard(t){
   const a=t.a;
-  return '<div class="remind" data-act="asset" data-arg="'+a.id+'" role="button" tabindex="0" aria-label="'+a.name+' '+t.label+'，'+(t.days===0?'今天到期':t.days+'天后到期')+'">'+
+  const dueText=t.days<0?'已过期 '+Math.abs(t.days)+' 天':(t.days===0?'今天到期':t.days+'天');
+  return '<div class="remind" data-act="asset" data-arg="'+a.id+'" role="button" tabindex="0" aria-label="'+a.name+' '+t.label+'，'+dueText+'">'+
     '<div class="head"><div class="ic">'+svg(a.icon)+'</div><div style="flex:1"><div class="nm">'+a.name+'</div><div class="meta">'+t.label+' · '+t.date+'</div></div>'+
-    '<span class="pill expiring">'+(t.days===0?'今天到期':t.days+'天')+'</span></div>'+rulerHTML(a,true)+'</div>';
+    '<span class="pill '+(t.days<0?'overdue':'expiring')+'">'+dueText+'</span></div>'+rulerHTML(a,true)+'</div>';
 }
 
 /* ---------- Assets list ---------- */
@@ -730,10 +783,12 @@ function viewAssets(){
   appbar('资产',{search:true});
   const cats=['全部','现金','数码','家居','交通','权益','会员'];
   const states=['全部','服役中','闲置','临期','已退役','已卖出'];
+  const sorts=[['default','默认排序'],['valueDesc','价值最高'],['recentBought','最近购入'],['dailyDesc','日均最高'],['dueSoon','到期最近']];
   const catTabs=cats.map(c=>'<button class="cat-tab'+(S.cat===c?' on':'')+'" data-act="cat" data-arg="'+c+'">'+c+'</button>').join('');
   const chips=states.map(s=>'<button class="chip'+(S.status===s?' on':'')+'" data-act="status" data-arg="'+s+'">'+s+'</button>').join('');
+  const sortSelect='<div class="sortbar"><select class="sort-select" id="assetSort" aria-label="资产排序">'+sorts.map(s=>'<option value="'+s[0]+'"'+(S.sort===s[0]?' selected':'')+'>'+s[1]+'</option>').join('')+'</select></div>';
   const toggle='<div class="view-toggle"><button class="'+(S.viewMode==='table'?'on':'')+'" data-act="viewmode" data-arg="table" aria-label="表格视图">'+svg('table')+'</button><button class="'+(S.viewMode==='list'?'on':'')+'" data-act="viewmode" data-arg="list" aria-label="列表视图">'+svg('list')+'</button><button class="'+(S.viewMode==='card'?'on':'')+'" data-act="viewmode" data-arg="card" aria-label="卡片视图">'+svg('grid2')+'</button></div>';
-  setScreen('<div class="cat-tabs">'+catTabs+toggle+'</div><div class="chips">'+chips+'</div><div id="itemList">'+itemsHTML()+'</div><div style="height:8px"></div>');
+  setScreen('<div class="cat-tabs">'+catTabs+toggle+'</div><div class="chips">'+chips+'</div>'+sortSelect+'<div id="itemList">'+itemsHTML()+'</div><div style="height:8px"></div>');
 }
 function itemsHTML(){
   let list=ASSETS.slice();
@@ -741,13 +796,23 @@ function itemsHTML(){
   if(S.cat!=='全部')list=list.filter(a=>a.cat===S.cat);
   if(S.status!=='全部'){const map={'服役中':'active','闲置':'idle','已退役':'retired','已卖出':'sold'};
     if(S.status==='临期')list=list.filter(a=>isExpiring(a));else list=list.filter(a=>a.status===map[S.status]);}
-  // order: active/idle/expiring first, retired/sold last
-  const rank={active:0,idle:1,retired:3,sold:4};
-  list.sort((a,b)=>(rank[a.status])-(rank[b.status]));
+  list.sort(assetComparator(S.sort));
   if(!list.length)return '<div class="empty">没有符合条件的资产</div>';
   if(S.viewMode==='card')return '<div class="card-grid">'+list.map(gridCard).join('')+'</div>';
   if(S.viewMode==='table')return assetTable(list);
   return '<div class="items">'+list.map(itemCard).join('')+'</div>';
+}
+function assetComparator(mode){
+  const rank={active:0,idle:1,retired:3,sold:4};
+  const defaultCmp=(a,b)=>(rank[a.status]||9)-(rank[b.status]||9);
+  const boughtTs=a=>a.bought?parseDate(a.bought).getTime():0;
+  return (a,b)=>{
+    if(mode==='valueDesc')return (b.value||0)-(a.value||0)||defaultCmp(a,b)||a.name.localeCompare(b.name,'zh-CN');
+    if(mode==='recentBought')return boughtTs(b)-boughtTs(a)||defaultCmp(a,b)||a.name.localeCompare(b.name,'zh-CN');
+    if(mode==='dailyDesc')return dailyCost(b)-dailyCost(a)||defaultCmp(a,b)||a.name.localeCompare(b.name,'zh-CN');
+    if(mode==='dueSoon')return deadlineDays(a)-deadlineDays(b)||defaultCmp(a,b)||a.name.localeCompare(b.name,'zh-CN');
+    return defaultCmp(a,b)||a.name.localeCompare(b.name,'zh-CN');
+  };
 }
 /* 表格视图：每一项资产一行，资产 / 数值 / 日均 三列对齐 */
 function assetTable(list){
@@ -873,20 +938,20 @@ function viewAssetDetail(){
     const inputMode=S.edit.field==='bought'?'':' inputmode="decimal"';
     acts='<div class="editbar"><input id="editInput" type="'+editType+'"'+inputMode+' value="'+S.edit.value+'" aria-label="'+S.edit.label+'"/><button class="ok" data-act="edit-ok">确认</button><button class="cancel" data-act="edit-cancel">取消</button></div>';
   }else if(a.group==='cash'){
-    acts='<div class="detail-actions"><button class="primary" data-act="edit" data-arg="balance">改余额</button><button data-act="noop">转账记录</button></div>';
+    acts='<div class="detail-actions"><button class="primary" data-act="edit" data-arg="balance">改余额</button><button data-act="noop">转账记录</button><button class="danger" data-act="delete-asset" data-arg="'+a.id+'">删除</button></div>';
   }else if(isEntitleLike(a)){
     const m=a.meter;
-    if(m&&m.type==='discrete')acts='<div class="detail-actions"><button class="primary" data-act="use" data-arg="'+a.id+'"'+(m.remaining<=0?' disabled':'')+'>'+(m.remaining<=0?'已用完':'用掉一'+a.unitName)+'</button><button data-act="renew" data-arg="'+a.id+'">续期</button></div>';
-    else if(m&&m.type==='cont')acts='<div class="detail-actions"><button class="primary" data-act="edit" data-arg="cont">改余额</button><button data-act="renew" data-arg="'+a.id+'">续期</button></div>';
-    else acts='<div class="detail-actions"><button class="primary" data-act="renew" data-arg="'+a.id+'">续期一年</button><button data-act="noop">核对会籍</button></div>';
+    if(m&&m.type==='discrete')acts='<div class="detail-actions"><button class="primary" data-act="use" data-arg="'+a.id+'"'+(m.remaining<=0?' disabled':'')+'>'+(m.remaining<=0?'已用完':'用掉一'+a.unitName)+'</button><button data-act="renew" data-arg="'+a.id+'">续期</button><button class="danger" data-act="delete-asset" data-arg="'+a.id+'">删除</button></div>';
+    else if(m&&m.type==='cont')acts='<div class="detail-actions"><button class="primary" data-act="edit" data-arg="cont">改余额</button><button data-act="renew" data-arg="'+a.id+'">续期</button><button class="danger" data-act="delete-asset" data-arg="'+a.id+'">删除</button></div>';
+    else acts='<div class="detail-actions"><button class="primary" data-act="renew" data-arg="'+a.id+'">续期一年</button><button data-act="noop">核对会籍</button><button class="danger" data-act="delete-asset" data-arg="'+a.id+'">删除</button></div>';
   }else if(a.status==='retired'){
-    acts='<div class="detail-actions"><button class="primary" data-act="sell" data-arg="'+a.id+'">标记已售</button><button data-act="setstatus" data-arg="active">恢复服役</button></div>';
+    acts='<div class="detail-actions"><button class="primary" data-act="sell" data-arg="'+a.id+'">标记已售</button><button data-act="setstatus" data-arg="active">恢复服役</button><button class="danger" data-act="delete-asset" data-arg="'+a.id+'">删除</button></div>';
   }else if(a.status==='sold'){
-    acts='<div class="detail-actions"><button data-act="noop">查看变现记录</button></div>';
+    acts='<div class="detail-actions"><button data-act="noop">查看变现记录</button><button class="danger" data-act="delete-asset" data-arg="'+a.id+'">删除</button></div>';
   }else{
     acts='<div class="detail-actions"><button class="primary" data-act="edit" data-arg="value">更新估值</button>'+
       (a.status==='idle'?'<button data-act="setstatus" data-arg="active">恢复服役</button>':'<button data-act="setstatus" data-arg="idle">标记闲置</button>')+
-      '<button data-act="edit" data-arg="bought">改购入日</button><button data-act="sell" data-arg="'+a.id+'">标记已售</button><button data-act="setstatus" data-arg="retired">标记退役</button></div>';
+      '<button data-act="edit" data-arg="bought">改购入日</button><button data-act="sell" data-arg="'+a.id+'">标记已售</button><button data-act="setstatus" data-arg="retired">标记退役</button><button class="danger" data-act="delete-asset" data-arg="'+a.id+'">删除</button></div>';
   }
   const meta=a.meta.map(r=>'<div class="metarow"><span class="mk">'+r[0]+'</span><span class="mv'+(/[¥0-9]/.test(r[1])?'':' cn')+'">'+r[1]+'</span></div>').join('');
   const evs=a.events.map(e=>{const down=/^[−-]/.test(e.delta),up=/^[+]/.test(e.delta);
@@ -914,8 +979,9 @@ function viewTodos(){
   appbar('待办',{sub:'资产不遗忘'});
   const all=todos();
   if(!all.length){setScreen('<div class="empty-big"><div class="ic">'+svg('check')+'</div><div class="t">都处理好了</div><div class="d">没有临期、待续期或需维护的资产。</div></div>');return;}
-  const urgent=all.filter(t=>t.days<=30),later=all.filter(t=>t.days>30);
+  const overdue=all.filter(t=>t.days<0),urgent=all.filter(t=>t.days>=0&&t.days<=30),later=all.filter(t=>t.days>30);
   let html='';
+  if(overdue.length){html+='<div class="section-label">已过期 · '+overdue.length+' 项</div><div class="block">'+overdue.map(remindCard).join('')+'</div>';}
   if(urgent.length){html+='<div class="section-label">30 天内 · '+urgent.length+' 项</div><div class="block">'+urgent.map(remindCard).join('')+'</div>';}
   if(later.length){html+='<div class="section-label">60 天内 · '+later.length+' 项</div><div class="block">'+later.map(remindCard).join('')+'</div>';}
   setScreen(html+'<div style="height:8px"></div>');
@@ -954,14 +1020,17 @@ function viewMe(){
       '<div class="me-row" data-act="nav" data-arg="byok" role="button" tabindex="0"><div class="ic">'+svg('plus')+'</div><div class="t">智能添加 · 接入 API</div><div class="v">'+(byokReady()?'已接入':'本地解析')+'</div></div>'+
       '<div class="me-row"><div class="ic">'+svg('toggle')+'</div><div class="t">总资产口径</div><div class="seg2"><button class="'+(S.valueMode==='all'?'on':'')+'" data-act="valset" data-arg="all">含非现金</button><button class="'+(S.valueMode==='cashOnly'?'on':'')+'" data-act="valset" data-arg="cashOnly">仅现金</button></div></div>'+
       '<div class="me-row" data-act="noop"><div class="ic">'+svg('grid')+'</div><div class="t">分类与标签</div><div class="v">数码 · 家居 · 交通 …</div></div>'+
-      '<div class="me-row" data-act="noop"><div class="ic">'+svg('download')+'</div><div class="t">数据导出</div><div class="v">CSV</div></div>'+
+      '<div class="me-row" data-act="export-data" role="button" tabindex="0"><div class="ic">'+svg('download')+'</div><div class="t">导出 JSON 备份</div><div class="v">'+ASSETS.length+' 项</div></div>'+
+      '<div class="me-row" data-act="import-data" role="button" tabindex="0"><div class="ic">'+svg('store')+'</div><div class="t">导入 JSON 恢复</div><div class="v">覆盖本机</div></div>'+
     '</div>'+
     '<div class="section-label">关于</div><div class="block">'+
       '<div class="me-row" data-act="noop"><div class="ic">'+svg('shield')+'</div><div class="t">本地存储 · 不上传</div></div>'+
       '<div class="me-row" data-act="noop"><div class="ic">'+svg('gear')+'</div><div class="t">设置</div></div>'+
       '<div class="me-row" data-act="reset-data" role="button" tabindex="0"><div class="ic" style="background:#FBF1E2;color:#C77A12;border-color:#F0DEC0">'+svg('refresh')+'</div><div class="t">恢复初始化数据</div><div class="v" style="color:var(--amber-ink)">覆盖本机</div></div>'+
-    '</div><div class="empty" style="padding:20px">持有 · 个人资产台账</div>'
+    '</div><input type="file" id="importJson" accept="application/json,.json" style="display:none"/><div class="empty" style="padding:20px">持有 · 个人资产台账</div>'
   );
+  const importInput=document.getElementById('importJson');
+  if(importInput)importInput.addEventListener('change',handleImportFile);
 }
 
 /* ---------- Router ---------- */
@@ -973,10 +1042,37 @@ window.fillAdd=function(){route('action');};
 
 /* ---------- interactions ---------- */
 function showStamp(text){const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;const host=document.createElement('div');host.className='stamp-host';const st=document.createElement('div');st.className='stamp';st.textContent=text;if(reduce){st.style.opacity='1';st.style.transform='rotate(-8deg)';}host.appendChild(st);document.getElementById('app').appendChild(host);if(!reduce){requestAnimationFrame(()=>st.classList.add('go'));setTimeout(()=>st.classList.add('out'),700);}setTimeout(()=>host.remove(),reduce?1200:1300);}
+function showUndoToast(text,onUndo){
+  const old=document.querySelector('.undo-toast');if(old)old.remove();
+  const el=document.createElement('div');el.className='undo-toast';el.innerHTML='<div class="msg">'+text+'</div><button type="button" data-act="undo-delete">撤销</button>';
+  document.getElementById('app').appendChild(el);
+  const timer=setTimeout(()=>{if(el.isConnected)el.remove();},7000);
+  el.querySelector('button').addEventListener('click',()=>{clearTimeout(timer);el.remove();onUndo();});
+}
 function useAsset(id){const a=ASSETS.find(x=>x.id===id);if(!a||!a.meter||a.meter.type!=='discrete'||a.meter.remaining<=0)return;a.meter.remaining-=1;a.value=Math.max(0,a.value-(a.perUnit||0));a.events.unshift({date:TODAY,title:'用掉 1 '+a.unitName,delta:'−1',sub:'剩 '+a.meter.remaining+' '+a.unitName,kind:'use'});saveAssets();showStamp('已核销');setTimeout(()=>{viewAssetDetail();renderTabs();},460);}
 function renew(id){const a=ASSETS.find(x=>x.id===id);if(!a)return;if(a.validUntil)a.validUntil=addYears(a.validUntil,1);if(a.meter&&a.meter.type==='time'){a.meter.start=a.meter.end;a.meter.end=addYears(a.meter.end,1);}if(a.meta){a.meta=a.meta.map(r=>/到期|有效期/.test(r[0])?[r[0],a.validUntil||r[1]]:r);}a.events.unshift({date:TODAY,title:'续期一年',delta:'',sub:'有效期延至 '+(a.validUntil||a.meter.end),kind:'in'});saveAssets();showStamp('已续期');setTimeout(()=>{viewAssetDetail();renderTabs();},460);}
 function setStatus(st){const a=ASSETS.find(x=>x.id===S.currentAsset);if(!a)return;a.status=st;a.events.unshift({date:TODAY,title:'状态改为「'+STATUS[st].label+'」',delta:'',sub:'',kind:st==='active'?'in':'idle'});saveAssets();showStamp(STATUS[st].label);setTimeout(()=>{viewAssetDetail();renderTabs();},420);}
 function sell(id){const a=ASSETS.find(x=>x.id===id);if(!a)return;const guess=Math.round(a.value*0.6);S.edit={field:'sell',label:'出售价',value:String(guess||0)};viewAssetDetail();}
+async function deleteAsset(id){
+  const idx=ASSETS.findIndex(x=>x.id===id);if(idx<0)return;
+  const a=ASSETS[idx];
+  if(!confirm('确定删除「'+a.name+'」吗？删除后可立即撤销一次。'))return;
+  LAST_DELETED={asset:JSON.parse(JSON.stringify(a)),index:idx};
+  ASSETS.splice(idx,1);
+  await dbPutAll(ASSETS);
+  S.currentAsset=null;S.edit=null;
+  route('assets');
+  showUndoToast('已删除「'+a.name+'」',async()=>{
+    if(!LAST_DELETED)return;
+    const insertAt=Math.min(LAST_DELETED.index,ASSETS.length);
+    ASSETS.splice(insertAt,0,LAST_DELETED.asset);
+    S.currentAsset=LAST_DELETED.asset.id;
+    LAST_DELETED=null;
+    await dbPutAll(ASSETS);
+    showStamp('已撤销');
+    route('asset-detail');
+  });
+}
 function applyEdit(){const a=ASSETS.find(x=>x.id===S.currentAsset);const inp=document.getElementById('editInput');if(!a||!inp){S.edit=null;viewAssetDetail();return;}const v=parseFloat(inp.value)||0;const f=S.edit.field;
   if(f==='balance'){a.value=v;if(a.meta)a.meta=a.meta.map(r=>/余额/.test(r[0])?[r[0],money(v)]:r);a.events.unshift({date:TODAY,title:'改余额',delta:money(v),sub:'手动核对',kind:'val'});}
   else if(f==='cont'){a.meter.remaining=Math.min(v,a.meter.total);a.value=a.meter.remaining;a.events.unshift({date:TODAY,title:'改余额',delta:money(a.meter.remaining),sub:'',kind:'val'});}
@@ -996,14 +1092,35 @@ function applyEdit(){const a=ASSETS.find(x=>x.id===S.currentAsset);const inp=doc
   S.edit=null;saveAssets();showStamp('已更新');setTimeout(()=>{viewAssetDetail();renderTabs();},300);}
 
 /* ---------- BYOK + 自然语言添加（OpenAI 兼容：Kimi / 小米 等） ---------- */
-function loadByok(){try{return JSON.parse(localStorage.getItem('byok_v1')||'{}');}catch(e){return {};}}
-function saveByok(o){try{localStorage.setItem('byok_v1',JSON.stringify(o));}catch(e){}}
+let BYOK_CACHE=null;
+function localByok(){try{return JSON.parse(localStorage.getItem('byok_v1')||'{}');}catch(e){return {};}}
+function loadByok(){if(BYOK_CACHE&&Object.keys(BYOK_CACHE).length)return BYOK_CACHE;BYOK_CACHE=localByok();return BYOK_CACHE;}
+function saveByok(o){
+  BYOK_CACHE=o||{};
+  try{localStorage.setItem('byok_v1',JSON.stringify(BYOK_CACHE));}catch(e){}
+  const hasConfig=!!(BYOK_CACHE.key||BYOK_CACHE.base||BYOK_CACHE.model||BYOK_CACHE.provider);
+  (hasConfig?dbPutConfig('byok_v1',BYOK_CACHE):dbDeleteConfig('byok_v1')).catch(e=>console.warn('[DB] BYOK save failed',e));
+}
+async function hydrateByok(){
+  try{
+    const stored=await dbGetConfig('byok_v1');
+    const local=localByok();
+    BYOK_CACHE=(stored&&Object.keys(stored).length)?stored:local;
+    if(BYOK_CACHE&&Object.keys(BYOK_CACHE).length&&!stored)dbPutConfig('byok_v1',BYOK_CACHE).catch(()=>{});
+  }catch(e){
+    console.warn('[DB] BYOK load failed',e);
+    BYOK_CACHE=localByok();
+  }
+}
 function byokReady(){const b=loadByok();return !!(b.key&&b.base);}
 const BYOK_PRESETS={
   xiaomi:{label:'小米 MiMo',base:'https://token-plan-cn.xiaomimimo.com/v1',model:'mimo-v2.5'},
-  kimi:{label:'Kimi（Moonshot）',base:'https://api.moonshot.cn/v1',model:'kimi-latest'},
+  kimi:{label:'Kimi Coding',base:'https://api.kimi.com/coding/v1',model:'kimi-latest'},
   custom:{label:'自定义',base:'',model:''},
 };
+function byokTemperature(b){
+  return /api\.kimi\.com\/coding/i.test(b.base||'') ? 1 : 0.2;
+}
 async function llmExtract(text, image){
   const b=loadByok();
   const url=(b.base||'').replace(/\/+$/,'')+'/chat/completions';
@@ -1012,7 +1129,7 @@ async function llmExtract(text, image){
     '把相对日期（上个月/上月/去年X月/前年/今年X月/X月X日）按今天解析为 YYYY-MM-DD。若文字或图片中出现购买/下单日期，务必用它作为 bought_date，否则才用今天。缺失字段给合理默认或空字符串/0。只返回 JSON，不要解释。';
   const userContent = image ? [{type:'text',text:text||'识别图片里的这件资产'},{type:'image_url',image_url:{url:image}}] : text;
   const res=await fetch(url,{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+(b.key||'')},
-    body:JSON.stringify({model:b.model||'kimi-latest',temperature:0.2,response_format:{type:'json_object'},
+    body:JSON.stringify({model:b.model||'kimi-latest',temperature:byokTemperature(b),response_format:{type:'json_object'},
       messages:[{role:'system',content:sys},{role:'user',content:userContent}]})});
   if(!res.ok){let t='';try{t=await res.text();}catch(e){}throw new Error('HTTP '+res.status+(t?' '+t.slice(0,100):''));}
   const data=await res.json();
@@ -1053,31 +1170,54 @@ async function runNL(text, image){
   }
   if(S.screen==='action')viewAction();
 }
-function nlPreview(r){
+function nlPreview(r,hasError){
+  const cats=['数码','家居','交通','权益','会员','现金','其他'];
+  const cat=r.category&&cats.includes(r.category)?r.category:'其他';
+  const catOpts=cats.map(c=>'<option value="'+c+'"'+(cat===c?' selected':'')+'>'+c+'</option>').join('');
+  const sourceLabel=/图片/.test(r._src||'')?'AI · 图片识别':(/AI/.test(r._src||'')?'AI 智能解析':'本地规则解析');
+  const confirmText=hasError&&!/AI/.test(r._src||'')?'使用本地结果添加':'确认添加';
   return '<div class="nl-preview">'+
-    '<div class="nl-row"><span>名称</span><b class="cn" style="font-family:var(--cn)">'+(r.name||'—')+'</b></div>'+
-    '<div class="nl-row"><span>分类</span><b style="font-family:var(--cn)">'+(r.category||'其他')+'</b></div>'+
-    '<div class="nl-row"><span>购入价</span><b>'+(r.price?money(r.price):'—')+'</b></div>'+
-    '<div class="nl-row"><span>购入日</span><b>'+(r.bought_date||TODAY)+'</b></div>'+
-    '<div class="nl-row"><span>当前估值</span><b>'+money(r.est_value||r.price||0)+'</b></div>'+
-    '<div class="nl-row src">'+svg('check')+'来源：'+(/图片/.test(r._src||'')?'AI · 图片识别':(/AI/.test(r._src||'')?'AI 智能解析':'本地规则解析'))+'</div>'+
-    '<div style="display:flex;gap:8px;margin-top:10px"><button class="nl-go" style="flex:1" data-act="nl-confirm">确认添加</button><button class="nl-cancel" data-act="nl-reset">重填</button></div>'+
+    '<div class="nl-edit"><label for="nlName">名称</label><input id="nlName" value="'+esc(r.name||'')+'" placeholder="资产名称"/></div>'+
+    '<div class="nl-edit"><label for="nlCategory">分类</label><select id="nlCategory">'+catOpts+'</select></div>'+
+    '<div class="nl-edit"><label for="nlPrice">购入价</label><input id="nlPrice" class="num" inputmode="decimal" value="'+esc(r.price||'')+'" placeholder="0"/></div>'+
+    '<div class="nl-edit"><label for="nlBought">购入日</label><input id="nlBought" class="num" type="date" value="'+esc(r.bought_date||TODAY)+'"/></div>'+
+    '<div class="nl-edit"><label for="nlValue">当前估值</label><input id="nlValue" class="num" inputmode="decimal" value="'+esc(r.est_value||r.price||0)+'" placeholder="0"/></div>'+
+    '<div class="nl-edit"><label for="nlNote">备注</label><input id="nlNote" value="'+esc(r.note||'')+'" placeholder="可选"/></div>'+
+    '<div class="nl-row src">'+svg('check')+'来源：'+sourceLabel+'</div>'+
+    '<div style="display:flex;gap:8px;margin-top:10px"><button class="nl-go" style="flex:1" data-act="nl-confirm">'+confirmText+'</button><button class="nl-cancel" data-act="nl-reset">重填</button></div>'+
   '</div>';
+}
+function nlErrorBox(nl){
+  if(!nl.error)return '';
+  const retry=byokReady()?'<button class="primary" data-act="nl-retry">重试 AI</button>':'';
+  const local=nl.result&&!/AI/.test(nl.result._src||'')?'<button data-act="nl-confirm">使用本地结果添加</button>':'';
+  return '<div class="nl-err">'+esc(nl.error)+'<div class="nl-err-actions">'+retry+'<button data-act="nav" data-arg="byok">改 API 设置</button>'+local+'</div></div>';
+}
+function readNLDraft(){
+  if(!(S.nl&&S.nl.result))return null;
+  const get=id=>document.getElementById(id);
+  const price=parseFloat((get('nlPrice')&&get('nlPrice').value||'').replace(/,/g,''))||0;
+  const value=parseFloat((get('nlValue')&&get('nlValue').value||'').replace(/,/g,''))||0;
+  const bought=(get('nlBought')&&get('nlBought').value||TODAY).trim();
+  const name=(get('nlName')&&get('nlName').value||'').trim();
+  if(!name){showStamp('名称不能为空');return null;}
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(bought)){showStamp('日期格式不对');return null;}
+  return {...S.nl.result,name,category:(get('nlCategory')&&get('nlCategory').value)||'其他',price,est_value:value,bought_date:bought,note:(get('nlNote')&&get('nlNote').value||'').trim()};
 }
 function smartAddCard(){
   const ready=byokReady();const nl=S.nl||{};
   return '<div class="block" style="margin-top:16px;padding:14px 16px">'+
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-family:var(--cn);font-weight:600;font-size:15px">智能添加 · 文字 / 图片</div>'+
       '<button class="pill '+(ready?'active':'')+'" data-act="nav" data-arg="byok"><span class="dot"></span>'+(ready?'AI 已接入':'本地解析 · 接入 AI')+'</button></div>'+
-    '<textarea id="nlInput" class="nl-ta" placeholder="一句话，如：昨天好利来礼品卡还剩 80 元">'+((nl.text||'').replace(/</g,'&lt;'))+'</textarea>'+
+    '<textarea id="nlInput" class="nl-ta" placeholder="一句话，如：昨天好利来礼品卡还剩 80 元">'+esc(nl.text||'')+'</textarea>'+
     (nl.image?'<div class="nl-img"><img src="'+nl.image+'"/><span>已选图片 · 点「传图」可换图</span></div>':'')+
     '<div style="display:flex;gap:8px;margin-top:9px">'+
-      '<button class="nl-go" style="flex:1" data-act="nl-go">'+(nl.loading?'识别中…':'✨ 智能添加')+'</button>'+
+      '<button class="nl-go" style="flex:1" data-act="nl-go"'+(nl.loading?' disabled':'')+'>'+(nl.loading?'识别中…':'✨ 智能添加')+'</button>'+
       '<button class="nl-cam" data-act="nl-pickimg">'+svg('camera')+'传图</button>'+
     '</div>'+
     '<input type="file" id="nlImg" accept="image/*" style="display:none"/>'+
-    (nl.error?'<div class="nl-err">'+nl.error+'</div>':'')+
-    (nl.result?nlPreview(nl.result):'')+
+    nlErrorBox(nl)+
+    (nl.result?nlPreview(nl.result,!!nl.error):'')+
   '</div>';
 }
 function addAssetFromNL(r){
@@ -1088,11 +1228,44 @@ function addAssetFromNL(r){
   const a={id,group:c.group,cat:r.category||'其他',name:r.name||'新资产',icon:c.icon,tint:c.tint,status:'active',countable:true,value,
     meta:[],events:[{date:r.bought_date||TODAY,title:'录入资产',delta:price?'−'+money(price):'',sub:r._src||'手动录入',kind:'buy'}]};
   if(S.nl&&S.nl.image)a.photo=S.nl.image;
-  if(c.group==='physical'){a.price=price;a.bought=r.bought_date||TODAY;a.meta=[['购入价',price?money(price):'—'],['购入日',a.bought],['当前估值',money(value)],['录入方式',r._src||'手动']];}
+  if(c.group==='physical'){a.price=price;a.bought=r.bought_date||TODAY;a.meta=[['购入价',price?money(price):'—'],['购入日',a.bought],['当前估值',money(value)],['录入方式',r._src||'手动']];if(r.note)a.meta.push(['备注',r.note]);}
   else if(c.group==='cash'){a.value=value;a.meta=[['账户',a.name],['当前余额',money(value)]];}
-  else {a.value=value;a.meta=[['当前价值',money(value)],['录入方式',r._src||'手动']];}
+  else {a.value=value;a.meta=[['当前价值',money(value)],['录入方式',r._src||'手动']];if(r.note)a.meta.push(['备注',r.note]);}
   ASSETS.unshift(a);
   S.nl=null;S.currentAsset=id;saveAssets();showStamp('已添加');setTimeout(()=>route('asset-detail'),440);
+}
+function exportData(){
+  const payload={schema:'youshu-ledger-export',version:1,exportedAt:new Date().toISOString(),assets:exportableAssets()};
+  window.__lastExportPayload=payload;
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='youshu-ledger-backup-'+TODAY+'.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  showStamp('已导出');
+}
+function handleImportFile(ev){
+  const f=ev.target.files&&ev.target.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=async()=>{
+    try{
+      const imported=validateImportAssets(JSON.parse(rd.result));
+      if(!confirm('导入 '+imported.length+' 项资产并覆盖本机当前数据？'))return;
+      ASSETS=imported;
+      await dbPutAll(ASSETS);
+      ensureThumbs();
+      S.currentAsset=null;S.edit=null;S.cat='全部';S.status='全部';
+      showStamp('已导入');
+      route('overview');
+    }catch(e){showStamp('导入失败');alert('导入失败：'+(e.message||e));}
+    ev.target.value='';
+  };
+  rd.onerror=()=>{showStamp('导入失败');ev.target.value='';};
+  rd.readAsText(f);
 }
 function viewByok(){
   appbar('智能添加 · 接入 API',{back:'me'});
@@ -1105,8 +1278,8 @@ function viewByok(){
     '<div class="section-label">服务商</div>'+
     '<div class="chips" style="padding-top:0">'+presets+'</div>'+
     '<div class="block" style="padding:14px 16px;margin-top:6px">'+
-      '<div class="byok-note">自然语言添加会把"昨天好利来礼品卡还剩 80 元"这类话，调用大模型（OpenAI 兼容接口）解析成结构化资产；不填则用本地规则解析。<br/>· 小米 MiMo 已默认 <b>国内区 token-plan-cn + mimo-v2.5</b>（已实测可用）：<b>只需粘贴 token</b> 保存即可。<br/>· 浏览器直连小米常被 CORS 拦 → 想在浏览器里真用 AI：跑 <code>node demo/mimo-proxy.mjs</code>，把上面 Base URL 改成 <code>http://localhost:8787/v1</code> 即可。</div>'+
-      '<label class="byok-l">Base URL（到 /v1 即可）</label><input id="byokBase" class="byok-in" placeholder="https://token-plan-cn.xiaomimimo.com/v1" value="'+(baseV.replace(/"/g,'&quot;'))+'"/>'+
+      '<div class="byok-note">自然语言添加会把"昨天好利来礼品卡还剩 80 元"这类话，调用大模型（OpenAI 兼容接口）解析成结构化资产；不填则用本地规则解析。<br/>· Kimi Coding 填 <b>https://api.kimi.com/coding/v1</b> + <b>kimi-latest</b>。<br/>· 小米 MiMo 已默认 <b>国内区 token-plan-cn + mimo-v2.5</b>（已实测可用）：<b>只需粘贴 token</b> 保存即可。<br/>· 浏览器直连小米常被 CORS 拦 → 想在浏览器里真用 AI：跑 <code>node demo/mimo-proxy.mjs</code>，把上面 Base URL 改成 <code>http://localhost:8787/v1</code> 即可。</div>'+
+      '<label class="byok-l">Base URL（到 /v1 即可）</label><input id="byokBase" class="byok-in" placeholder="https://api.kimi.com/coding/v1" value="'+(baseV.replace(/"/g,'&quot;'))+'"/>'+
       '<label class="byok-l">API Key（粘贴你的 token）</label><input id="byokKey" class="byok-in" type="password" placeholder="粘贴小米 token…" value="'+(keyV.replace(/"/g,'&quot;'))+'"/>'+
       '<label class="byok-l">模型</label><input id="byokModel" class="byok-in" placeholder="mimo-v2.5" value="'+(modelV.replace(/"/g,'&quot;'))+'"/>'+
       '<div style="display:flex;gap:8px;margin-top:13px"><button class="nl-go" style="flex:1" data-act="byok-save">保存并启用</button><button class="nl-cancel" data-act="byok-clear">清除</button></div>'+
@@ -1128,6 +1301,9 @@ document.getElementById('app').addEventListener('click',e=>{
   else if(act==='renew')renew(arg);
   else if(act==='sell')sell(arg);
   else if(act==='setstatus')setStatus(arg);
+  else if(act==='delete-asset')deleteAsset(arg);
+  else if(act==='export-data')exportData();
+  else if(act==='import-data'){const i=document.getElementById('importJson');if(i)i.click();}
   else if(act==='edit'){const a=ASSETS.find(x=>x.id===S.currentAsset);S.edit={field:arg,label:arg==='value'?'当前估值':(arg==='bought'?'购入日':'当前余额'),value:String(arg==='cont'?a.meter.remaining:(arg==='bought'?(a.bought||TODAY):a.value))};viewAssetDetail();}
   else if(act==='edit-ok')applyEdit();
   else if(act==='edit-cancel'){S.edit=null;viewAssetDetail();}
@@ -1137,7 +1313,8 @@ document.getElementById('app').addEventListener('click',e=>{
   else if(act==='addtmpl')showStamp('演示：已添加');
   else if(act==='nl-go'){const inp=document.getElementById('nlInput');const text=inp?inp.value.trim():'';const img=S.nl&&S.nl.image;if(!text&&!img){showStamp('写一句话或传张图');return;}S.nl={text,image:img,loading:true,result:null,error:null};viewAction();runNL(text,img);}
   else if(act==='nl-pickimg'){if(!byokReady()){showStamp('传图识别需先接入 AI');return;}const i=document.getElementById('nlImg');if(i)i.click();}
-  else if(act==='nl-confirm'){if(S.nl&&S.nl.result)addAssetFromNL(S.nl.result);}
+  else if(act==='nl-retry'){const inp=document.getElementById('nlInput');const text=(inp&&inp.value.trim())||(S.nl&&S.nl.text)||'';const img=S.nl&&S.nl.image;if(!byokReady()){showStamp('先接入 AI');return;}S.nl={text,image:img,loading:true,result:S.nl&&S.nl.result,error:null};viewAction();runNL(text,img);}
+  else if(act==='nl-confirm'){const draft=readNLDraft();if(draft)addAssetFromNL(draft);}
   else if(act==='nl-reset'){S.nl=null;viewAction();}
   else if(act==='byok-preset'){const p=BYOK_PRESETS[arg]||BYOK_PRESETS.kimi;const cur=loadByok();saveByok({provider:arg,base:p.base||cur.base||'',model:p.model||cur.model||'',key:cur.key||''});viewByok();}
   else if(act==='byok-save'){const base=(document.getElementById('byokBase').value||'').trim();const key=(document.getElementById('byokKey').value||'').trim();const model=(document.getElementById('byokModel').value||'').trim()||'kimi-latest';const cur=loadByok();saveByok({provider:cur.provider||'kimi',base,key,model});showStamp(key&&base?'已启用 AI':'已保存');setTimeout(()=>route('me'),440);}
@@ -1145,6 +1322,9 @@ document.getElementById('app').addEventListener('click',e=>{
   else if(act==='reset-data'){if(confirm('确定要恢复初始化资产数据吗？这会覆盖本机当前修改。')){ASSETS=cloneAssets(DEFAULT_ASSETS);dbPutAll(ASSETS);ensureThumbs();showStamp('已恢复');setTimeout(()=>route('overview'),400);}}
   else if(act==='pickphoto'){const i=document.getElementById('assetPhoto');if(i)i.click();}
   else if(act==='noop')showStamp('演示中暂未开放');
+});
+document.getElementById('app').addEventListener('change',e=>{
+  if(e.target&&e.target.id==='assetSort'){S.sort=e.target.value;const l=document.getElementById('itemList');if(l)l.innerHTML=itemsHTML();}
 });
 document.getElementById('app').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='editInput'){e.preventDefault();applyEdit();return;}if(e.key!=='Enter'&&e.key!==' ')return;const t=e.target.closest('[data-act][tabindex]');if(!t)return;e.preventDefault();t.click();});
 
@@ -1156,6 +1336,7 @@ function saveAssets(){debouncedSave();}
   const h=(location.hash||'').replace('#','');
   if(h&&VIEWS[h])S.screen=h;
   try{
+    await hydrateByok();
     const saved=await dbGetAll();
     if(saved&&saved.length){ASSETS=saved;}else{ASSETS=cloneAssets(DEFAULT_ASSETS);await dbPutAll(ASSETS);}
   }catch(e){console.warn('[boot] IndexedDB load failed, using defaults',e);ASSETS=cloneAssets(DEFAULT_ASSETS);}

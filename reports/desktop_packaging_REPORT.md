@@ -2,15 +2,15 @@
 
 ## Verdict
 
-通过。项目已经从浏览器打开的 HTML demo 扩展为 macOS 桌面 App，并成功生成可分发的 arm64 `.dmg` 安装包。
+通过。项目已经从浏览器打开的 HTML demo 扩展为 macOS 桌面 App，并成功生成当前 Alpha 版本的 arm64 `.dmg` 安装包。
 
 ## Artifacts
 
 | Artifact | Path | Status |
 | --- | --- | --- |
 | macOS app bundle | `dist/mac-arm64/持有.app` | Generated |
-| macOS installer image | `dist/持有-1.0.0-arm64.dmg` | Generated |
-| DMG block map | `dist/持有-1.0.0-arm64.dmg.blockmap` | Generated |
+| macOS installer image | `dist/持有-0.1.0-alpha.0-arm64.dmg` | Generated |
+| DMG block map | `dist/持有-0.1.0-alpha.0-arm64.dmg.blockmap` | Generated |
 | Desktop entry | `desktop/main.cjs` | Added |
 | Source smoke test | `tools/smoke-electron.mjs` | Added |
 | Packaged smoke test | `tools/smoke-packaged.mjs` | Added |
@@ -23,9 +23,9 @@
 | Source app uses local file content | Pass | URL was `file:///Users/lele/Documents/Projects/youshu-ledger-app/demo/index.html#overview` |
 | Packaged app loads from build output | Pass | `npm run test:packaged` returned `ok: true` |
 | Packaged app uses asar content | Pass | URL included `dist/mac-arm64/持有.app/Contents/Resources/app.asar/demo/index.html#overview` |
-| DMG mounts successfully | Pass | `hdiutil attach dist/持有-1.0.0-arm64.dmg` mounted `/Volumes/持有 1.0.0-arm64` |
-| App launches from mounted DMG | Pass | `PACKAGED_APP_EXECUTABLE="/Volumes/持有 1.0.0-arm64/持有.app/Contents/MacOS/持有" npm run test:packaged` returned `ok: true` |
-| Mounted DMG cleanup | Pass | `hdiutil detach "/Volumes/持有 1.0.0-arm64"` ejected `disk4` |
+| DMG mounts successfully | Pass | `hdiutil attach dist/持有-0.1.0-alpha.0-arm64.dmg -nobrowse` mounted `/Volumes/持有 0.1.0-alpha.0-arm64` |
+| App launches from mounted DMG | Pass | `PACKAGED_APP_EXECUTABLE="/Volumes/持有 0.1.0-alpha.0-arm64/持有.app/Contents/MacOS/持有" npm run test:packaged` returned `ok: true` |
+| Mounted DMG cleanup | Pass | `hdiutil detach "/Volumes/持有 0.1.0-alpha.0-arm64"` ejected `disk4` |
 
 ## Key Build Settings
 
@@ -39,6 +39,7 @@
 | Target | `dmg`, `arm64` |
 | App content | `demo/**/*`, `desktop/**/*`, `package.json` |
 | Packaging mode | `asar: true` |
+| Version | `0.1.0-alpha.0` |
 
 ## Known Gaps and Risks
 

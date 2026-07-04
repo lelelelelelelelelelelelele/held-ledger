@@ -7,6 +7,7 @@ import { dirname, resolve } from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const requests = [];
+let postCount = 0;
 
 const server = createServer((req, res) => {
   res.setHeader('access-control-allow-origin', '*');
@@ -37,17 +38,24 @@ const server = createServer((req, res) => {
       return;
     }
 
+    postCount += 1;
+    if (postCount === 1) {
+      res.writeHead(500, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ error: 'temporary failure' }));
+      return;
+    }
+
     res.writeHead(200, { 'content-type': 'application/json' });
     res.end(JSON.stringify({
       choices: [{
         message: {
           content: JSON.stringify({
-            name: 'API 验证相机',
+            name: 'API 重试相机',
             category: '数码',
-            price: 1234,
-            est_value: 1200,
-            bought_date: '2026-06-30',
-            note: 'mocked',
+            price: 4321,
+            est_value: 4100,
+            bought_date: '2026-07-01',
+            note: 'retry-ok',
           }),
         },
       }],
@@ -58,7 +66,7 @@ const server = createServer((req, res) => {
 await new Promise(resolveListen => server.listen(0, '127.0.0.1', resolveListen));
 const { port } = server.address();
 
-const userDataDir = await mkdtemp(resolve(tmpdir(), 'youshu-byok-api-'));
+const userDataDir = await mkdtemp(resolve(tmpdir(), 'youshu-byok-error-'));
 const app = await electron.launch({ args: [root, `--user-data-dir=${userDataDir}`] });
 
 try {
@@ -75,50 +83,56 @@ try {
     window.fillAdd();
   }, `http://127.0.0.1:${port}/v1`);
 
-  await page.locator('#nlInput').fill('请用 API 解析这台相机');
+  await page.locator('#nlInput').fill('请用 API 解析 4321 元买的重试相机');
   await page.locator('[data-act="nl-go"]').click();
-  await page.locator('[data-act="nl-confirm"]').waitFor({ timeout: 10_000 });
+  await page.locator('.nl-err').waitFor({ timeout: 10_000 });
 
-  const previewText = await page.locator('.nl-preview').innerText();
-  const previewValues = {
+  const errorText = await page.locator('.nl-err').innerText();
+  if (!errorText.includes('AI 解析失败') || !errorText.includes('重试 AI') || !errorText.includes('改 API 设置')) {
+    throw new Error(`Retry UI missing after API failure: ${errorText}`);
+  }
+  const fallbackSource = await page.locator('.nl-preview').innerText();
+  if (!fallbackSource.includes('本地规则解析')) {
+    throw new Error(`Fallback preview should be local after API failure: ${fallbackSource}`);
+  }
+  if ((await page.locator('#app').innerText()).includes('API 重试相机')) {
+    throw new Error('Failed API call should not add the retry asset before confirmation.');
+  }
+
+  await page.locator('[data-act="nl-retry"]').click();
+  await page.waitForFunction(() => document.querySelector('#nlName')?.value === 'API 重试相机');
+  const retryPreview = {
     name: await page.locator('#nlName').inputValue(),
-    category: await page.locator('#nlCategory').inputValue(),
     price: Number(await page.locator('#nlPrice').inputValue()),
     bought: await page.locator('#nlBought').inputValue(),
     value: Number(await page.locator('#nlValue').inputValue()),
   };
-  const expectedPreview = { name: 'API 验证相机', category: '数码', price: 1234, bought: '2026-06-30', value: 1200 };
-  for (const [key, expected] of Object.entries(expectedPreview)) {
-    if (previewValues[key] !== expected) {
-      throw new Error(`BYOK preview ${key} mismatch: ${JSON.stringify(previewValues)}`);
-    }
+  if (retryPreview.name !== 'API 重试相机' || retryPreview.price !== 4321 || retryPreview.bought !== '2026-07-01' || retryPreview.value !== 4100) {
+    throw new Error(`Retry preview mismatch: ${JSON.stringify(retryPreview)}`);
   }
-  if (!previewText.includes('AI 智能解析')) {
-    throw new Error(`BYOK preview source missing: ${previewText}`);
+  const retryText = await page.locator('.nl-preview').innerText();
+  if (!retryText.includes('AI 智能解析')) {
+    throw new Error(`Retry preview should switch back to AI source: ${retryText}`);
   }
 
   await page.locator('[data-act="nl-confirm"]').click();
-  await page.waitForFunction(() => document.querySelector('#app')?.innerText.includes('API 验证相机'));
+  await page.waitForFunction(() => document.querySelector('#app')?.innerText.includes('API 重试相机'));
 
-  const req = requests.find(item => item.url === '/v1/chat/completions');
-  if (!req) {
-    throw new Error('Mock API did not receive /v1/chat/completions request.');
+  const postRequests = requests.filter(item => item.url === '/v1/chat/completions');
+  if (postRequests.length !== 2) {
+    throw new Error(`Expected two API requests after retry, got ${postRequests.length}`);
   }
-  if (req.authorization !== 'Bearer test-token') {
-    throw new Error(`Unexpected authorization header: ${req.authorization}`);
-  }
-  if (req.body?.model !== 'mock-asset-model') {
-    throw new Error(`Unexpected model in request: ${JSON.stringify(req.body)}`);
-  }
-  if (!JSON.stringify(req.body).includes('请用 API 解析这台相机')) {
-    throw new Error(`User prompt missing from request body: ${JSON.stringify(req.body)}`);
+  for (const req of postRequests) {
+    if (req.authorization !== 'Bearer test-token' || req.body?.model !== 'mock-asset-model') {
+      throw new Error(`Retry request lost auth/model: ${JSON.stringify(req)}`);
+    }
   }
 
   console.log(JSON.stringify({
     ok: true,
     userDataDir,
     apiBase: `http://127.0.0.1:${port}/v1`,
-    scenario: 'BYOK OpenAI-compatible API -> smart add preview -> confirm asset',
+    scenario: 'BYOK API failure -> local fallback -> retry -> AI preview -> confirm once',
   }, null, 2));
 } finally {
   await app.close();

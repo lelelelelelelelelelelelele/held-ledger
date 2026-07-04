@@ -2,7 +2,15 @@
 
 这是一个参考“有数”体验的个人资产与记账工具原型，当前已经包含可运行 demo 和 macOS 桌面打包配置。
 
-当前桌面版名称为「持有」，使用 Electron 封装 `demo/index.html`，可生成 `.app` 与 `.dmg` 安装包。
+当前桌面版名称为「持有」，版本标记为 `0.1.0-alpha.0`。这是源码开放准备版 + 本机 Alpha / 内部试用版，适合愿意试用、备份数据并反馈问题的用户；暂不建议把未签名安装包作为面向大众的稳定正式 App 发布。
+
+## Storage and Limits
+
+- 资产数据存储在本机浏览器 / Electron 的 IndexedDB 中，不上传云端，也没有多设备同步。
+- 「我的」页支持导出 JSON 备份和导入 JSON 恢复；导入会覆盖本机当前资产数据。
+- BYOK API 配置保存在本机 IndexedDB，并保留旧版 localStorage 兼容读取；演示版会由前端直连服务商，请不要在不可信环境粘贴生产密钥。
+- 当前安装包未使用 Apple Developer ID 签名，也未 notarization 公证。首次打开时，macOS 可能要求在「系统设置 → 隐私与安全性」中允许打开。
+- 金融资产模块、图片 BYOK live test、稳定错误恢复、数据模型迁移和云备份仍属于后续开发范围。
 
 ## Documents
 
@@ -52,9 +60,9 @@ npm run test:byok-api
 当前构建产物：
 
 - `dist/mac-arm64/持有.app`
-- `dist/持有-1.0.0-arm64.dmg`
+- `dist/持有-0.1.0-alpha.0-arm64.dmg`
 
-注意：当前安装包未使用 Apple Developer ID 签名。首次打开时，macOS 可能要求在「系统设置 → 隐私与安全性」中允许打开。
+注意：Alpha 包仍未签名/公证，外发前仍需要 Apple Developer ID 签名和 notarization。
 
 ## Quick Cd
 

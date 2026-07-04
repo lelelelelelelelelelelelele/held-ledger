@@ -100,14 +100,14 @@
 <main>
   <header>
     <h1>Release Readiness Report</h1>
-    <p class="verdict"><span class="dot"></span>有条件通过：可作为本机/内部试用版发布；不建议直接外部分发。</p>
+    <p class="verdict"><span class="dot"></span>有条件通过：可作为源码开放准备版和本机/内部试用版发布；BYOK 文本路径已通过 Kimi live test；不建议直接外发未签名安装包。</p>
   </header>
 
   <h2>Verdict</h2>
   <ul>
-    <li>桌面 App、初始化资产、自然语言添加、打包 App smoke test 均已通过。</li>
-    <li>BYOK / OpenAI-compatible API 链路已用本地 mock server 验收。</li>
-    <li>真实服务商 token 的 live API 验收尚未在本轮执行。</li>
+    <li>桌面 App、初始化资产、自然语言添加、可编辑确认、API 错误重试、JSON 导出/导入、删除撤销、资产排序、逾期待办、打包 App smoke test 均已通过。</li>
+    <li>BYOK / OpenAI-compatible API 链路已用本地 mock server 验收：base URL 包含 <code>/v1</code> 时请求 <code>/chat/completions</code>，最终路径为 <code>/v1/chat/completions</code>。</li>
+    <li>Kimi Coding BYOK 已用真实 token live test，开发版、重启后的持久化配置、打包版 App 均能得到 <code>AI 智能解析</code> 预览。</li>
     <li>macOS 包仍未签名、未公证，外发会遇到 Gatekeeper 摩擦。</li>
   </ul>
 
@@ -117,14 +117,18 @@
     <tbody>
       <tr><td>本机桌面 App</td><td>Ready for local/internal trial</td><td>Electron 包装 <code>demo/index.html</code></td></tr>
       <tr><td>macOS packaged app</td><td>Ready for local/internal trial</td><td><code>dist/mac-arm64/持有.app</code> 可启动</td></tr>
-      <tr><td>DMG</td><td>Build-supported</td><td>需要外发前重新构建并签名/公证</td></tr>
+      <tr><td>DMG</td><td>Ready for local/internal trial</td><td><code>dist/持有-0.1.0-alpha.0-arm64.dmg</code> 已重建；仍需签名/公证后外发</td></tr>
       <tr><td>初始化资产</td><td>Ready</td><td>新用户目录会加载基础资产集合</td></tr>
       <tr><td>本机真实数据</td><td>Not versioned</td><td>IndexedDB 本机数据不进 Git</td></tr>
+      <tr><td>JSON 备份恢复</td><td>Ready for trial</td><td>「我的」页可导出 JSON；导入会覆盖本机资产数据</td></tr>
+      <tr><td>资产排序</td><td>Ready for trial</td><td>默认、价值最高、最近购入、日均最高、到期最近</td></tr>
+      <tr><td>待办提醒</td><td>Ready for trial</td><td>已过期、30 天内、60 天内分组</td></tr>
+      <tr><td>智能添加确认</td><td>Ready for trial</td><td>解析后可编辑名称、分类、购入价、购入日、估值、备注</td></tr>
       <tr><td>金融资产</td><td>Deferred</td><td>当前显示为「暂未开发」</td></tr>
       <tr><td>实物资产</td><td>Ready for trial</td><td>数码、家居、交通</td></tr>
       <tr><td>权益票券</td><td>Ready for trial</td><td>里程、礼品卡、票券</td></tr>
       <tr><td>会员订阅</td><td>Ready for trial</td><td>独立到期提醒类</td></tr>
-      <tr><td>BYOK API</td><td>Mock-tested</td><td>真实服务商 token 尚未 live test</td></tr>
+      <tr><td>BYOK API</td><td>Live-tested with Kimi</td><td>Kimi Coding text smart-add 已通过；图片路径尚未 live test</td></tr>
     </tbody>
   </table>
 
@@ -133,8 +137,10 @@
     <thead><tr><th>Check</th><th>Result</th><th>Evidence</th></tr></thead>
     <tbody>
       <tr><td>Source Electron smoke</td><td>Pass</td><td><code>npm run test:desktop</code></td></tr>
-      <tr><td>Seeded flow acceptance</td><td>Pass</td><td><code>npm run test:seeded-flow</code></td></tr>
+      <tr><td>Seeded flow acceptance</td><td>Pass</td><td><code>npm run test:seeded-flow</code>，覆盖初始化、逾期待办、资产排序、自然语言添加编辑确认、删除撤销、JSON 导出/导入</td></tr>
       <tr><td>BYOK mock API smoke</td><td>Pass</td><td><code>npm run test:byok-api</code></td></tr>
+      <tr><td>BYOK API error/retry smoke</td><td>Pass</td><td><code>npm run test:byok-api-error</code></td></tr>
+      <tr><td>Kimi BYOK live API/UI</td><td>Pass</td><td><code>reports/kimi_byok_live_REPORT.md</code></td></tr>
       <tr><td>Packaged app smoke</td><td>Pass</td><td><code>npm run test:packaged</code></td></tr>
       <tr><td>Computer Use visual check</td><td>Pass</td><td>总览显示金融资产暂未开发、权益估值、会员订阅</td></tr>
     </tbody>
@@ -148,22 +154,22 @@
       <tr><td>Authorization header</td><td>Pass</td><td>script verifies <code>Bearer test-token</code></td></tr>
       <tr><td>Model field</td><td>Pass</td><td>script verifies configured model is sent</td></tr>
       <tr><td>JSON response parsing</td><td>Pass</td><td>mock response becomes smart-add preview</td></tr>
-      <tr><td>Confirm add after API result</td><td>Pass</td><td>preview can be confirmed into asset detail</td></tr>
-      <tr><td>Real provider live test</td><td>Gap</td><td>needs an actual token and network-provider verification</td></tr>
+      <tr><td>Confirm add after API result</td><td>Pass</td><td>editable preview can be confirmed into asset detail</td></tr>
+      <tr><td>API failure recovery</td><td>Pass</td><td>failed API call shows error, keeps local fallback, and can retry AI</td></tr>
+      <tr><td>Real provider live test</td><td>Pass</td><td>Kimi Coding text path verified with real token</td></tr>
       <tr><td>Image API path</td><td>Gap</td><td>text API is tested; image upload path still depends on real model support</td></tr>
     </tbody>
   </table>
 
-  <h2>Open TODO</h2>
-  <h3>P0 Before External Release</h3>
+  <h2>Open TODO Summary</h2>
+  <p>以下为发布风险摘要；完整开发待办以 <code>docs/todo.md</code> 为准。</p>
+  <h3>Before Public DMG Distribution</h3>
   <table>
     <thead><tr><th>Task</th><th>Why It Matters</th></tr></thead>
     <tbody>
       <tr><td>Apple Developer ID signing</td><td>Avoid first-launch trust friction</td></tr>
       <tr><td>Apple notarization</td><td>Required for smooth external macOS distribution</td></tr>
-      <tr><td>Real provider BYOK live test</td><td>Mock proves integration shape, not provider behavior</td></tr>
-      <tr><td>Data export/backup</td><td>IndexedDB-only storage is fragile for real use</td></tr>
-      <tr><td>Stronger reset warning</td><td>「恢复初始化数据」 can overwrite local ledger state</td></tr>
+      <tr><td>Image BYOK live test</td><td>Text path is live-tested; image path still needs provider capability validation</td></tr>
     </tbody>
   </table>
 
@@ -171,11 +177,8 @@
   <table>
     <thead><tr><th>Task</th><th>Why It Matters</th></tr></thead>
     <tbody>
-      <tr><td>Single asset delete/undo</td><td>Needed for mistaken entries</td></tr>
-      <tr><td>Editable smart-add confirmation</td><td>Avoid confirm-then-fix workflow</td></tr>
-      <tr><td>Import/export</td><td>Makes user data portable</td></tr>
-      <tr><td>API error and retry UI</td><td>BYOK failures should be understandable</td></tr>
       <tr><td>Data model migrations</td><td>Future category changes should not require manual repair</td></tr>
+      <tr><td>Richer due-date actions</td><td>Users should be able to edit dates or mark reminders handled</td></tr>
       <tr><td>Photo/source cleanup</td><td>Candidate assets should stay out of product repo</td></tr>
     </tbody>
   </table>
@@ -192,11 +195,11 @@
   </table>
 
   <h2>Release Recommendation</h2>
-  <p>可以发布为：本机试用版、内部验收版、给自己持续录入资产的桌面版。</p>
-  <p>暂不建议发布为：公开下载版、面向外部用户的正式安装包、依赖真实 AI 服务商的稳定功能版。</p>
+  <p>可以发布为：本机试用版、内部验收版、给自己持续录入资产的桌面版、Kimi BYOK 文本智能添加的内部试用版。</p>
+  <p>暂不建议发布为：公开下载版、面向外部用户的正式安装包、对外承诺稳定 AI 服务、图片识别和错误恢复体验的正式版。</p>
 
   <h2>Suggested Acceptance Call</h2>
-  <p>本轮可以验收为「本机资产台账桌面试用版」。验收边界是：资产、权益、会员的本机管理体验成立；金融资产和外部分发能力明确留到下一阶段。</p>
+  <p>本轮可以验收为「本机资产台账 Alpha 试用版 + Kimi BYOK 文本智能添加内测版」。验收边界是：资产、权益、会员的本机管理体验成立；JSON 备份恢复和删除撤销已覆盖基础数据安全；Kimi 文本解析已能真实生成 AI 预览；金融资产、图片识别、外部分发能力和稳定 AI 错误恢复明确留到下一阶段。</p>
 </main>
 </body>
 </html>

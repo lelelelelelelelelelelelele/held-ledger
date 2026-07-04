@@ -1,8 +1,8 @@
 import { _electron as electron } from 'playwright';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { dirname, resolve, join } from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const userDataDir = await mkdtemp(resolve(tmpdir(), 'youshu-seeded-flow-'));
@@ -25,6 +25,19 @@ try {
   if (initialText.includes('从第一项资产开始') || initialText.includes('¥0.00\n日均成本')) {
     throw new Error('First-run empty ledger UI should not be shown for seeded data.');
   }
+  for (const expected of ['全部 2 项', '好利来礼品卡', '已过期 4 天']) {
+    if (!initialText.includes(expected)) {
+      throw new Error(`Seeded overview overdue todo missing: ${expected}`);
+    }
+  }
+
+  await page.locator('[data-act="nav"][data-arg="todos"]').first().click();
+  const todosText = await page.locator('#app').innerText();
+  for (const expected of ['已过期 · 1 项', '好利来礼品卡', '已过期 4 天', '60 天内 · 1 项', '极氪001']) {
+    if (!todosText.includes(expected)) {
+      throw new Error(`Seeded todo section missing: ${expected}`);
+    }
+  }
 
   await page.locator('[data-act="nav"][data-arg="assets"]').first().click();
   const assetsText = await page.locator('#app').innerText();
@@ -37,6 +50,27 @@ try {
     if (assetsText.includes(unexpected)) {
       throw new Error(`Unexpected sample asset leaked into seeded list: ${unexpected}`);
     }
+  }
+
+  await page.locator('#assetSort').selectOption('valueDesc');
+  let firstAssetText = await page.locator('[data-act="asset"]').first().innerText();
+  if (!firstAssetText.includes('极氪001')) {
+    throw new Error(`Value sort should put 极氪001 first: ${firstAssetText}`);
+  }
+  await page.locator('#assetSort').selectOption('recentBought');
+  firstAssetText = await page.locator('[data-act="asset"]').first().innerText();
+  if (!firstAssetText.includes('T90 Pro 扫地机器人')) {
+    throw new Error(`Recent purchase sort should put T90 Pro first: ${firstAssetText}`);
+  }
+  await page.locator('#assetSort').selectOption('dailyDesc');
+  firstAssetText = await page.locator('[data-act="asset"]').first().innerText();
+  if (!firstAssetText.includes('极氪001')) {
+    throw new Error(`Daily cost sort should put 极氪001 first: ${firstAssetText}`);
+  }
+  await page.locator('#assetSort').selectOption('dueSoon');
+  firstAssetText = await page.locator('[data-act="asset"]').first().innerText();
+  if (!firstAssetText.includes('好利来礼品卡')) {
+    throw new Error(`Due sort should put 好利来礼品卡 first: ${firstAssetText}`);
   }
 
   await page.locator('[data-act="asset"][data-arg="zeekr"]').click();
@@ -58,30 +92,85 @@ try {
   await page.locator('[data-act="nl-go"]').click();
   await page.locator('[data-act="nl-confirm"]').waitFor({ timeout: 10_000 });
 
-  const previewText = await page.locator('.nl-preview').innerText();
-  if (!previewText.includes('佳能 R8 相机') || !previewText.includes('¥6,800.00')) {
-    throw new Error(`Unexpected preview: ${previewText}`);
+  const previewName = await page.locator('#nlName').inputValue();
+  const previewPrice = await page.locator('#nlPrice').inputValue();
+  if (previewName !== '佳能 R8 相机' || Number(previewPrice) !== 6800) {
+    throw new Error(`Unexpected editable preview: ${previewName} / ${previewPrice}`);
   }
+  await page.locator('#nlName').fill('佳能 R8 Mark II');
+  await page.locator('#nlPrice').fill('7200');
+  await page.locator('#nlBought').fill('2026-05-20');
+  await page.locator('#nlValue').fill('6900');
+  await page.locator('#nlNote').fill('确认页编辑验收');
 
   await page.locator('[data-act="nl-confirm"]').click();
   await page.waitForSelector('.dhero', { timeout: 10_000 });
-  await page.waitForFunction(() => document.querySelector('#app')?.innerText.includes('佳能 R8 相机'));
+  await page.waitForFunction(() => document.querySelector('#app')?.innerText.includes('佳能 R8 Mark II'));
 
   const detailText = await page.locator('#app').innerText();
-  if (!detailText.includes('佳能 R8 相机') || !detailText.includes('录入资产')) {
+  for (const expected of ['佳能 R8 Mark II', '¥7,200', '2026-05-20', '¥6,900', '确认页编辑验收', '录入资产']) {
+    if (!detailText.includes(expected)) {
+      throw new Error(`Edited asset detail missing ${expected}: ${detailText}`);
+    }
+  }
+  if (detailText.includes('佳能 R8 相机') && !detailText.includes('佳能 R8 Mark II')) {
     throw new Error(`Asset detail did not show the entered asset: ${detailText}`);
   }
 
+  page.once('dialog', dialog => dialog.accept());
+  await page.locator('[data-act="delete-asset"]').click();
+  await page.waitForSelector('.undo-toast', { timeout: 10_000 });
+  const deletedAssetRows = await page.locator('[data-act="asset"]').filter({ hasText: '佳能 R8 Mark II' }).count();
+  if (deletedAssetRows !== 0) {
+    const afterDeleteText = await page.locator('#app').innerText();
+    throw new Error(`Deleted asset was still visible in the asset list: ${afterDeleteText}`);
+  }
+  await page.locator('.undo-toast button').click();
+  await page.waitForSelector('.dhero', { timeout: 10_000 });
+  await page.waitForFunction(() => document.querySelector('#app')?.innerText.includes('佳能 R8 Mark II'));
+
   await page.locator('[data-act="nav"][data-arg="overview"]').first().click();
   const overviewText = await page.locator('#app').innerText();
-  if (!overviewText.includes('录入资产 · 佳能 R8 相机')) {
-    throw new Error(`Overview did not show the new entry: ${overviewText}`);
+  if (!overviewText.includes('¥263,430.00')) {
+    throw new Error(`Overview net worth did not include the edited asset value: ${overviewText}`);
   }
+
+  await page.locator('[data-act="nav"][data-arg="me"]').first().click();
+  await page.locator('[data-act="export-data"]').click();
+  const exported = await page.evaluate(() => window.__lastExportPayload);
+  if (exported.schema !== 'youshu-ledger-export' || !Array.isArray(exported.assets) || exported.assets.length < 7) {
+    throw new Error(`Unexpected export payload: ${JSON.stringify(exported).slice(0, 300)}`);
+  }
+  const editedAsset = exported.assets.find(asset => asset.name === '佳能 R8 Mark II');
+  if (!editedAsset || editedAsset.price !== 7200 || editedAsset.value !== 6900 || editedAsset.bought !== '2026-05-20') {
+    throw new Error(`Edited smart-add asset missing from export: ${JSON.stringify(editedAsset)}`);
+  }
+
+  exported.assets.unshift({
+    id: 'import-smoke',
+    group: 'physical',
+    cat: '数码',
+    name: '导入验收资产',
+    icon: 'box',
+    tint: '#E1E6EC',
+    status: 'active',
+    countable: true,
+    price: 1234,
+    bought: '2026-07-04',
+    value: 1234,
+    meta: [['购入价', '¥1,234'], ['购入日', '2026-07-04'], ['当前估值', '¥1,234']],
+    events: [{ date: '2026-07-04', title: '导入资产', delta: '−¥1,234', sub: 'JSON smoke', kind: 'buy' }],
+  });
+  const importPath = join(userDataDir, 'import-smoke.json');
+  await writeFile(importPath, JSON.stringify(exported, null, 2));
+  page.once('dialog', dialog => dialog.accept());
+  await page.locator('#importJson').setInputFiles(importPath);
+  await page.waitForFunction(() => document.querySelector('#app')?.innerText.includes('导入验收资产'));
 
   console.log(JSON.stringify({
     ok: true,
     userDataDir,
-    scenario: 'seeded ledger -> verify prior assets -> natural language asset entry',
+    scenario: 'seeded ledger -> verify prior assets -> natural language asset entry -> delete undo -> JSON export import',
   }, null, 2));
 } finally {
   await app.close();

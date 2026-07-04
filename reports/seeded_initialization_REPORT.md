@@ -59,7 +59,7 @@
 | Artifact | Path |
 | --- | --- |
 | macOS App | `dist/mac-arm64/持有.app` |
-| macOS DMG | `dist/持有-1.0.0-arm64.dmg` |
+| macOS DMG | `dist/持有-0.1.0-alpha.0-arm64.dmg` |
 
 ## Known Gaps
 

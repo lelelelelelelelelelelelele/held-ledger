@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kimi BYOK Live Test Report</title>
+<style>
+  :root {
+    --paper: #f7f8f4;
+    --ink: #1c211d;
+    --muted: #637067;
+    --line: #dfe5dc;
+    --green: #2e7d5b;
+    --amber: #8a5408;
+    --white: #fffefb;
+  }
+  body {
+    margin: 0;
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Noto Sans SC", "PingFang SC", sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+  }
+  main {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 40px 22px 56px;
+  }
+  header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 26px;
+  }
+  h1 {
+    margin: 0 0 10px;
+    font-size: 31px;
+    letter-spacing: 0;
+  }
+  h2 {
+    margin: 30px 0 12px;
+    font-size: 19px;
+  }
+  p {
+    margin: 0 0 12px;
+  }
+  .verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--green);
+    font-weight: 700;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border: 1px solid var(--line);
+    margin: 10px 0 18px;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 12px;
+  }
+  th {
+    font-size: 13px;
+    color: var(--muted);
+    background: #eef3ec;
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    background: #eef3ec;
+    padding: 1px 5px;
+    border-radius: 5px;
+  }
+  .note {
+    color: var(--muted);
+  }
+  .warn {
+    color: var(--amber);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Kimi BYOK Live Test Report</h1>
+    <p class="verdict"><span class="dot"></span>通过：真实 Kimi、开发版、重启持久化、打包版均已验证。</p>
+  </header>
+
+  <h2>Verdict</h2>
+  <p>通过。Kimi BYOK 文本解析链路已经在真实服务商、开发版 Electron、重启后的持久化配置、以及打包版 App 中验证通过。</p>
+  <p class="note">API key 已写入本机应用配置用于 BYOK 测试，但没有写入仓库文件或报告。</p>
+  <table>
+    <thead><tr><th>Field</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Provider</td><td>Kimi Coding</td></tr>
+      <tr><td>Base URL</td><td><code>https://api.kimi.com/coding/v1</code></td></tr>
+      <tr><td>Model</td><td><code>kimi-latest</code></td></tr>
+      <tr><td>Request URL</td><td><code>https://api.kimi.com/coding/v1/chat/completions</code></td></tr>
+      <tr><td>Temperature</td><td><code>1</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>What Was Actually Tested</h2>
+  <table>
+    <thead><tr><th>Test Area</th><th>Result</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>Direct provider endpoint</td><td>Pass</td><td><code>POST https://api.kimi.com/coding/v1/chat/completions</code> returned <code>200</code> with JSON content</td></tr>
+      <tr><td>Wrong base path check</td><td>Pass</td><td><code>https://api.kimi.com/coding/chat/completions</code> returned <code>404</code>, confirming <code>/v1</code> is required</td></tr>
+      <tr><td>Kimi parameter compatibility</td><td>Pass after fix</td><td><code>temperature: 0.2</code> returned <code>400</code>; <code>temperature: 1</code> returned <code>200</code></td></tr>
+      <tr><td>Source Electron UI live parse</td><td>Pass</td><td>Preview showed <code>来源：AI 智能解析</code></td></tr>
+      <tr><td>Config persistence after restart</td><td>Pass</td><td>BYOK config persisted in IndexedDB <code>config/byok_v1</code> after app restart</td></tr>
+      <tr><td>Packaged app smoke</td><td>Pass</td><td><code>npm run test:packaged</code> passed against <code>dist/mac-arm64/持有.app</code></td></tr>
+      <tr><td>Packaged app live parse</td><td>Pass</td><td>Packaged app preview showed <code>来源：AI 智能解析</code></td></tr>
+      <tr><td>Existing mock BYOK regression</td><td>Pass</td><td><code>npm run test:byok-api</code> still passes</td></tr>
+      <tr><td>Seeded app flow regression</td><td>Pass</td><td><code>npm run test:seeded-flow</code> still passes</td></tr>
+      <tr><td>Source desktop smoke</td><td>Pass</td><td><code>npm run test:desktop</code> still passes</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Real Effect Test Cases</h2>
+  <table>
+    <thead><tr><th>Input</th><th>Runtime</th><th>Observed Preview</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td><code>昨天 199 元买了一个 Kimi 测试键盘</code></td><td>Source Electron, temporary profile</td><td>Name: Kimi 测试键盘; category: 数码; price: ¥199.00; bought date: 2026-07-03; source: AI 智能解析</td><td>Pass</td></tr>
+      <tr><td><code>今天 88 元买了一张 Kimi 验证礼品卡</code></td><td>Source Electron, persisted app profile after restart</td><td>Name: Kimi 验证礼品卡; category: 权益; price: ¥88.00; bought date: 2026-07-04; source: AI 智能解析</td><td>Pass</td></tr>
+      <tr><td><code>今天 66 元买了一张打包版 Kimi 测试卡</code></td><td>Packaged App, persisted app profile</td><td>Name: 打包版 Kimi 测试卡; category: 权益; price: ¥66.00; bought date: 2026-07-04; source: AI 智能解析</td><td>Pass</td></tr>
+    </tbody>
+  </table>
+  <p class="note">The tests stopped at preview. No test asset was confirmed into the user's ledger.</p>
+
+  <h2>Fixes Made During Testing</h2>
+  <table>
+    <thead><tr><th>File</th><th>Change</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code>demo/index.html</code></td><td>Kimi preset changed to <code>https://api.kimi.com/coding/v1</code></td><td>The user-provided <code>/coding/</code> base becomes a 404 when the app appends <code>/chat/completions</code>; <code>/coding/v1</code> is the working OpenAI-compatible base</td></tr>
+      <tr><td><code>demo/index.html</code></td><td>Kimi Coding requests use <code>temperature: 1</code></td><td>The provider rejects <code>temperature: 0.2</code> for <code>kimi-latest</code> on this endpoint</td></tr>
+      <tr><td><code>demo/index.html</code></td><td>BYOK config is persisted in IndexedDB <code>config/byok_v1</code>, with localStorage compatibility retained</td><td>Electron <code>file://</code> localStorage did not reliably survive restart in this app path</td></tr>
+      <tr><td><code>tools/smoke-byok-api.mjs</code></td><td>Test navigation changed from internal <code>route()</code> to public <code>window.fillAdd()</code></td><td><code>route()</code> is not exposed globally in current page scope</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Commands Run</h2>
+  <table>
+    <thead><tr><th>Command / Check</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>Direct Kimi live request with <code>temperature: 1</code></td><td>Pass</td></tr>
+      <tr><td>Source Electron live UI parse</td><td>Pass</td></tr>
+      <tr><td>Persisted app profile live UI parse</td><td>Pass</td></tr>
+      <tr><td>Packaged app live UI parse</td><td>Pass</td></tr>
+      <tr><td><code>npm run test:byok-api</code></td><td>Pass</td></tr>
+      <tr><td><code>npm run test:seeded-flow</code></td><td>Pass</td></tr>
+      <tr><td><code>npm run test:desktop</code></td><td>Pass</td></tr>
+      <tr><td><code>npm run pack:desktop</code></td><td>Pass; regenerated <code>dist/mac-arm64/持有.app</code></td></tr>
+      <tr><td><code>npm run test:packaged</code></td><td>Pass</td></tr>
+      <tr><td><code>git diff --check</code></td><td>Pass</td></tr>
+      <tr><td>Secret scan for the supplied key in repo files</td><td>Pass; no key found</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Current Gaps</h2>
+  <table>
+    <thead><tr><th>Gap</th><th>Impact</th></tr></thead>
+    <tbody>
+      <tr><td>Image recognition path not live-tested</td><td>Text smart-add is verified; image input still needs separate provider capability testing</td></tr>
+      <tr><td>DMG not rebuilt in this run</td><td><code>dist/mac-arm64/持有.app</code> was regenerated; the existing DMG may still contain the previous app build</td></tr>
+      <tr><td>App is still unsigned / unnotarized</td><td>Suitable for local/internal trial, not polished external distribution</td></tr>
+      <tr><td>API key remains local BYOK data</td><td>Good for local testing; production distribution should use a safer backend/proxy or explicit BYOK privacy model</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Acceptance Call</h2>
+  <p>Kimi BYOK text parsing can be accepted for local/internal testing. The most important real effect is that the app now produces AI-sourced structured previews from real Kimi responses after restart and in the packaged App, instead of silently falling back to local parsing.</p>
+</main>
+</body>
+</html>

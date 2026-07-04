@@ -97,7 +97,7 @@
 <main>
   <header>
     <h1>Desktop Packaging Report</h1>
-    <p class="verdict"><span class="dot"></span>通过：已生成并验证 macOS arm64 桌面安装包。</p>
+    <p class="verdict"><span class="dot"></span>通过：已生成并验证当前 Alpha 版本的 macOS arm64 桌面安装包。</p>
   </header>
 
   <h2>Artifacts</h2>
@@ -105,8 +105,8 @@
     <thead><tr><th>Artifact</th><th>Path</th><th>Status</th></tr></thead>
     <tbody>
       <tr><td>macOS app bundle</td><td><code>dist/mac-arm64/持有.app</code></td><td>Generated</td></tr>
-      <tr><td>macOS installer image</td><td><code>dist/持有-1.0.0-arm64.dmg</code></td><td>Generated</td></tr>
-      <tr><td>DMG block map</td><td><code>dist/持有-1.0.0-arm64.dmg.blockmap</code></td><td>Generated</td></tr>
+      <tr><td>macOS installer image</td><td><code>dist/持有-0.1.0-alpha.0-arm64.dmg</code></td><td>Generated</td></tr>
+      <tr><td>DMG block map</td><td><code>dist/持有-0.1.0-alpha.0-arm64.dmg.blockmap</code></td><td>Generated</td></tr>
       <tr><td>Desktop entry</td><td><code>desktop/main.cjs</code></td><td>Added</td></tr>
       <tr><td>Source smoke test</td><td><code>tools/smoke-electron.mjs</code></td><td>Added</td></tr>
       <tr><td>Packaged smoke test</td><td><code>tools/smoke-packaged.mjs</code></td><td>Added</td></tr>
@@ -121,9 +121,9 @@
       <tr><td>Source app uses local file content</td><td>Pass</td><td>URL was <code>file:///Users/lele/Documents/Projects/youshu-ledger-app/demo/index.html#overview</code></td></tr>
       <tr><td>Packaged app loads from build output</td><td>Pass</td><td><code>npm run test:packaged</code> returned <code>ok: true</code></td></tr>
       <tr><td>Packaged app uses asar content</td><td>Pass</td><td>URL included <code>dist/mac-arm64/持有.app/Contents/Resources/app.asar/demo/index.html#overview</code></td></tr>
-      <tr><td>DMG mounts successfully</td><td>Pass</td><td><code>hdiutil attach dist/持有-1.0.0-arm64.dmg</code> mounted <code>/Volumes/持有 1.0.0-arm64</code></td></tr>
-      <tr><td>App launches from mounted DMG</td><td>Pass</td><td><code>PACKAGED_APP_EXECUTABLE="/Volumes/持有 1.0.0-arm64/持有.app/Contents/MacOS/持有" npm run test:packaged</code> returned <code>ok: true</code></td></tr>
-      <tr><td>Mounted DMG cleanup</td><td>Pass</td><td><code>hdiutil detach "/Volumes/持有 1.0.0-arm64"</code> ejected <code>disk4</code></td></tr>
+      <tr><td>DMG mounts successfully</td><td>Pass</td><td><code>hdiutil attach dist/持有-0.1.0-alpha.0-arm64.dmg -nobrowse</code> mounted <code>/Volumes/持有 0.1.0-alpha.0-arm64</code></td></tr>
+      <tr><td>App launches from mounted DMG</td><td>Pass</td><td><code>PACKAGED_APP_EXECUTABLE="/Volumes/持有 0.1.0-alpha.0-arm64/持有.app/Contents/MacOS/持有" npm run test:packaged</code> returned <code>ok: true</code></td></tr>
+      <tr><td>Mounted DMG cleanup</td><td>Pass</td><td><code>hdiutil detach "/Volumes/持有 0.1.0-alpha.0-arm64"</code> ejected <code>disk4</code></td></tr>
     </tbody>
   </table>
 
@@ -139,6 +139,7 @@
       <tr><td>Target</td><td><code>dmg</code>, <code>arm64</code></td></tr>
       <tr><td>App content</td><td><code>demo/**/*</code>, <code>desktop/**/*</code>, <code>package.json</code></td></tr>
       <tr><td>Packaging mode</td><td><code>asar: true</code></td></tr>
+      <tr><td>Version</td><td><code>0.1.0-alpha.0</code></td></tr>
     </tbody>
   </table>
 

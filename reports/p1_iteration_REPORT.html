@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>P1 Iteration Report</title>
+<style>
+  :root {
+    --paper: #f7f8f4;
+    --ink: #1c211d;
+    --muted: #637067;
+    --line: #dfe5dc;
+    --green: #2e7d5b;
+    --amber: #8a5408;
+    --white: #fffefb;
+  }
+  body {
+    margin: 0;
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Noto Sans SC", "PingFang SC", sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+  }
+  main {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 40px 22px 56px;
+  }
+  header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 26px;
+  }
+  h1 {
+    margin: 0 0 10px;
+    font-size: 31px;
+    letter-spacing: 0;
+  }
+  h2 {
+    margin: 30px 0 12px;
+    font-size: 19px;
+  }
+  p {
+    margin: 0 0 12px;
+  }
+  ul {
+    margin: 0 0 18px 20px;
+    padding: 0;
+  }
+  li {
+    margin: 4px 0;
+  }
+  .verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--green);
+    font-weight: 700;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border: 1px solid var(--line);
+    margin: 10px 0 18px;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 12px;
+  }
+  th {
+    font-size: 13px;
+    color: var(--muted);
+    background: #eef3ec;
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    background: #eef3ec;
+    padding: 1px 5px;
+    border-radius: 5px;
+  }
+  .note {
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>P1 Iteration Report</h1>
+    <p class="verdict"><span class="dot"></span>通过：P1 已推进到可纠错、可恢复、可看风险的本机 Alpha 体验。</p>
+  </header>
+
+  <h2>Report Boundary</h2>
+  <p>本报告记录 P1 功能迭代差异、验收结果和剩余产品缺口；它不是发布准入报告。</p>
+  <ul>
+    <li>发布结论与外部分发风险见 <code>reports/release_readiness_REPORT.md</code>。</li>
+    <li>打包产物与 DMG 挂载验证见 <code>reports/desktop_packaging_REPORT.md</code>。</li>
+    <li>开发待办源头见 <code>docs/todo.md</code>。</li>
+  </ul>
+
+  <h2>Iteration Difference</h2>
+  <table>
+    <thead><tr><th>Area</th><th>Before</th><th>After</th><th>Validation</th></tr></thead>
+    <tbody>
+      <tr><td>资产排序</td><td>只有固定状态排序</td><td>增加默认、价值最高、最近购入、日均最高、到期最近</td><td><code>npm run test:seeded-flow</code></td></tr>
+      <tr><td>逾期待办</td><td>已过期权益会从待办消失</td><td>总览和待办页显示已过期项，待办页分组为已过期、30 天内、60 天内</td><td><code>npm run test:seeded-flow</code></td></tr>
+      <tr><td>智能添加确认</td><td>解析结果只读，只能确认或重填</td><td>可编辑名称、分类、购入价、购入日、当前估值、备注，再确认入库</td><td><code>npm run test:seeded-flow</code></td></tr>
+      <tr><td>BYOK API 失败</td><td>文本失败后本地兜底，但重试路径不清楚</td><td>显示错误、本地兜底、重试 AI、改 API 设置</td><td><code>npm run test:byok-api-error</code></td></tr>
+      <tr><td>测试入口</td><td>只有分散脚本</td><td>增加 <code>npm run test:p1</code> 和 <code>npm test</code> 聚合入口</td><td><code>npm test</code></td></tr>
+      <tr><td>打包证据</td><td>本地曾残留旧 <code>1.0.0</code> DMG</td><td>当前目录只保留 <code>0.1.0-alpha.0</code> DMG，DMG 挂载启动通过</td><td>mounted <code>npm run test:packaged</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Validation Results</h2>
+  <table>
+    <thead><tr><th>Command</th><th>Result</th><th>Coverage</th></tr></thead>
+    <tbody>
+      <tr><td><code>npm run test:p1</code></td><td>Pass</td><td>source smoke, seeded flow, BYOK success, BYOK error/retry</td></tr>
+      <tr><td><code>npm run test:seeded-flow</code></td><td>Pass</td><td>初始化资产、逾期待办、资产排序、确认页编辑、删除撤销、JSON 导入导出</td></tr>
+      <tr><td><code>npm run test:byok-api</code></td><td>Pass</td><td>OpenAI-compatible success path, Authorization/model/request body</td></tr>
+      <tr><td><code>npm run test:byok-api-error</code></td><td>Pass</td><td>HTTP 500 -> local fallback -> retry AI -> confirm once</td></tr>
+      <tr><td><code>npm run build:desktop</code></td><td>Pass</td><td>Rebuilt <code>dist/持有-0.1.0-alpha.0-arm64.dmg</code></td></tr>
+      <tr><td><code>npm run test:packaged</code></td><td>Pass</td><td>Built app and mounted DMG app both launch</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Remaining P1 Gaps</h2>
+  <table>
+    <thead><tr><th>Gap</th><th>Why It Remains</th><th>Suggested Next Check</th></tr></thead>
+    <tbody>
+      <tr><td>数据模型版本迁移策略</td><td>IndexedDB schema has moved to config/assets stores, but asset schema migration is still ad hoc</td><td>Add explicit export schema version and import migration tests</td></tr>
+      <tr><td>图片/照片资产来源整理</td><td>当前 thumb assets and user-uploaded photos coexist without provenance policy</td><td>Decide which images are demo assets, generated placeholders, or user-owned</td></tr>
+      <tr><td>更完整到期处理动作</td><td>已能看到逾期，但不能直接改有效期或标记已处理</td><td>Add due-date edit/handled action and acceptance coverage</td></tr>
+      <tr><td>搜索入口</td><td>排序完成，搜索图标仍未展开为真实搜索</td><td>Add name/category/meta search with clear-filter state</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Conclusion</h2>
+  <p>本轮已经把 P1 从“能录入和展示”推进到“能纠错、能恢复、能看风险”。下一轮优先做数据迁移策略和到期处理动作；搜索入口适合作为小步快改跟进。</p>
+</main>
+</body>
+</html>

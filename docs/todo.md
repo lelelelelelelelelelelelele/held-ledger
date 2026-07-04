@@ -2,7 +2,7 @@
 
 ## Release Readiness
 
-当前状态：可以作为本机/内部试用版发布；不建议作为外部分发版发布。
+当前状态：源码可作为开源 Alpha 准备；安装包仅建议本机/内部试用。Kimi BYOK 文本智能添加已可内测；暂不建议作为面向大众的稳定正式 App 发布。
 
 ### Done
 
@@ -13,29 +13,38 @@
 - [x] 里程按用户口径折算估值
 - [x] 智能添加本地解析
 - [x] BYOK OpenAI-compatible API mock 验收
+- [x] Kimi BYOK live API/UI 验收
+- [x] BYOK 配置改为 IndexedDB 持久化，保留 localStorage 兼容读取
+- [x] 导出 / 导入 JSON，降低本机 IndexedDB 丢失风险
+- [x] 单项资产删除 / 撤销，降低误录和误点成本
+- [x] 资产列表排序入口：默认、价值最高、最近购入、日均最高、到期最近
+- [x] 逾期提醒闭环：已过期权益进入总览和待办页，并在临期筛选/到期排序中可见
+- [x] 智能添加确认页支持编辑字段：名称、分类、购入价、购入日、当前估值、备注
+- [x] API 错误状态和重试提示：失败后本地兜底、重试 AI、改 API 设置
+- [x] README 明确本地存储、无云同步、BYOK 密钥存储、未签名安装说明和已知限制
+- [x] Release 标记为 Alpha（`0.1.0-alpha.0`）
+- [x] 发布前验证重跑：desktop、seeded-flow、byok-api、packaged
 - [x] Packaged app smoke test
 - [x] 关键验收报告与截图归档
 
-### P0 Before External Release
+### P0 Before Open Source Alpha
 
-- [ ] Apple Developer ID 签名
-- [ ] Apple notarization 公证
-- [ ] 使用真实服务商 token 跑一次 BYOK live API 验收
-- [ ] 明确 BYOK 密钥存储和隐私提示：当前仅本机 localStorage，适合本机试用
-- [ ] 增加数据导出/备份入口，避免本机 IndexedDB 丢失后无法恢复
-- [ ] 给「恢复初始化数据」增加更强确认或备份提示
+当前无开放 P0；重新发布前需再次运行验证命令。
 
 ### P1 Before Wider Beta
 
-- [ ] 单项资产删除/撤销
-- [ ] 智能添加确认页支持编辑字段
-- [ ] 资产数据导入/导出
-- [ ] API 错误状态和重试提示
 - [ ] 数据模型版本迁移策略
 - [ ] 图像/照片资产来源整理和替换策略
-- [ ] 更完整的会员、权益到期提醒视图
+- [ ] 更完整的会员、权益到期处理动作：改有效期、标记已处理、批量视图
 
-### P2 Later
+### P2 Before External Stable Release
+
+- [ ] Apple Developer ID 签名
+- [ ] Apple notarization 公证
+- [ ] 图片 BYOK live test
+- [ ] 更完整的数据备份/恢复策略
+
+### P3 Later
 
 - [ ] 金融资产模块：现金、存款、基金、持仓独立账户模型
 - [ ] 架构图或模块说明
@@ -46,8 +55,11 @@
 ## Validation Commands
 
 ```sh
+npm test
+npm run test:p1
 npm run test:desktop
 npm run test:seeded-flow
 npm run test:byok-api
+npm run test:byok-api-error
 npm run test:packaged
 ```
