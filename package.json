@@ -6,6 +6,7 @@
   "scripts": {
     "desktop": "electron .",
     "build:desktop": "electron-builder --mac dmg",
+    "build:promo": "node tools/generate-promo.mjs",
     "pack:desktop": "electron-builder --mac dir",
     "test": "npm run test:p1 && npm run test:packaged",
     "test:p1": "npm run test:desktop && npm run test:seeded-flow && npm run test:byok-api && npm run test:byok-api-error",

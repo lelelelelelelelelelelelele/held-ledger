@@ -6,6 +6,15 @@ import { dirname, resolve, join } from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const userDataDir = await mkdtemp(resolve(tmpdir(), 'youshu-seeded-flow-'));
+const today = new Date().toISOString().slice(0, 10);
+const daysBetween = (a, b) => {
+  const parse = value => {
+    const [y, m, d] = value.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  };
+  return Math.round((parse(b) - parse(a)) / 86_400_000);
+};
+const giftOverdueText = `已过期 ${Math.abs(daysBetween(today, '2026-06-30'))} 天`;
 const app = await electron.launch({
   args: [root, `--user-data-dir=${userDataDir}`],
 });
@@ -25,7 +34,7 @@ try {
   if (initialText.includes('从第一项资产开始') || initialText.includes('¥0.00\n日均成本')) {
     throw new Error('First-run empty ledger UI should not be shown for seeded data.');
   }
-  for (const expected of ['全部 2 项', '好利来礼品卡', '已过期 4 天']) {
+  for (const expected of ['全部 2 项', '好利来礼品卡', giftOverdueText]) {
     if (!initialText.includes(expected)) {
       throw new Error(`Seeded overview overdue todo missing: ${expected}`);
     }
@@ -33,7 +42,7 @@ try {
 
   await page.locator('[data-act="nav"][data-arg="todos"]').first().click();
   const todosText = await page.locator('#app').innerText();
-  for (const expected of ['已过期 · 1 项', '好利来礼品卡', '已过期 4 天', '60 天内 · 1 项', '极氪001']) {
+  for (const expected of ['已过期 · 1 项', '好利来礼品卡', giftOverdueText, '60 天内 · 1 项', '极氪001']) {
     if (!todosText.includes(expected)) {
       throw new Error(`Seeded todo section missing: ${expected}`);
     }

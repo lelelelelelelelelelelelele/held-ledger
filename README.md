@@ -19,6 +19,7 @@
 - `docs/image-source-policy.md`：图片来源标注、导出和公开分发前替换策略
 - `docs/todo.md`：后续开发前需要确认和执行的事项
 - `docs/demo/open-source-demos.md`：可参考的开源项目与 demo 方向
+- `reports/promo/`：基于真实截图生成的 release 宣发图
 
 ## Desktop Package
 
@@ -56,6 +57,12 @@ npm run test:seeded-flow
 
 ```sh
 npm run test:byok-api
+```
+
+生成 release 宣发图：
+
+```sh
+npm run build:promo
 ```
 
 当前构建产物：

@@ -22,6 +22,7 @@
 - [x] 智能添加确认页支持编辑字段：名称、分类、购入价、购入日、当前估值、备注
 - [x] API 错误状态和重试提示：失败后本地兜底、重试 AI、改 API 设置
 - [x] 图像/照片资产来源策略：`photoSource` 标注、详情展示、JSON 导出、策略报告
+- [x] Release 宣发图：GitHub Release 封面、功能拼图、社群方图和生成脚本
 - [x] README 明确本地存储、无云同步、BYOK 密钥存储、未签名安装说明和已知限制
 - [x] Release 标记为 Alpha（`0.1.0-alpha.0`）
 - [x] 发布前验证重跑：desktop、seeded-flow、byok-api、packaged
@@ -63,4 +64,5 @@ npm run test:seeded-flow
 npm run test:byok-api
 npm run test:byok-api-error
 npm run test:packaged
+npm run build:promo
 ```
