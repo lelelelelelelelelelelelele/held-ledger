@@ -14,7 +14,11 @@ const daysBetween = (a, b) => {
   };
   return Math.round((parse(b) - parse(a)) / 86_400_000);
 };
-const giftOverdueText = `已过期 ${Math.abs(daysBetween(today, '2026-06-30'))} 天`;
+const giftDueDays = daysBetween(today, '2026-06-30');
+const giftOverdueText = `已过期 ${Math.abs(giftDueDays)} 天`;
+const zeekrDueDays = daysBetween(today, '2026-08-05');
+const overdueSection = `已过期 · ${[giftDueDays, zeekrDueDays].filter(days => days < 0).length} 项`;
+const zeekrDueSection = zeekrDueDays < 0 ? null : (zeekrDueDays <= 30 ? '30 天内 · 1 项' : '60 天内 · 1 项');
 const app = await electron.launch({
   args: [root, `--user-data-dir=${userDataDir}`],
 });
@@ -42,7 +46,7 @@ try {
 
   await page.locator('[data-act="nav"][data-arg="todos"]').first().click();
   const todosText = await page.locator('#app').innerText();
-  for (const expected of ['已过期 · 1 项', '好利来礼品卡', giftOverdueText, '60 天内 · 1 项', '极氪001']) {
+  for (const expected of [overdueSection, '好利来礼品卡', giftOverdueText, zeekrDueSection, '极氪001'].filter(Boolean)) {
     if (!todosText.includes(expected)) {
       throw new Error(`Seeded todo section missing: ${expected}`);
     }

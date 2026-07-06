@@ -45,7 +45,7 @@
 | Item | Priority | Notes |
 | --- | --- | --- |
 | `demo/thumbs/*.jpg` 版权审核或替换 | Before public stable | 当前只标注为演示图，不声明可商用 |
-| 图片 BYOK live test | Before external stable | 文本 Kimi BYOK 已通过，图片路径尚未 live test |
+| 图片 BYOK live test | Before external stable | 文本 BYOK mock/API UI 已通过，图片路径尚未 live test |
 | 大图压缩和导出体积限制 | Later | 当前缩略图压缩为 360px JPEG，但没有导出体积提示 |
 
 ## Conclusion

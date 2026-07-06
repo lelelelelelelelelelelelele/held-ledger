@@ -2,7 +2,7 @@
 
 ## Release Readiness
 
-当前状态：源码可作为开源 Alpha 准备；安装包仅建议本机/内部试用。Kimi BYOK 文本智能添加已可内测；暂不建议作为面向大众的稳定正式 App 发布。
+当前状态：源码可作为开源 Alpha 准备；安装包仅建议本机/内部试用。BYOK / OpenAI-compatible 文本智能添加已可内测；暂不建议作为面向大众的稳定正式 App 发布。
 
 ### Done
 
@@ -13,7 +13,7 @@
 - [x] 里程按用户口径折算估值
 - [x] 智能添加本地解析
 - [x] BYOK OpenAI-compatible API mock 验收
-- [x] Kimi BYOK live API/UI 验收
+- [x] BYOK / OpenAI-compatible API/UI 验收
 - [x] BYOK 配置改为 IndexedDB 持久化，保留 localStorage 兼容读取
 - [x] 导出 / 导入 JSON，降低本机 IndexedDB 丢失风险
 - [x] 单项资产删除 / 撤销，降低误录和误点成本

@@ -1103,7 +1103,7 @@ function applyEdit(){const a=ASSETS.find(x=>x.id===S.currentAsset);const inp=doc
   else if(f==='sell'){a.soldPrice=v;a.status='sold';a.value=0;a.events.unshift({date:TODAY,title:'已出售',delta:money(v,{sign:true}),sub:'折旧 '+money(v-(a.price||0),{sign:true}),kind:'sell'});}
   S.edit=null;saveAssets();showStamp('已更新');setTimeout(()=>{viewAssetDetail();renderTabs();},300);}
 
-/* ---------- BYOK + 自然语言添加（OpenAI 兼容：Kimi / 小米 等） ---------- */
+/* ---------- BYOK + 自然语言添加（OpenAI 兼容：小米 MiMo / 自定义接口） ---------- */
 let BYOK_CACHE=null;
 function localByok(){try{return JSON.parse(localStorage.getItem('byok_v1')||'{}');}catch(e){return {};}}
 function loadByok(){if(BYOK_CACHE&&Object.keys(BYOK_CACHE).length)return BYOK_CACHE;BYOK_CACHE=localByok();return BYOK_CACHE;}
@@ -1127,7 +1127,6 @@ async function hydrateByok(){
 function byokReady(){const b=loadByok();return !!(b.key&&b.base);}
 const BYOK_PRESETS={
   xiaomi:{label:'小米 MiMo',base:'https://token-plan-cn.xiaomimimo.com/v1',model:'mimo-v2.5'},
-  kimi:{label:'Kimi Coding',base:'https://api.kimi.com/coding/v1',model:'kimi-latest'},
   custom:{label:'自定义',base:'',model:''},
 };
 function byokTemperature(b){
@@ -1141,7 +1140,7 @@ async function llmExtract(text, image){
     '把相对日期（上个月/上月/去年X月/前年/今年X月/X月X日）按今天解析为 YYYY-MM-DD。若文字或图片中出现购买/下单日期，务必用它作为 bought_date，否则才用今天。缺失字段给合理默认或空字符串/0。只返回 JSON，不要解释。';
   const userContent = image ? [{type:'text',text:text||'识别图片里的这件资产'},{type:'image_url',image_url:{url:image}}] : text;
   const res=await fetch(url,{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+(b.key||'')},
-    body:JSON.stringify({model:b.model||'kimi-latest',temperature:byokTemperature(b),response_format:{type:'json_object'},
+    body:JSON.stringify({model:b.model||BYOK_PRESETS.xiaomi.model,temperature:byokTemperature(b),response_format:{type:'json_object'},
       messages:[{role:'system',content:sys},{role:'user',content:userContent}]})});
   if(!res.ok){let t='';try{t=await res.text();}catch(e){}throw new Error('HTTP '+res.status+(t?' '+t.slice(0,100):''));}
   const data=await res.json();
@@ -1282,7 +1281,8 @@ function handleImportFile(ev){
 function viewByok(){
   appbar('智能添加 · 接入 API',{back:'me'});
   const b=loadByok();
-  const prov=b.provider||'xiaomi';
+  const rawProv=b.provider||'xiaomi';
+  const prov=BYOK_PRESETS[rawProv]?rawProv:(b.base?'custom':'xiaomi');
   const pre=BYOK_PRESETS[prov]||BYOK_PRESETS.xiaomi;
   const baseV=b.base||pre.base||'', modelV=b.model||pre.model||'', keyV=b.key||'';
   const presets=Object.keys(BYOK_PRESETS).map(k=>'<button class="chip'+(prov===k?' on':'')+'" data-act="byok-preset" data-arg="'+k+'">'+BYOK_PRESETS[k].label+'</button>').join('');
@@ -1290,8 +1290,8 @@ function viewByok(){
     '<div class="section-label">服务商</div>'+
     '<div class="chips" style="padding-top:0">'+presets+'</div>'+
     '<div class="block" style="padding:14px 16px;margin-top:6px">'+
-      '<div class="byok-note">自然语言添加会把"昨天好利来礼品卡还剩 80 元"这类话，调用大模型（OpenAI 兼容接口）解析成结构化资产；不填则用本地规则解析。<br/>· Kimi Coding 填 <b>https://api.kimi.com/coding/v1</b> + <b>kimi-latest</b>。<br/>· 小米 MiMo 已默认 <b>国内区 token-plan-cn + mimo-v2.5</b>（已实测可用）：<b>只需粘贴 token</b> 保存即可。<br/>· 浏览器直连小米常被 CORS 拦 → 想在浏览器里真用 AI：跑 <code>node demo/mimo-proxy.mjs</code>，把上面 Base URL 改成 <code>http://localhost:8787/v1</code> 即可。</div>'+
-      '<label class="byok-l">Base URL（到 /v1 即可）</label><input id="byokBase" class="byok-in" placeholder="https://api.kimi.com/coding/v1" value="'+(baseV.replace(/"/g,'&quot;'))+'"/>'+
+      '<div class="byok-note">自然语言添加会把"昨天好利来礼品卡还剩 80 元"这类话，调用大模型（OpenAI 兼容接口）解析成结构化资产；不填则用本地规则解析。<br/>· 小米 MiMo 已默认 <b>国内区 token-plan-cn + mimo-v2.5</b>：<b>只需粘贴 token</b> 保存即可。<br/>· 浏览器直连小米常被 CORS 拦 → 想在浏览器里真用 AI：跑 <code>node demo/mimo-proxy.mjs</code>，把上面 Base URL 改成 <code>http://localhost:8787/v1</code> 即可。<br/>· 其他 OpenAI-compatible 服务商可选「自定义」，Base URL 填到 <b>/v1</b>。</div>'+
+      '<label class="byok-l">Base URL（到 /v1 即可）</label><input id="byokBase" class="byok-in" placeholder="https://token-plan-cn.xiaomimimo.com/v1" value="'+(baseV.replace(/"/g,'&quot;'))+'"/>'+
       '<label class="byok-l">API Key（粘贴你的 token）</label><input id="byokKey" class="byok-in" type="password" placeholder="粘贴小米 token…" value="'+(keyV.replace(/"/g,'&quot;'))+'"/>'+
       '<label class="byok-l">模型</label><input id="byokModel" class="byok-in" placeholder="mimo-v2.5" value="'+(modelV.replace(/"/g,'&quot;'))+'"/>'+
       '<div style="display:flex;gap:8px;margin-top:13px"><button class="nl-go" style="flex:1" data-act="byok-save">保存并启用</button><button class="nl-cancel" data-act="byok-clear">清除</button></div>'+
@@ -1328,8 +1328,8 @@ document.getElementById('app').addEventListener('click',e=>{
   else if(act==='nl-retry'){const inp=document.getElementById('nlInput');const text=(inp&&inp.value.trim())||(S.nl&&S.nl.text)||'';const img=S.nl&&S.nl.image;if(!byokReady()){showStamp('先接入 AI');return;}S.nl={text,image:img,loading:true,result:S.nl&&S.nl.result,error:null};viewAction();runNL(text,img);}
   else if(act==='nl-confirm'){const draft=readNLDraft();if(draft)addAssetFromNL(draft);}
   else if(act==='nl-reset'){S.nl=null;viewAction();}
-  else if(act==='byok-preset'){const p=BYOK_PRESETS[arg]||BYOK_PRESETS.kimi;const cur=loadByok();saveByok({provider:arg,base:p.base||cur.base||'',model:p.model||cur.model||'',key:cur.key||''});viewByok();}
-  else if(act==='byok-save'){const base=(document.getElementById('byokBase').value||'').trim();const key=(document.getElementById('byokKey').value||'').trim();const model=(document.getElementById('byokModel').value||'').trim()||'kimi-latest';const cur=loadByok();saveByok({provider:cur.provider||'kimi',base,key,model});showStamp(key&&base?'已启用 AI':'已保存');setTimeout(()=>route('me'),440);}
+  else if(act==='byok-preset'){const p=BYOK_PRESETS[arg]||BYOK_PRESETS.xiaomi;const cur=loadByok();saveByok({provider:arg,base:p.base||cur.base||'',model:p.model||cur.model||'',key:cur.key||''});viewByok();}
+  else if(act==='byok-save'){const base=(document.getElementById('byokBase').value||'').trim();const key=(document.getElementById('byokKey').value||'').trim();const cur=loadByok();const provider=BYOK_PRESETS[cur.provider]?cur.provider:(base?'custom':'xiaomi');const preset=BYOK_PRESETS[provider]||BYOK_PRESETS.xiaomi;const model=(document.getElementById('byokModel').value||'').trim()||preset.model||BYOK_PRESETS.xiaomi.model;saveByok({provider,base,key,model});showStamp(key&&base?'已启用 AI':'已保存');setTimeout(()=>route('me'),440);}
   else if(act==='byok-clear'){saveByok({});showStamp('已清除');viewByok();}
   else if(act==='reset-data'){if(confirm('确定要恢复初始化资产数据吗？这会覆盖本机当前修改。')){ASSETS=cloneAssets(DEFAULT_ASSETS);dbPutAll(ASSETS);ensureThumbs();showStamp('已恢复');setTimeout(()=>route('overview'),400);}}
   else if(act==='pickphoto'){const i=document.getElementById('assetPhoto');if(i)i.click();}

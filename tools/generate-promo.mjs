@@ -126,7 +126,7 @@ const pages = [
           <div class="badge-row">
             <div class="badge">本地存储</div>
             <div class="badge">可导入导出</div>
-            <div class="badge">Kimi BYOK</div>
+            <div class="badge">BYOK 接入</div>
           </div>
         </div>
         <div class="phone" style="right:390px;top:86px;transform:rotate(-5deg)"><img src="${shots.overview}"/></div>

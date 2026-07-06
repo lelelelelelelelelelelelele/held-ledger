@@ -8,7 +8,7 @@
 
 - 桌面 App、初始化资产、自然语言添加、可编辑确认、API 错误重试、JSON 导出/导入、删除撤销、资产排序、逾期待办、打包 App smoke test 均已通过。
 - BYOK / OpenAI-compatible API 链路已用本地 mock server 验收，证明前端在 base URL 包含 `/v1` 时会请求 `/chat/completions`，最终路径为 `/v1/chat/completions`，并携带 Bearer token、解析 JSON、完成确认添加。
-- Kimi Coding BYOK 已用真实 token live test，开发版、重启后的持久化配置、打包版 App 均能得到 `AI 智能解析` 预览。
+- BYOK 发布口径只承诺 OpenAI-compatible 文本智能添加链路，不绑定特定服务商；真实服务商需按实际选择的 provider 单独验收。
 - macOS 包仍未签名、未公证，外发会遇到 Gatekeeper 摩擦。
 
 ## Current Scope
@@ -29,7 +29,7 @@
 | 实物资产 | Ready for trial | 数码、家居、交通 |
 | 权益票券 | Ready for trial | 里程、礼品卡、票券 |
 | 会员订阅 | Ready for trial | 独立到期提醒类 |
-| BYOK API | Live-tested with Kimi | Kimi Coding text smart-add 已通过；图片路径尚未 live test |
+| BYOK API | Ready for trial | OpenAI-compatible text smart-add mock/API UI 已通过；图片路径尚未 live test |
 
 ## Validation Results
 
@@ -39,7 +39,7 @@
 | Seeded flow acceptance | Pass | `npm run test:seeded-flow`，覆盖初始化、逾期待办、资产排序、自然语言添加编辑确认、删除撤销、JSON 导出/导入 |
 | BYOK mock API smoke | Pass | `npm run test:byok-api` |
 | BYOK API error/retry smoke | Pass | `npm run test:byok-api-error` |
-| Kimi BYOK live API/UI | Pass | `reports/kimi_byok_live_REPORT.md` |
+| Provider-specific BYOK live API/UI | Not claimed for release | 当前 release 不绑定特定服务商；真实服务商需按所选 provider 重新验收 |
 | Packaged app smoke | Pass | `npm run test:packaged` |
 | Computer Use visual check | Pass | 总览显示金融资产暂未开发、权益估值、会员订阅 |
 
@@ -53,8 +53,8 @@
 | JSON response parsing | Pass | mock response becomes smart-add preview |
 | Confirm add after API result | Pass | editable preview can be confirmed into asset detail |
 | API failure recovery | Pass | failed API call shows error, keeps local fallback, and can retry AI |
-| Real provider live test | Pass | Kimi Coding text path verified with real token |
-| Image API path | Gap | text API is tested; image upload path still depends on real model support |
+| Real provider live test | Not claimed for release | Release 准入只依赖 OpenAI-compatible mock/API UI；真实服务商需按所选 provider 重新验收 |
+| Image API path | Gap | text API has mock/API UI coverage; image upload path still depends on real model support |
 
 ## Open TODO Summary
 
@@ -66,7 +66,7 @@
 | --- | --- |
 | Apple Developer ID signing | Avoid first-launch trust friction |
 | Apple notarization | Required for smooth external macOS distribution |
-| Image BYOK live test | Text path is live-tested; image path still needs provider capability validation |
+| Image BYOK live test | Text path has mock/API UI coverage; image path still needs provider capability validation |
 | Demo image rights audit/replacement | Bundled demo thumbnails are labelled, not yet rights-cleared for public stable distribution |
 
 ### P1 Before Wider Beta
@@ -92,7 +92,7 @@
 - 本机试用版
 - 内部验收版
 - 给自己持续录入资产的桌面版
-- Kimi BYOK 文本智能添加的内部试用版
+- BYOK / OpenAI-compatible 文本智能添加的内部试用版
 
 暂不建议发布为：
 
@@ -102,4 +102,4 @@
 
 ## Suggested Acceptance Call
 
-本轮可以验收为「本机资产台账 Alpha 试用版 + Kimi BYOK 文本智能添加内测版」。验收边界是：资产、权益、会员的本机管理体验成立；JSON 备份恢复和删除撤销已覆盖基础数据安全；Kimi 文本解析已能真实生成 AI 预览；金融资产、图片识别、外部分发能力和稳定 AI 错误恢复明确留到下一阶段。
+本轮可以验收为「本机资产台账 Alpha 试用版 + BYOK / OpenAI-compatible 文本智能添加内测版」。验收边界是：资产、权益、会员的本机管理体验成立；JSON 备份恢复和删除撤销已覆盖基础数据安全；文本解析已通过 mock API/UI 验收；金融资产、图片识别、外部分发能力和稳定 AI 错误恢复明确留到下一阶段。
