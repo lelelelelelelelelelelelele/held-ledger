@@ -65,7 +65,7 @@ await page.evaluate(() => { S.currentAsset = 'mac'; S.edit = null; route('asset-
 await page.waitForTimeout(300);
 await shot('04-asset-detail-macbook');
 
-// 5. 资产详情 - 权益类（国航航段）
+// 5. 资产详情 - 权益类（合成航段示例）
 await page.evaluate(() => { S.currentAsset = 'air'; S.edit = null; route('asset-detail'); });
 await page.waitForTimeout(300);
 await shot('05-asset-detail-airline');
