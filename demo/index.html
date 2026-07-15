@@ -424,6 +424,7 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 <script>
 "use strict";
 const TODAY=new Date().toISOString().slice(0,10);
+function isoOffset(days){const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);}
 
 /* ---------- IndexedDB 持久化层 ---------- */
 const DB_NAME='youshu_ledger_seeded_v4';
@@ -503,32 +504,27 @@ const STATUS={
   sold:{label:'已卖出',color:'#5E7C9A'},
 };
 
-/* assets — 默认初始化为真实登记过的少量资产 */
+/* assets — 仓库只保留合成示例；真实资产仅写入本机 IndexedDB */
 let ASSETS=[];
 let LAST_DELETED=null;
 const DEFAULT_ASSETS=[
-  // 数码与实物
-  {id:'macair',group:'physical',cat:'数码',name:'MacBook Air 13"',icon:'laptop',tint:'#E2E8EC',photo:'thumbs/macair.jpg',photoSource:'bundled_demo',status:'active',countable:true,price:5700,bought:'2026-06-11',value:5700,
-   meta:[['购入价','¥5,700'],['购入日','2026-06-11'],['当前估值','¥5,700'],['状态','新购入 · 用了约三周']],
-   events:[{date:'2026-06-11',title:'录入资产',delta:'−¥5,700',sub:'新购入 · 约三周',kind:'buy'}]},
-  {id:'pc',group:'physical',cat:'数码',name:'9700X + 5070 主机',icon:'box',tint:'#E1E6EC',photo:'thumbs/pc.jpg',photoSource:'bundled_demo',status:'active',countable:true,price:11000,bought:'2026-05-16',value:11000,
-   meta:[['配置','Ryzen 9700X + RTX 5070'],['购入价','¥11,000'],['购入日','2026-05-16'],['当前估值','¥11,000']],
-   events:[{date:'2026-05-16',title:'录入资产',delta:'−¥11,000',sub:'装机 · 9700X + 5070',kind:'buy'}]},
-  {id:'zeekr',group:'physical',cat:'交通',name:'极氪001',icon:'car',tint:'#D7E0E6',photo:'thumbs/zeekr.jpg',photoSource:'bundled_demo',status:'active',countable:true,price:296000,bought:'2026-06-25',value:228000,
-   due:[{label:'车险到期',date:'2026-08-05'}],
-   meta:[['购入价','¥296,000'],['购入日','2026-06-25'],['当前估值','¥228,000'],['续航','WLTP 656km'],['车险到期','2026-08-05']],
-   events:[{date:'2026-06-10',title:'充电',delta:'−¥58',sub:'家充 · 42 度',kind:'spend'},{date:'2026-06-25',title:'购入',delta:'−¥296,000',sub:'极氪001 WE 版',kind:'buy'}]},
-  {id:'t90pro',group:'physical',cat:'家居',name:'T90 Pro 扫地机器人',icon:'box',tint:'#E9E4DA',status:'active',countable:true,price:2750,bought:'2026-07-03',value:2750,
-   meta:[['购入价','¥2,750'],['购入日','2026-07-03'],['当前估值','¥2,750'],['状态','新购入']],
-   events:[{date:'2026-07-03',title:'录入资产',delta:'−¥2,750',sub:'扫地机器人 · T90 Pro',kind:'buy'}]},
-  {id:'mate70proplus',group:'physical',cat:'数码',name:'Mate 70 Pro+',icon:'phone',tint:'#E1E6EC',status:'active',countable:true,price:9000,bought:'2024-12-01',value:9000,
-   meta:[['购入价','约 ¥9,000'],['购入日','2024-12-01'],['当前估值','约 ¥9,000'],['状态','在用']],
-   events:[{date:'2024-12-01',title:'录入资产',delta:'−¥9,000',sub:'约 9k · Mate 70 Pro+',kind:'buy'}]},
-  // 权益票券
-  {id:'gift',group:'entitle',cat:'权益',name:'好利来礼品卡',icon:'card',tint:'#EAE1E7',status:'active',countable:true,value:80,validUntil:'2026-06-30',unitName:'元',
-   meter:{type:'cont',total:500,remaining:80},
-   meta:[['有效期至','2026-06-30'],['面值','¥500.00'],['当前余额','¥80.00']],
-   events:[{date:'2026-06-12',title:'多次消费',delta:'−¥420',sub:'累计 · 半熟芝士等',kind:'spend'},{date:'2026-02-14',title:'充值入账',delta:'+¥500',sub:'激活',kind:'in'}]},
+  {id:'demo-laptop',group:'physical',cat:'数码',name:'演示笔记本',icon:'laptop',tint:'#E2E8EC',status:'active',countable:true,price:6999,bought:isoOffset(-180),value:5200,
+   meta:[['购入价','¥6,999'],['当前估值','¥5,200'],['状态','演示数据']],
+   events:[{date:isoOffset(-180),title:'录入资产',delta:'−¥6,999',sub:'合成示例',kind:'buy'}]},
+  {id:'demo-camera',group:'physical',cat:'数码',name:'旅行相机',icon:'camera',tint:'#E1E6EC',status:'active',countable:true,price:4599,bought:isoOffset(-365),value:3200,
+   meta:[['购入价','¥4,599'],['当前估值','¥3,200'],['状态','演示数据']],
+   events:[{date:isoOffset(-365),title:'录入资产',delta:'−¥4,599',sub:'合成示例',kind:'buy'}]},
+  {id:'demo-bike',group:'physical',cat:'交通',name:'通勤自行车',icon:'car',tint:'#D7E0E6',status:'active',countable:true,price:2800,bought:isoOffset(-120),value:1800,
+   due:[{label:'保养提醒',date:isoOffset(45)}],
+   meta:[['购入价','¥2,800'],['当前估值','¥1,800'],['状态','演示数据'],['保养提醒',isoOffset(45)]],
+   events:[{date:isoOffset(-120),title:'录入资产',delta:'−¥2,800',sub:'合成示例',kind:'buy'}]},
+  {id:'demo-gift',group:'entitle',cat:'权益',name:'演示礼品卡',icon:'card',tint:'#EAE1E7',status:'active',countable:true,value:120,validUntil:isoOffset(14),unitName:'元',
+   meter:{type:'cont',total:500,remaining:120},
+   meta:[['有效期至',isoOffset(14)],['面值','¥500.00'],['当前余额','¥120.00']],
+   events:[{date:isoOffset(-30),title:'消费记录',delta:'−¥380',sub:'合成示例',kind:'spend'}]},
+  {id:'demo-member',group:'member',cat:'会员',name:'演示年度会员',icon:'member',tint:'#E3E8DE',status:'active',countable:false,value:0,validUntil:isoOffset(25),
+   meta:[['有效期至',isoOffset(25)],['状态','演示数据']],
+   events:[{date:isoOffset(-340),title:'开通会员',delta:'−¥299',sub:'合成示例',kind:'buy'}]},
 ];
 
 /* ---------- helpers ---------- */
@@ -762,7 +758,7 @@ function viewOverview(){
     const down=/^[−-]/.test(x.e.delta);
     return '<div class="metarow" style="border-color:var(--hair-2)"><span class="mk" style="color:var(--ink);font-weight:500">'+x.e.title+' · '+x.a.name+'</span><span class="mv'+(x.e.delta?'':' cn')+'" style="color:'+(down?'var(--ink)':(x.e.delta?'var(--green)':'var(--slate)'))+'">'+(x.e.delta||'—')+'</span></div>';
   }).join('');
-  const firstRun=!ASSETS.length?'<div class="empty-big"><div class="ic">'+svg('plus')+'</div><div class="t">从第一项资产开始</div><div class="d">可以用一句话录入，比如「上个月 11000 装了 9700X + 5070 主机」。</div><a class="cta" data-act="nav" data-arg="action" role="button" tabindex="0">添加第一项资产</a></div>':'';
+  const firstRun=!ASSETS.length?'<div class="empty-big"><div class="ic">'+svg('plus')+'</div><div class="t">从第一项资产开始</div><div class="d">可以用一句话录入，比如「上个月 3999 买了一台相机」。</div><a class="cta" data-act="nav" data-arg="action" role="button" tabindex="0">添加第一项资产</a></div>':'';
   setScreen(
     '<div class="nethero"><div class="toprow"><div class="k">'+svg('bank')+'总资产净值</div>'+
       '<button class="valtoggle" data-act="valmode" aria-label="切换估值口径">'+svg('toggle')+(S.valueMode==='all'?'含非现金':'仅现金')+'</button></div>'+
@@ -1027,7 +1023,7 @@ function viewInvest(){
 function viewMe(){
   appbar('我的');
   setScreen(
-    '<div class="me-id"><div class="av">叶</div><div><div class="nm">资产台账</div><div class="em">'+ASSETS.filter(a=>a.countable).length+' 项资产 · 净值 '+money(netWorth())+'</div></div></div>'+
+    '<div class="me-id"><div class="av">持</div><div><div class="nm">资产台账</div><div class="em">'+ASSETS.filter(a=>a.countable).length+' 项资产 · 净值 '+money(netWorth())+'</div></div></div>'+
     '<div class="section-label">偏好</div><div class="block">'+
       '<div class="me-row" data-act="nav" data-arg="byok" role="button" tabindex="0"><div class="ic">'+svg('plus')+'</div><div class="t">智能添加 · 接入 API</div><div class="v">'+(byokReady()?'已接入':'本地解析')+'</div></div>'+
       '<div class="me-row"><div class="ic">'+svg('toggle')+'</div><div class="t">总资产口径</div><div class="seg2"><button class="'+(S.valueMode==='all'?'on':'')+'" data-act="valset" data-arg="all">含非现金</button><button class="'+(S.valueMode==='cashOnly'?'on':'')+'" data-act="valset" data-arg="cashOnly">仅现金</button></div></div>'+
@@ -1220,7 +1216,7 @@ function smartAddCard(){
   return '<div class="block" style="margin-top:16px;padding:14px 16px">'+
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-family:var(--cn);font-weight:600;font-size:15px">智能添加 · 文字 / 图片</div>'+
       '<button class="pill '+(ready?'active':'')+'" data-act="nav" data-arg="byok"><span class="dot"></span>'+(ready?'AI 已接入':'本地解析 · 接入 AI')+'</button></div>'+
-    '<textarea id="nlInput" class="nl-ta" placeholder="一句话，如：昨天好利来礼品卡还剩 80 元">'+esc(nl.text||'')+'</textarea>'+
+    '<textarea id="nlInput" class="nl-ta" placeholder="一句话，如：昨天买了一个 399 元的背包">'+esc(nl.text||'')+'</textarea>'+
     (nl.image?'<div class="nl-img"><img src="'+nl.image+'"/><span>已选图片 · 点「传图」可换图</span></div>':'')+
     '<div style="display:flex;gap:8px;margin-top:9px">'+
       '<button class="nl-go" style="flex:1" data-act="nl-go"'+(nl.loading?' disabled':'')+'>'+(nl.loading?'识别中…':'✨ 智能添加')+'</button>'+
@@ -1290,7 +1286,7 @@ function viewByok(){
     '<div class="section-label">服务商</div>'+
     '<div class="chips" style="padding-top:0">'+presets+'</div>'+
     '<div class="block" style="padding:14px 16px;margin-top:6px">'+
-      '<div class="byok-note">自然语言添加会把"昨天好利来礼品卡还剩 80 元"这类话，调用大模型（OpenAI 兼容接口）解析成结构化资产；不填则用本地规则解析。<br/>· 小米 MiMo 已默认 <b>国内区 token-plan-cn + mimo-v2.5</b>：<b>只需粘贴 token</b> 保存即可。<br/>· 浏览器直连小米常被 CORS 拦 → 想在浏览器里真用 AI：跑 <code>node demo/mimo-proxy.mjs</code>，把上面 Base URL 改成 <code>http://localhost:8787/v1</code> 即可。<br/>· 其他 OpenAI-compatible 服务商可选「自定义」，Base URL 填到 <b>/v1</b>。</div>'+
+      '<div class="byok-note">自然语言添加会把"昨天买了一个 399 元的背包"这类话，调用大模型（OpenAI 兼容接口）解析成结构化资产；不填则用本地规则解析。<br/>· 小米 MiMo 已默认 <b>国内区 token-plan-cn + mimo-v2.5</b>：<b>只需粘贴 token</b> 保存即可。<br/>· 浏览器直连小米常被 CORS 拦 → 想在浏览器里真用 AI：跑 <code>node demo/mimo-proxy.mjs</code>，把上面 Base URL 改成 <code>http://localhost:8787/v1</code> 即可。<br/>· 其他 OpenAI-compatible 服务商可选「自定义」，Base URL 填到 <b>/v1</b>。</div>'+
       '<label class="byok-l">Base URL（到 /v1 即可）</label><input id="byokBase" class="byok-in" placeholder="https://token-plan-cn.xiaomimimo.com/v1" value="'+(baseV.replace(/"/g,'&quot;'))+'"/>'+
       '<label class="byok-l">API Key（粘贴你的 token）</label><input id="byokKey" class="byok-in" type="password" placeholder="粘贴小米 token…" value="'+(keyV.replace(/"/g,'&quot;'))+'"/>'+
       '<label class="byok-l">模型</label><input id="byokModel" class="byok-in" placeholder="mimo-v2.5" value="'+(modelV.replace(/"/g,'&quot;'))+'"/>'+

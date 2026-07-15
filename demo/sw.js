@@ -1,13 +1,10 @@
-const CACHE_NAME = 'youshu-v4';
+const CACHE_NAME = 'youshu-v5-private-data';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png',
-  './thumbs/macair.jpg',
-  './thumbs/pc.jpg',
-  './thumbs/zeekr.jpg'
+  './icon-512.png'
 ];
 
 /* 安装：预缓存核心资源 */

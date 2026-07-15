@@ -39,7 +39,7 @@ try {
   if (!appBounds || appBounds.width < 380 || appBounds.height < 700) {
     throw new Error(`Unexpected app bounds: ${JSON.stringify(appBounds)}`);
   }
-  if (!bodyText.includes('¥256,530.00') && !bodyText.includes('实物资产')) {
+  if (!bodyText.includes('¥10,320.00') && !bodyText.includes('实物资产')) {
     throw new Error('Expected app content was not visible.');
   }
 

@@ -2,6 +2,7 @@ node_modules/
 .DS_Store
 dist/
 build/icon.iconset/
+demo/thumbs/
 index.html
 .claude/handoffs/
 reports/photo-candidates/

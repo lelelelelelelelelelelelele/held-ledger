@@ -43,7 +43,7 @@
 - [ ] Apple Developer ID 签名
 - [ ] Apple notarization 公证
 - [ ] 图片 BYOK live test
-- [ ] `demo/thumbs/*.jpg` 版权审核或替换
+- [x] 公开源码 branch 不跟踪 `demo/thumbs/`，默认改用生成占位图
 - [ ] 更完整的数据备份/恢复策略
 
 ### P3 Later

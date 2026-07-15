@@ -7,6 +7,7 @@
 ## Storage and Limits
 
 - 资产数据存储在本机浏览器 / Electron 的 IndexedDB 中，不上传云端，也没有多设备同步。
+- 仓库中的首次启动数据全部是合成示例；真实资产名称、金额、日期和本机图片不应进入 Git。
 - 「我的」页支持导出 JSON 备份和导入 JSON 恢复；导入会覆盖本机当前资产数据。
 - BYOK API 配置保存在本机 IndexedDB，并保留旧版 localStorage 兼容读取；演示版会由前端直连服务商，请不要在不可信环境粘贴生产密钥。
 - 当前安装包未使用 Apple Developer ID 签名，也未 notarization 公证。首次打开时，macOS 可能要求在「系统设置 → 隐私与安全性」中允许打开。
