@@ -1,0 +1,56 @@
+{
+  "name": "held-ledger",
+  "version": "0.1.0-alpha.0",
+  "description": "Held Ledger（持有）：local-first 的个人资产台账桌面应用。",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "desktop": "electron .",
+    "build:desktop": "electron-builder --mac dmg",
+    "pack:desktop": "electron-builder --mac dir",
+    "test": "npm run test:p1",
+    "test:release": "npm run build:desktop && npm run test:packaged",
+    "test:p1": "npm run test:desktop && npm run test:seeded-flow && npm run test:byok-api && npm run test:byok-api-error",
+    "test:desktop": "node tools/smoke-electron.mjs",
+    "test:packaged": "node tools/smoke-packaged.mjs",
+    "test:seeded-flow": "node tools/acceptance-seeded-flow.mjs",
+    "test:byok-api": "node tools/smoke-byok-api.mjs",
+    "test:byok-api-error": "node tools/smoke-byok-api-error.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "build": {
+    "appId": "app.heldledger.desktop",
+    "productName": "持有",
+    "asar": true,
+    "directories": {
+      "buildResources": "build"
+    },
+    "files": [
+      "desktop/**/*",
+      "demo/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.finance",
+      "icon": "build/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^43.0.0",
+    "electron-builder": "^26.15.3",
+    "playwright": "^1.61.0"
+  }
+}
