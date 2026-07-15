@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const userDataDir = await mkdtemp(resolve(tmpdir(), 'youshu-smoke-'));
+const userDataDir = await mkdtemp(resolve(tmpdir(), 'held-ledger-smoke-'));
 const app = await electron.launch({ args: [root, `--user-data-dir=${userDataDir}`] });
 
 try {

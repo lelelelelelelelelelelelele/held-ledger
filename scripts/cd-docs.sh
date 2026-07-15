@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
 
-youshu() {
+heldledger() {
   cd /Users/lele/Documents/Projects/youshu-ledger-app || return
 }

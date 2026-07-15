@@ -1,4 +1,4 @@
-// Screenshot harness for 持有 (Youshu) demo
+// Screenshot harness for Held Ledger（持有）
 // Captures every main screen at iPhone viewport. The demo shell (#app) is a
 // fixed 100dvh frame with overflow:hidden, so a fullPage shot adds nothing —
 // one viewport capture per screen is the canonical set.

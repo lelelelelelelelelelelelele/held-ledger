@@ -14,7 +14,7 @@ if (!existsSync(executablePath)) {
   throw new Error(`Packaged app executable not found: ${executablePath}`);
 }
 
-const userDataDir = await mkdtemp(resolve(tmpdir(), 'youshu-packaged-smoke-'));
+const userDataDir = await mkdtemp(resolve(tmpdir(), 'held-ledger-packaged-smoke-'));
 const app = await electron.launch({ executablePath, args: [`--user-data-dir=${userDataDir}`] });
 
 try {

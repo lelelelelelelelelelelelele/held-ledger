@@ -1,7 +1,7 @@
 {
-  "name": "youshu-ledger-app",
+  "name": "held-ledger",
   "version": "0.1.0-alpha.0",
-  "description": "持有：轻量、清晰的个人资产与记账工具桌面演示版。",
+  "description": "Held Ledger（持有）：local-first 的个人资产台账桌面应用。",
   "main": "desktop/main.cjs",
   "scripts": {
     "desktop": "electron .",
@@ -21,7 +21,7 @@
   "license": "ISC",
   "type": "commonjs",
   "build": {
-    "appId": "com.youshu.ledger",
+    "appId": "app.heldledger.desktop",
     "productName": "持有",
     "asar": true,
     "directories": {

@@ -15,7 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Sans:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
 /* ============================================================
-   持有 (Hold) — 个人资产管理 demo
+   Held Ledger（持有）— 个人资产管理 demo
    资产为纲：净资产 + 日均成本双指标 / 生命周期状态 / 消耗刻度尺。
    温润玉绿 + 暖中性纸面。原创设计，借鉴资产管理品类概念，非照搬任何产品。
    ============================================================ */
@@ -149,7 +149,7 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
 .asset-table .nm .t{font-family:var(--cn);font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .asset-table .cell{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap;}
 .asset-table .cell.muted{color:var(--slate-2);}
-/* ---------- Card grid view (有数 photo cards) ---------- */
+/* ---------- Card grid view ---------- */
 .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 18px;}
 .gcell{background:var(--card);border:1px solid var(--hair);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;}
 .gcell:active{transform:scale(.99);}
@@ -858,7 +858,7 @@ function itemCard(a){
 /* 预计服役年限（按类别），用于卡片「剩余 N 天」 */
 const LIFE_YEARS={数码:8,家居:15,交通:15};
 function serviceLeft(a){const ly=LIFE_YEARS[a.cat]||10;return Math.max(0,Math.round(ly*365-daysHeld(a)));}
-/* 卡片视图：有数风格照片卡（两列网格）
+/* 卡片视图：两列照片卡网格
    照片 + 状态角标 + 名称 + 原价·已用天数 + 醒目日均成本 + 衰减曲线 + 剩余天数 */
 function gridCard(a){
   const faded=(a.status==='retired'||a.status==='sold')?' faded':'';
@@ -1242,13 +1242,13 @@ function addAssetFromNL(r){
   S.nl=null;S.currentAsset=id;saveAssets();showStamp('已添加');setTimeout(()=>route('asset-detail'),440);
 }
 function exportData(){
-  const payload={schema:'youshu-ledger-export',version:1,exportedAt:new Date().toISOString(),assets:exportableAssets()};
+  const payload={schema:'held-ledger-export',version:1,exportedAt:new Date().toISOString(),assets:exportableAssets()};
   window.__lastExportPayload=payload;
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;
-  a.download='youshu-ledger-backup-'+TODAY+'.json';
+  a.download='held-ledger-backup-'+TODAY+'.json';
   document.body.appendChild(a);
   a.click();
   a.remove();

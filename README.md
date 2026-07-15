@@ -1,6 +1,6 @@
-# Youshu-Inspired Ledger App
+# Held Ledger（持有）
 
-这是一个参考“有数”体验的个人资产与记账工具原型，当前已经包含可运行 demo 和 macOS 桌面打包配置。
+Held Ledger 是一个 local-first 的个人资产台账与轻量记账工具，当前已经包含可运行 demo 和 macOS 桌面打包配置。
 
 当前桌面版名称为「持有」，版本标记为 `0.1.0-alpha.0`。这是源码开放准备版 + 本机 Alpha / 内部试用版，适合愿意试用、备份数据并反馈问题的用户；暂不建议把未签名安装包作为面向大众的稳定正式 App 发布。
 
@@ -81,11 +81,11 @@ npm run build:promo
 cd /Users/lele/Documents/Projects/youshu-ledger-app/docs
 ```
 
-或者临时加载快捷函数，然后输入 `youshu` 直接进入项目目录：
+或者临时加载快捷函数，然后输入 `heldledger` 直接进入项目目录：
 
 ```sh
 source /Users/lele/Documents/Projects/youshu-ledger-app/scripts/cd-docs.sh
-youshu
+heldledger
 ```
 
 ## Current Scope

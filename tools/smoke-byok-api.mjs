@@ -58,7 +58,7 @@ const server = createServer((req, res) => {
 await new Promise(resolveListen => server.listen(0, '127.0.0.1', resolveListen));
 const { port } = server.address();
 
-const userDataDir = await mkdtemp(resolve(tmpdir(), 'youshu-byok-api-'));
+const userDataDir = await mkdtemp(resolve(tmpdir(), 'held-ledger-byok-api-'));
 const app = await electron.launch({ args: [root, `--user-data-dir=${userDataDir}`] });
 
 try {

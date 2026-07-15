@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve, join } from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const userDataDir = await mkdtemp(resolve(tmpdir(), 'chiyou-synthetic-flow-'));
+const userDataDir = await mkdtemp(resolve(tmpdir(), 'held-ledger-synthetic-flow-'));
 const isoOffset = days => {
   const date = new Date();
   date.setDate(date.getDate() + days);
@@ -113,7 +113,7 @@ try {
   await page.locator('[data-act="nav"][data-arg="me"]').first().click();
   await page.locator('[data-act="export-data"]').click();
   const exported = await page.evaluate(() => window.__lastExportPayload);
-  if (exported.schema !== 'youshu-ledger-export' || !Array.isArray(exported.assets) || exported.assets.length !== 6) {
+  if (exported.schema !== 'held-ledger-export' || !Array.isArray(exported.assets) || exported.assets.length !== 6) {
     throw new Error(`Unexpected synthetic export payload: ${JSON.stringify(exported).slice(0, 300)}`);
   }
   const syntheticAsset = exported.assets.find(asset => asset.id === 'demo-bike');

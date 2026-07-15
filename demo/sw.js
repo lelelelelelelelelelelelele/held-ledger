@@ -1,4 +1,4 @@
-const CACHE_NAME = 'youshu-v5-private-data';
+const CACHE_NAME = 'held-ledger-v1';
 const ASSETS = [
   './',
   './index.html',
