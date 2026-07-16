@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Held Ledger social preview</title>
+  <style>
+    :root {
+      --paper: #f4f5ef;
+      --card: #fcfdf9;
+      --ink: #183227;
+      --muted: #617268;
+      --green: #257250;
+      --green-deep: #143d2c;
+      --green-soft: #e0eee4;
+      --line: #d7dfd5;
+      --amber: #bd781b;
+      --amber-soft: #fff1dc;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 1280px; height: 640px; margin: 0; overflow: hidden; }
+    body {
+      color: var(--ink);
+      font-family: "Microsoft YaHei UI", "Noto Sans SC", sans-serif;
+      background:
+        radial-gradient(circle at 10% 9%, rgba(64, 139, 96, .16), transparent 28%),
+        radial-gradient(circle at 88% 88%, rgba(201, 150, 55, .11), transparent 29%),
+        var(--paper);
+    }
+    .frame {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.08fr .92fr;
+      width: 100%; height: 100%;
+      overflow: hidden;
+    }
+    .frame::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .32;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.08'/%3E%3C/svg%3E");
+    }
+    .copy { position: relative; z-index: 1; padding: 75px 0 58px 106px; }
+    .eyebrow { color: var(--green); font: 700 13px/1 ui-monospace, "Cascadia Mono", monospace; letter-spacing: .15em; }
+    .brand { display: flex; align-items: center; gap: 13px; margin-top: 24px; }
+    .mark { display: grid; place-items: center; width: 39px; height: 39px; border-radius: 12px; color: #fff; background: var(--green); box-shadow: 0 7px 16px rgba(37,114,80,.22); font: 700 20px Georgia, serif; }
+    .brand-name { font: 600 21px/1.1 "Microsoft YaHei UI", sans-serif; letter-spacing: -.03em; }
+    .brand-name small { display: block; margin-top: 5px; color: var(--muted); font: 600 11px/1 ui-monospace, monospace; letter-spacing: .08em; }
+    h1 { max-width: 630px; margin: 32px 0 20px; font: 500 57px/.98 "Palatino Linotype", "Noto Serif SC", Georgia, serif; letter-spacing: -.055em; }
+    .lede { width: 550px; margin: 0; color: #4e6156; font: 18px/1.68 "Microsoft YaHei UI", sans-serif; }
+    .tags { display: flex; gap: 9px; margin-top: 33px; }
+    .tag { padding: 8px 12px; border: 1px solid #cad8ce; border-radius: 999px; color: var(--green-deep); background: rgba(255,255,255,.52); font: 700 12px/1 "Microsoft YaHei UI", sans-serif; }
+    .alpha { display: inline-flex; align-items: center; gap: 8px; margin-top: 29px; padding: 10px 13px; border: 1px solid #edcf9e; border-radius: 8px; background: var(--amber-soft); color: #82500a; font: 700 11px/1.1 ui-monospace, "Cascadia Mono", monospace; letter-spacing: .025em; }
+    .alpha i { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
+    .fine { margin: 14px 0 0 1px; color: #718076; font: 12px/1.4 ui-monospace, "Cascadia Mono", monospace; }
+    .stage { position: relative; z-index: 1; display: grid; place-items: center; }
+    .halo { position: absolute; top: 77px; right: 61px; width: 475px; height: 475px; border: 1px solid rgba(37,114,80,.13); border-radius: 50%; }
+    .halo::before, .halo::after { content: ""; position: absolute; border: 1px solid rgba(37,114,80,.10); border-radius: 50%; }
+    .halo::before { inset: 30px; } .halo::after { inset: 65px; }
+    .phone { position: relative; width: 330px; height: 590px; margin: 29px 35px 0 0; padding: 10px; overflow: hidden; border: 8px solid #1e2e26; border-radius: 39px; background: #1e2e26; box-shadow: 0 34px 65px -24px rgba(19,48,35,.46); transform: rotate(4.5deg); }
+    .phone::before { content: ""; position: absolute; top: 11px; left: 50%; z-index: 2; width: 91px; height: 21px; border-radius: 0 0 14px 14px; background: #1e2e26; transform: translateX(-50%); }
+    .screen { height: 100%; overflow: hidden; border-radius: 25px; background: #f4f6f0; }
+    .appbar { display: flex; align-items: center; height: 55px; padding: 16px 17px 10px; border-bottom: 1px solid #e0e7dc; color: var(--green); font: 700 17px/1 "Microsoft YaHei UI", sans-serif; }
+    .appbar span { margin-left: auto; color: #7a897f; font: 10px/1 ui-monospace, monospace; }
+    .app { padding: 13px; }
+    .notice { display: flex; align-items: center; gap: 5px; margin: 0 0 9px 1px; color: #738076; font: 9px/1.2 ui-monospace, monospace; }
+    .notice b { color: #7a5421; }
+    .summary { position: relative; padding: 15px; overflow: hidden; border: 1px solid #d1e4d6; border-radius: 17px; background: linear-gradient(140deg,#deefe4,#f1f5ec 73%); }
+    .summary::after { content: ""; position: absolute; right: -29px; top: -41px; width: 142px; height: 142px; border-radius: 50%; background: radial-gradient(circle at 35% 35%,rgba(37,114,80,.12),transparent 67%); }
+    .cap { color: var(--green-deep); font: 700 11px/1 "Microsoft YaHei UI", sans-serif; }
+    .amount { margin-top: 10px; color: #1d3026; font: 600 29px/1 ui-monospace, "Cascadia Mono", monospace; letter-spacing: -.06em; }
+    .sub { margin-top: 6px; color: #607066; font: 10px/1.2 "Microsoft YaHei UI", sans-serif; }
+    .bar { height: 7px; margin-top: 14px; border-radius: 10px; background: #d9e3d9; overflow: hidden; }.bar i { display:block; width: 80%; height:100%; background:var(--green); border-radius:inherit; }
+    .section { display:flex; align-items:center; margin: 18px 2px 8px; color: #6b786f; font: 700 10px/1 "Microsoft YaHei UI", sans-serif; }.section b { margin-left:auto; color:var(--green); }
+    .rows { overflow:hidden; border: 1px solid #dce4da; border-radius: 14px; background: #fdfefa; }
+    .row { display:flex; align-items:center; gap:9px; min-height:57px; padding:9px 10px; border-top:1px solid #e9eee8; }.row:first-child {border-top:0}.icon { display:grid; place-items:center; width:30px;height:30px;border-radius:9px;background:#e5f1e8;color:var(--green);font:700 15px Georgia,serif; }.row:nth-child(2) .icon {background:#f4ecdf;color:#a46e1c}.row:nth-child(3) .icon {background:#ebe7ef;color:#735780}.row strong {display:block;font:700 11px/1.25 "Microsoft YaHei UI",sans-serif}.row small {display:block;margin-top:4px;color:#7b877f;font:9px/1 "Microsoft YaHei UI",sans-serif}.row em {margin-left:auto;color:#38493e;font:600 11px/1 ui-monospace,monospace;font-style:normal}.todo { margin-top:12px; padding:10px;border:1px solid #e8ddc5;border-radius:11px;background:#fffaf0;color:#855c1c;font:10px/1.3 "Microsoft YaHei UI",sans-serif }.todo b {float:right;border-radius:10px;padding:3px 5px;background:#fbe8c7;font:9px/1 ui-monospace,monospace}
+  </style>
+</head>
+<body>
+  <main class="frame" aria-label="Held Ledger social preview using fictional data">
+    <section class="copy">
+      <div class="eyebrow">PUBLIC SOURCE ALPHA · LOCAL-FIRST</div>
+      <div class="brand"><div class="mark">持</div><div class="brand-name">Held Ledger · 持有<small>PERSONAL ASSET LEDGER</small></div></div>
+      <h1>清楚知道你持有什么，下一步该处理什么。</h1>
+      <p class="lede">记录实物资产、权益票券与会员订阅；在本机查看估值、状态与到期提醒，不需要创建账户。</p>
+      <div class="tags"><span class="tag">实物资产</span><span class="tag">权益票券</span><span class="tag">会员订阅</span></div>
+      <div class="alpha"><i></i>PUBLIC SOURCE ALPHA · SYNTHETIC DATA ONLY</div>
+      <p class="fine">非投资跟踪 · 无云同步 · 未提供签名安装包</p>
+    </section>
+    <section class="stage" aria-hidden="true">
+      <div class="halo"></div>
+      <div class="phone"><div class="screen"><div class="appbar">持有 <span>资产台账</span></div><div class="app"><div class="notice">● <b>合成演示数据</b> · 不含真实资产</div><div class="summary"><div class="cap">总资产净值</div><div class="amount">¥10,320</div><div class="sub">含非现金估值 · 仅作产品演示</div><div class="bar"><i></i></div></div><div class="section">资产分组 <b>查看全部</b></div><div class="rows"><div class="row"><div class="icon">□</div><div><strong>实物资产</strong><small>3 项 · 数码 · 交通</small></div><em>¥10,200</em></div><div class="row"><div class="icon">◇</div><div><strong>权益票券</strong><small>1 项 · 权益记录</small></div><em>¥120</em></div><div class="row"><div class="icon">+</div><div><strong>会员订阅</strong><small>到期提醒</small></div><em>0 项</em></div></div><div class="section">待办 <b>3 项</b></div><div class="todo">演示礼品卡 · 有效期提醒 <b>14 天</b></div></div></div></div>
+    </section>
+  </main>
+</body>
+</html>
