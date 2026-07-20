@@ -20,7 +20,6 @@
 - 资产详情上传照片后标记为 `photoSource: "user_upload"`，并记录 `photoUpdated`。
 - 智能添加传图确认后标记为 `photoSource: "ai_input_upload"`，并记录 `photoUpdated`。
 - 2026-07-15 使用合成图片和 Kimi Coding `kimi-for-coding` 完成单次 live test：图片请求返回 `200`，结构化预览字段全部匹配。
-- 确认保存实验暴露出通用智能添加 ID 重启后复用问题；该问题与图片识别能力无关，但修复前不能把图片添加链路视为可靠持久化。
 - 没有照片的资产运行时生成占位图并标记为 `generated_placeholder`。
 - 资产详情页会显示“图片来源”。
 - JSON 导出会保留 `photoSource`；生成占位 SVG 不作为真实照片导出。
@@ -36,4 +35,4 @@
 
 ## Current Status
 
-当前 tracked source 已改为合成种子 + 生成占位图；真实资产图片仅可存在于本机 IndexedDB、被忽略的个人目录或内部证据 branch。AI 识别输入会发送给用户主动配置的 BYOK 服务商。公开 branch 需要继续执行隐私扫描，下一版发布前还需修复智能添加 ID 冲突。
+当前 tracked source 已改为合成种子 + 生成占位图；真实资产图片仅可存在于本机 IndexedDB、被忽略的个人目录或内部证据 branch。AI 识别输入会发送给用户主动配置的 BYOK 服务商。公开 branch 需要继续执行隐私扫描。智能添加 ID 重启复用问题已修复并加入回归测试。

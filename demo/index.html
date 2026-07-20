@@ -427,6 +427,7 @@ const TODAY=new Date().toISOString().slice(0,10);
 function isoOffset(days){const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);}
 
 /* ---------- IndexedDB 持久化层 ---------- */
+// Legacy storage key retained so existing local data survives the Held Ledger rename.
 const DB_NAME='youshu_ledger_seeded_v4';
 const DB_VER=2;
 const ASSET_STORE='assets';

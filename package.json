@@ -9,6 +9,7 @@
     "build:promo": "node tools/generate-promo.mjs",
     "pack:desktop": "electron-builder --mac dir",
     "test": "npm run test:p1 && npm run test:packaged",
+    "test:release": "npm run build:desktop && npm run test:packaged",
     "test:p1": "npm run test:desktop && npm run test:seeded-flow && npm run test:byok-api && npm run test:byok-api-error && npm run test:regression-smart-add-id-collision",
     "test:desktop": "node tools/smoke-electron.mjs",
     "test:packaged": "node tools/smoke-packaged.mjs",

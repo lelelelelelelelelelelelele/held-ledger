@@ -11,3 +11,4 @@ reports/screenshots/*
 !reports/screenshots/computer_use_zeekr_purchase_date_editor.png
 !reports/screenshots/kimi_image_byok_preview.png
 !reports/screenshots/kimi_image_byok_saved.png
+*.log
