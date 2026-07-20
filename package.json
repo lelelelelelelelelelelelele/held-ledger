@@ -9,12 +9,13 @@
     "build:promo": "node tools/generate-promo.mjs",
     "pack:desktop": "electron-builder --mac dir",
     "test": "npm run test:p1 && npm run test:packaged",
-    "test:p1": "npm run test:desktop && npm run test:seeded-flow && npm run test:byok-api && npm run test:byok-api-error",
+    "test:p1": "npm run test:desktop && npm run test:seeded-flow && npm run test:byok-api && npm run test:byok-api-error && npm run test:regression-smart-add-id-collision",
     "test:desktop": "node tools/smoke-electron.mjs",
     "test:packaged": "node tools/smoke-packaged.mjs",
     "test:seeded-flow": "node tools/acceptance-seeded-flow.mjs",
     "test:byok-api": "node tools/smoke-byok-api.mjs",
-    "test:byok-api-error": "node tools/smoke-byok-api-error.mjs"
+    "test:byok-api-error": "node tools/smoke-byok-api-error.mjs",
+    "test:regression-smart-add-id-collision": "node tools/regression-smart-add-id-collision.mjs"
   },
   "keywords": [],
   "author": "",

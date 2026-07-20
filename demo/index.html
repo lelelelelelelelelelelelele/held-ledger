@@ -1231,7 +1231,7 @@ function addAssetFromNL(r){
   const cm={'数码':{group:'physical',icon:'box',tint:'#E1E6EC'},'家居':{group:'physical',icon:'box',tint:'#E9E4DA'},'交通':{group:'physical',icon:'car',tint:'#DBE8DF'},'权益':{group:'entitle',icon:'ticket',tint:'#DBE8DF'},'会员':{group:'member',icon:'member',tint:'#E4E8DC'},'现金':{group:'cash',icon:'cash',tint:'#DDE7EC'},'其他':{group:'physical',icon:'box',tint:'#E7E9E4'}};
   const c=cm[r.category]||cm['其他'];
   const price=Math.round((r.price||0)*100)/100, value=Math.round((r.est_value||r.price||0)*100)/100;
-  const id='nl'+(nlSeq++);
+  const id=nextNlId();
   const a={id,group:c.group,cat:r.category||'其他',name:r.name||'新资产',icon:c.icon,tint:c.tint,status:'active',countable:true,value,
     meta:[],events:[{date:r.bought_date||TODAY,title:'录入资产',delta:price?'−'+money(price):'',sub:r._src||'手动录入',kind:'buy'}]};
   if(S.nl&&S.nl.image){a.photo=S.nl.image;a.photoSource='ai_input_upload';a.photoUpdated=TODAY;}
@@ -1339,6 +1339,20 @@ document.getElementById('app').addEventListener('keydown',e=>{if(e.key==='Enter'
 /* --- 持久化：所有修改 ASSETS 的地方都调用 saveAssets --- */
 function saveAssets(){debouncedSave();}
 
+/* 智能添加 ID 序列：启动时根据已有 nl* 资产初始化，避免重启后从 nl1 复用导致覆盖 */
+function initNlSeq(){
+  let max=0;
+  ASSETS.forEach(a=>{
+    const m=String(a.id||'').match(/^nl(\d+)$/);
+    if(m)max=Math.max(max,parseInt(m[1],10));
+  });
+  nlSeq=max+1;
+}
+function nextNlId(){
+  while(ASSETS.some(a=>a.id==='nl'+nlSeq))nlSeq++;
+  return 'nl'+(nlSeq++);
+}
+
 /* --- boot：从 IndexedDB 加载，首次用默认数据 --- */
 (async function boot(){
   const h=(location.hash||'').replace('#','');
@@ -1349,6 +1363,7 @@ function saveAssets(){debouncedSave();}
     if(saved&&saved.length){ASSETS=saved;}else{ASSETS=cloneAssets(DEFAULT_ASSETS);await dbPutAll(ASSETS);}
   }catch(e){console.warn('[boot] IndexedDB load failed, using defaults',e);ASSETS=cloneAssets(DEFAULT_ASSETS);}
   ensureThumbs();
+  initNlSeq();
   /* 注册 Service Worker */
   if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
   route(S.screen);

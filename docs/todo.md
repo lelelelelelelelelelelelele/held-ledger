@@ -31,9 +31,9 @@
 
 ### P0 Before Open Source Alpha
 
-- [ ] 修复智能添加资产 ID 在重启后从 `nl1` 重新计数的问题，避免 IndexedDB 中同 ID 旧资产覆盖新资产
+- [x] 修复智能添加资产 ID 在重启后从 `nl1` 重新计数的问题，避免 IndexedDB 中同 ID 旧资产覆盖新资产
 
-重新发布前需修复该数据持久化问题，并再次运行验证命令。
+重新发布前需再次运行验证命令。已增加回归测试 `npm run test:regression-smart-add-id-collision`。
 
 ### P1 Before Wider Beta
 
