@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kimi Image BYOK Live Experiment Report</title>
+<style>
+  :root { --paper:#f4f6f1; --ink:#18231e; --muted:#647168; --line:#d8e1d8; --green:#2e7d5b; --amber:#9a6412; --red:#a33c32; --white:#fff; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.6 -apple-system,BlinkMacSystemFont,"Noto Sans SC","PingFang SC",sans-serif; color:var(--ink); background:var(--paper); }
+  main { max-width:1080px; margin:0 auto; padding:42px 22px 64px; }
+  header { border-bottom:1px solid var(--line); padding-bottom:22px; margin-bottom:26px; }
+  h1 { margin:0 0 10px; font-size:32px; }
+  h2 { margin:32px 0 12px; font-size:20px; }
+  p { margin:0 0 12px; }
+  ul,ol { margin:8px 0 18px 22px; padding:0; }
+  li { margin:5px 0; }
+  .verdict { display:flex; gap:10px; align-items:flex-start; font-weight:700; color:var(--amber); max-width:880px; }
+  .dot { width:11px; height:11px; margin-top:7px; border-radius:50%; background:var(--amber); flex:0 0 auto; }
+  .callout { border-left:4px solid var(--amber); background:#fff8e9; padding:14px 16px; margin:16px 0; }
+  table { width:100%; border-collapse:collapse; background:var(--white); border:1px solid var(--line); margin:10px 0 20px; }
+  th,td { text-align:left; vertical-align:top; border-bottom:1px solid var(--line); padding:10px 12px; }
+  th { font-size:13px; color:var(--muted); background:#eaf1e9; }
+  tr:last-child td { border-bottom:0; }
+  .pass { color:var(--green); font-weight:700; }
+  .fail { color:var(--red); font-weight:700; }
+  code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; background:#eaf1e9; padding:1px 5px; border-radius:5px; }
+  .evidence { display:grid; grid-template-columns:minmax(260px, .8fr) minmax(320px, 1.2fr); gap:18px; align-items:start; }
+  figure { margin:0; background:#fff; border:1px solid var(--line); padding:12px; }
+  figure img { width:100%; display:block; }
+  figcaption { margin-top:8px; color:var(--muted); font-size:13px; }
+  @media (max-width:760px) { .evidence { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Kimi Image BYOK Live Experiment</h1>
+    <p class="verdict"><span class="dot"></span><span>图片识别能力通过，产品持久化验收阻塞：Kimi 返回正确结构化结果，但确认保存暴露出智能添加 ID 重启后复用问题。</span></p>
+  </header>
+
+  <h2>Verdict</h2>
+  <p>2026-07-15 使用现有 Kimi Coding BYOK token、<code>kimi-for-coding</code> 和不含个人数据的合成 PNG 完成真实图片请求。HTTP 返回 <code>200</code>，App 正确得到“视觉测试相机 / 数码 / ¥1,234 / 2026-07-15 / 当前估值 ¥1,234”。</p>
+  <p>因此 provider capability validation 已完成；但已有 <code>nl1</code> 的数据档中，新图片资产也被分配为 <code>nl1</code>，详情页显示成功后仍未可靠写入 IndexedDB。该问题是通用智能添加缺陷，不是图片识别失败。</p>
+
+  <div class="callout"><strong>安全边界：</strong>实验使用真实数据目录的临时副本和合成图片；原始 App 数据未修改，API key 未打印或写入仓库。</div>
+
+  <h2>Provider and Request</h2>
+  <table>
+    <thead><tr><th>Field</th><th>Observed Value</th></tr></thead>
+    <tbody>
+      <tr><td>Provider / Base</td><td>Kimi Coding / <code>https://api.kimi.com/coding/v1</code></td></tr>
+      <tr><td>Stored model before test</td><td><code>kimi-latest</code> in the original profile; left unchanged</td></tr>
+      <tr><td>Available models</td><td><code>kimi-for-coding</code>, <code>kimi-for-coding-highspeed</code></td></tr>
+      <tr><td>Tested model</td><td><code>kimi-for-coding</code>, selected only in the temporary profile copy</td></tr>
+      <tr><td>Image payload</td><td>PNG as base64 Data URL inside <code>image_url</code></td></tr>
+      <tr><td>HTTP result</td><td class="pass">200 Pass</td></tr>
+      <tr><td>Reported usage</td><td>814 prompt + 286 completion = 1100 tokens</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Evidence</h2>
+  <div class="evidence">
+    <figure><img src="fixtures/kimi-image-byok-test.png" alt="Synthetic asset fixture" /><figcaption>合成测试图片，无真实个人数据。</figcaption></figure>
+    <figure><img src="screenshots/kimi_image_byok_preview.png" alt="Kimi image recognition preview" /><figcaption>真实 Kimi 响应进入 Held Ledger 后的可编辑预览。</figcaption></figure>
+  </div>
+
+  <h2>Results</h2>
+  <table>
+    <thead><tr><th>Check</th><th>Result</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>Existing token authentication</td><td class="pass">Pass</td><td><code>GET /models</code> returned 200</td></tr>
+      <tr><td>Image request accepted</td><td class="pass">Pass</td><td><code>POST /chat/completions</code> returned 200</td></tr>
+      <tr><td>Structured preview</td><td class="pass">Pass</td><td>Name, category, price, date and value matched</td></tr>
+      <tr><td>Image source label</td><td class="pass">Pass</td><td>UI displayed <code>AI · 图片识别</code></td></tr>
+      <tr><td>Immediate confirm/detail</td><td class="pass">Pass</td><td>New asset appeared in the in-memory detail view</td></tr>
+      <tr><td>IndexedDB persistence with existing <code>nl1</code></td><td class="fail">Fail</td><td>The older record with the same key remained; no persisted camera record</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Persistence Defect</h2>
+  <ol>
+    <li><code>nlSeq</code> starts at 1 on every launch.</li>
+    <li>The copied profile already contained <code>nl1</code>.</li>
+    <li>Image confirmation created another in-memory <code>nl1</code>.</li>
+    <li>Bulk IndexedDB <code>put</code> wrote both; the later old record won for the duplicate key.</li>
+    <li>The UI looked successful while IndexedDB contained no <code>视觉测试相机</code>.</li>
+  </ol>
+  <table>
+    <thead><tr><th>Location</th><th><code>nl1</code> Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>In-memory array</td><td><code>视觉测试相机</code> and one pre-existing <code>nl1</code> record</td></tr>
+      <tr><td>IndexedDB</td><td>Only the pre-existing <code>nl1</code> remained; its user asset name is intentionally omitted</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Acceptance Call</h2>
+  <ul>
+    <li>Mark the Kimi Coding image BYOK live test complete.</li>
+    <li>To reproduce it in the real App profile, replace the old <code>kimi-latest</code> setting with <code>kimi-for-coding</code> or another model returned by that endpoint.</li>
+    <li>Do not claim stable or multi-provider image compatibility.</li>
+    <li>Fix smart-add ID reuse as P0 before the next release.</li>
+    <li>Add a restart regression with a pre-existing <code>nl1</code>.</li>
+    <li>Until fixed, use isolated/internal data and export JSON backups.</li>
+  </ul>
+</main>
+</body>
+</html>

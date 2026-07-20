@@ -4,6 +4,8 @@
 
 通过。Kimi BYOK 文本解析链路已经在真实服务商、开发版 Electron、重启后的持久化配置、以及打包版 App 中验证通过。
 
+> 2026-07-15 更新：图片识别已在 `kimi-for-coding` 上完成后续 live test。图片请求和结构化预览通过；确认保存同时暴露出通用智能添加 ID 冲突。最新结论见 `reports/kimi_image_byok_live_REPORT.md`。
+
 本轮确认的可用配置：
 
 | Field | Value |
@@ -66,11 +68,11 @@ The tests stopped at preview. No test asset was confirmed into the user's ledger
 | `git diff --check` | Pass |
 | Secret scan for the supplied key in repo files | Pass; no key found |
 
-## Current Gaps
+## Current Gaps at the Time of This Test
 
 | Gap | Impact |
 | --- | --- |
-| Image recognition path not live-tested | Text smart-add is verified; image input still needs separate provider capability testing |
+| Image recognition path not live-tested | 已由 2026-07-15 的后续图片实验补齐；见 `reports/kimi_image_byok_live_REPORT.md` |
 | DMG not rebuilt in this run | `dist/mac-arm64/持有.app` was regenerated; the existing DMG may still contain the previous app build |
 | App is still unsigned / unnotarized | Suitable for local/internal trial, not polished external distribution |
 | API key remains local BYOK data | Good for local testing; production distribution should use a safer backend/proxy or explicit BYOK privacy model |

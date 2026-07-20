@@ -11,7 +11,8 @@ Held Ledger 是一个 local-first 的个人资产台账与轻量记账工具，�
 - 「我的」页支持导出 JSON 备份和导入 JSON 恢复；导入会覆盖本机当前资产数据。
 - BYOK API 配置保存在本机 IndexedDB，并保留旧版 localStorage 兼容读取；演示版会由前端直连服务商，请不要在不可信环境粘贴生产密钥。
 - 当前安装包未使用 Apple Developer ID 签名，也未 notarization 公证。首次打开时，macOS 可能要求在「系统设置 → 隐私与安全性」中允许打开。
-- 金融资产模块、图片 BYOK live test、稳定错误恢复、数据模型迁移和云备份仍属于后续开发范围。
+- Kimi Coding 图片 BYOK 已完成一次真实图片识别实验；其他服务商和模型不作稳定兼容承诺。智能添加资产 ID 在 App 重启后可能复用并覆盖同 ID 旧记录，修复前请确认添加后及时导出 JSON 备份。
+- 金融资产模块、稳定错误恢复、数据模型迁移和云备份仍属于后续开发范围。
 
 ## Documents
 

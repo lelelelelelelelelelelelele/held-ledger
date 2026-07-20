@@ -2,7 +2,7 @@
 
 ## Release Readiness
 
-当前状态：源码可作为开源 Alpha 准备；安装包仅建议本机/内部试用。BYOK / OpenAI-compatible 文本智能添加已可内测；暂不建议作为面向大众的稳定正式 App 发布。
+当前状态：已有 Alpha 可继续本机/内部试用；下一次发布前需先修复智能添加 ID 重启后复用问题。BYOK / OpenAI-compatible 文本智能添加和 Kimi Coding 单次图片识别均已完成 live test；暂不建议作为面向大众的稳定正式 App 发布。
 
 ### Done
 
@@ -31,7 +31,9 @@
 
 ### P0 Before Open Source Alpha
 
-当前无开放 P0；重新发布前需再次运行验证命令。
+- [ ] 修复智能添加资产 ID 在重启后从 `nl1` 重新计数的问题，避免 IndexedDB 中同 ID 旧资产覆盖新资产
+
+重新发布前需修复该数据持久化问题，并再次运行验证命令。
 
 ### P1 Before Wider Beta
 
@@ -42,7 +44,7 @@
 
 - [ ] Apple Developer ID 签名
 - [ ] Apple notarization 公证
-- [ ] 图片 BYOK live test
+- [x] Kimi Coding 图片 BYOK live test：base64 `image_url` 请求、结构化预览和确认页均通过；持久化暴露的 ID 冲突另列 P0
 - [x] 公开源码 branch 不跟踪 `demo/thumbs/`，默认改用生成占位图
 - [ ] 更完整的数据备份/恢复策略
 

@@ -101,6 +101,7 @@
 
   <h2>Verdict</h2>
   <p>通过。Kimi BYOK 文本解析链路已经在真实服务商、开发版 Electron、重启后的持久化配置、以及打包版 App 中验证通过。</p>
+  <p class="warn">2026-07-15 更新：图片识别已在 <code>kimi-for-coding</code> 上完成后续 live test。图片请求和结构化预览通过；确认保存同时暴露出通用智能添加 ID 冲突。最新结论见 <code>reports/kimi_image_byok_live_REPORT.md</code>。</p>
   <p class="note">API key 已写入本机应用配置用于 BYOK 测试，但没有写入仓库文件或报告。</p>
   <table>
     <thead><tr><th>Field</th><th>Value</th></tr></thead>
@@ -170,11 +171,11 @@
     </tbody>
   </table>
 
-  <h2>Current Gaps</h2>
+  <h2>Current Gaps at the Time of This Test</h2>
   <table>
     <thead><tr><th>Gap</th><th>Impact</th></tr></thead>
     <tbody>
-      <tr><td>Image recognition path not live-tested</td><td>Text smart-add is verified; image input still needs separate provider capability testing</td></tr>
+      <tr><td>Image recognition path not live-tested</td><td>已由 2026-07-15 的后续图片实验补齐；见 <code>reports/kimi_image_byok_live_REPORT.md</code></td></tr>
       <tr><td>DMG not rebuilt in this run</td><td><code>dist/mac-arm64/持有.app</code> was regenerated; the existing DMG may still contain the previous app build</td></tr>
       <tr><td>App is still unsigned / unnotarized</td><td>Suitable for local/internal trial, not polished external distribution</td></tr>
       <tr><td>API key remains local BYOK data</td><td>Good for local testing; production distribution should use a safer backend/proxy or explicit BYOK privacy model</td></tr>

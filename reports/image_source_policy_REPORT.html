@@ -35,7 +35,7 @@
 <main>
   <header>
     <h1>Image Source Policy Report</h1>
-    <p class="verdict"><span class="dot"></span>有条件通过：Alpha 已能追踪图片来源，公开稳定版前仍需审核或替换演示缩略图。</p>
+    <p class="verdict"><span class="dot"></span>图片能力通过、持久化有阻塞：Kimi Coding 图片识别 live test 通过，但确认保存暴露出通用智能添加 ID 冲突。</p>
   </header>
 
   <h2>Report Boundary</h2>
@@ -50,9 +50,9 @@
   <table>
     <thead><tr><th>Source</th><th>Code</th><th>Used By</th><th>Export Behavior</th><th>Risk</th></tr></thead>
     <tbody>
-      <tr><td>内置演示图</td><td><code>bundled_demo</code></td><td>默认种子资产缩略图</td><td>保留相对路径与来源字段</td><td>公开分发前需确认授权或替换</td></tr>
+      <tr><td>历史本机演示图</td><td><code>bundled_demo</code></td><td>旧版本机数据</td><td>保留相对路径与来源字段</td><td>不进入公开 branch；公开种子已改用生成占位图</td></tr>
       <tr><td>用户上传</td><td><code>user_upload</code></td><td>资产详情照片上传</td><td>保留 data URL 与来源字段</td><td>属于本机用户数据，体积可能较大</td></tr>
-      <tr><td>AI 识别输入图</td><td><code>ai_input_upload</code></td><td>智能添加传图确认</td><td>保留 data URL 与来源字段</td><td>图片识别 live test 尚未完成</td></tr>
+      <tr><td>AI 识别输入图</td><td><code>ai_input_upload</code></td><td>智能添加传图确认</td><td>保留 data URL 与来源字段</td><td>会发送到用户配置的 BYOK 服务商；需明确隐私边界</td></tr>
       <tr><td>生成占位图</td><td><code>generated_placeholder</code></td><td>无照片资产运行时占位</td><td>不导出 SVG 图片内容，只保留来源</td><td>无版权风险，但不是实物照片</td></tr>
     </tbody>
   </table>
@@ -61,10 +61,12 @@
   <table>
     <thead><tr><th>Check</th><th>Result</th><th>Evidence</th></tr></thead>
     <tbody>
-      <tr><td>默认图片标注</td><td>Pass</td><td><code>macair</code>、<code>pc</code>、<code>zeekr</code> 使用 <code>photoSource: "bundled_demo"</code></td></tr>
+      <tr><td>公开种子图片</td><td>Pass</td><td>默认种子使用合成数据和 <code>generated_placeholder</code>，不跟踪 <code>demo/thumbs/</code></td></tr>
       <tr><td>详情页可见</td><td>Pass</td><td>资产详情显示“图片来源：内置演示图”等来源</td></tr>
       <tr><td>用户上传追踪</td><td>Pass</td><td>详情页上传照片写入 <code>photoSource: "user_upload"</code> 和 <code>photoUpdated</code></td></tr>
       <tr><td>AI 传图追踪</td><td>Pass</td><td>智能添加传图确认写入 <code>photoSource: "ai_input_upload"</code> 和 <code>photoUpdated</code></td></tr>
+      <tr><td>Kimi 图片识别 live test</td><td>Pass</td><td><code>kimi-for-coding</code> 接收 base64 <code>image_url</code>，返回 <code>200</code>；名称、分类、价格、日期全部匹配</td></tr>
+      <tr><td>既有数据档确认持久化</td><td>Fail</td><td>App 重启后 <code>nlSeq</code> 从 1 重新计数；已有 <code>nl1</code> 时，新资产被旧记录覆盖</td></tr>
       <tr><td>导出追踪</td><td>Pass</td><td><code>npm run test:seeded-flow</code> 验证 JSON 导出包含 <code>photoSource</code></td></tr>
     </tbody>
   </table>
@@ -74,8 +76,8 @@
     <thead><tr><th>Decision</th><th>Rationale</th></tr></thead>
     <tbody>
       <tr><td>不把生成占位 SVG 当作真实照片</td><td>占位图只是 UI fallback，不应被误认为用户素材</td></tr>
-      <tr><td>内置演示图保留但标注风险</td><td>Alpha 需要可视化资产卡片，但公开分发前必须完成素材来源确认</td></tr>
-      <tr><td>用户上传和 AI 输入图都视作本机用户数据</td><td>不上传云端，导出时由用户自己控制备份</td></tr>
+      <tr><td>历史演示图只保留在本机兼容层</td><td>公开 branch 已改为合成种子和生成占位图</td></tr>
+      <tr><td>用户上传与 AI 输入图分开说明</td><td>用户上传默认仅在本机；AI 输入图会发送到用户配置的 BYOK 服务商，并在确认后保存在本机</td></tr>
       <tr><td>图片识别能力与图片素材授权分开管理</td><td>BYOK live test 证明识别链路，不证明素材可商用</td></tr>
     </tbody>
   </table>
@@ -84,14 +86,14 @@
   <table>
     <thead><tr><th>Item</th><th>Priority</th><th>Notes</th></tr></thead>
     <tbody>
-      <tr><td><code>demo/thumbs/*.jpg</code> 版权审核或替换</td><td>Before public stable</td><td>当前只标注为演示图，不声明可商用</td></tr>
-      <tr><td>图片 BYOK live test</td><td>Before external stable</td><td>文本 BYOK mock/API UI 已通过，图片路径尚未 live test</td></tr>
+      <tr><td>修复智能添加 ID 重启后复用</td><td>P0 before next release</td><td>否则确认页成功后，新记录仍可能没有可靠写入 IndexedDB</td></tr>
+      <tr><td>BYOK 图片隐私提示</td><td>Before wider beta</td><td>传图前明确说明图片将发送到用户配置的第三方服务商</td></tr>
       <tr><td>大图压缩和导出体积限制</td><td>Later</td><td>当前缩略图压缩为 360px JPEG，但没有导出体积提示</td></tr>
     </tbody>
   </table>
 
   <h2>Conclusion</h2>
-  <p>图片来源策略已经从“待整理”变成可追踪字段和可验收行为。下一步不是继续改字段，而是完成公开分发前的演示素材授权审核或替换。</p>
+  <p>图片来源策略和 Kimi 图片识别能力已经有真实验收证据。下一步优先修复智能添加 ID 冲突，再补充传图隐私提示和自动化图片回归；单次 provider 通过不等于稳定、多服务商兼容。</p>
 </main>
 </body>
 </html>
