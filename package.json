@@ -17,7 +17,9 @@
     "test:seeded-flow": "node tools/acceptance-seeded-flow.mjs",
     "test:byok-api": "node tools/smoke-byok-api.mjs",
     "test:byok-api-error": "node tools/smoke-byok-api-error.mjs",
-    "test:regression-smart-add-id-collision": "node tools/regression-smart-add-id-collision.mjs"
+    "test:regression-smart-add-id-collision": "node tools/regression-smart-add-id-collision.mjs",
+    "build:windows": "electron-builder --win nsis --x64",
+    "test:installed": "node tools/test-installed-windows.mjs"
   },
   "keywords": [],
   "author": "",
@@ -49,6 +51,22 @@
     },
     "dmg": {
       "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Held-Ledger-${version}-windows-${arch}-setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false
     }
   },
   "devDependencies": {

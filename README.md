@@ -1,6 +1,6 @@
 # Held Ledger（持有）
 
-Held Ledger 是一个 local-first 的个人资产台账与轻量记账工具，当前已经包含可运行 demo 和 macOS 桌面打包配置。
+Held Ledger 是一个 local-first 的个人资产台账与轻量记账工具，当前已经包含可运行 demo、macOS DMG 和 Windows x64 安装包构建配置。
 
 当前桌面版名称为「持有」，版本为 `0.1.0-alpha.1`（Alpha）。
 
@@ -14,7 +14,7 @@ Held Ledger 是一个 local-first 的个人资产台账与轻量记账工具，�
 open "/Applications/持有.app"
 ```
 
-从源码运行时，在项目根目录执行 `npm run desktop`；依赖安装和 DMG 构建步骤见下方「多端安装与运行」。
+源码运行和构建命令见下方「开发者：源码运行与打包」。
 
 ### 台账存在哪里
 
@@ -23,6 +23,7 @@ open "/Applications/持有.app"
 | 内容 | 默认位置 / 获取方式 |
 | --- | --- |
 | 当前版本的 Mac 应用数据目录 | `~/Library/Application Support/held-ledger/`（首次运行后创建） |
+| Windows 应用数据目录 | `%APPDATA%/held-ledger/`（首次运行后创建） |
 | 台账、物品图片和 API 配置 | 上述目录的 `IndexedDB/` 中 |
 | API 配置兼容副本 | 上述目录的 `Local Storage/` 中 |
 | 可携带的备份文件 | 在「我的 → 导出 JSON 备份」生成 `held-ledger-backup-日期.json`；保存位置以下载提示或下载设置为准 |
@@ -57,7 +58,7 @@ BYOK（Bring Your Own Key）用于「智能添加」：输入一句购买描述�
 | --- | --- | --- |
 | macOS Apple Silicon（M 系列） | Alpha（Apple Silicon） | 通过下方 Release 入口下载 DMG 后安装 |
 | Intel Mac | Ongoing（开发中） | 暂未提供已验证的安装方式 |
-| Windows | Ongoing（开发中） | 暂未提供安装包 |
+| Windows x64 | Alpha 候选（尚未发布） | Windows `.exe` 安装包，见下方说明 |
 | Linux | Ongoing（开发中） | 暂未提供安装包 |
 | iPhone / iPad / Android / HarmonyOS（鸿蒙） | Ongoing（开发中） | 暂未提供原生安装包或已验证的 PWA 安装方式 |
 
@@ -70,6 +71,14 @@ BYOK（Bring Your Own Key）用于「智能添加」：输入一句购买描述�
 下载 [v0.1.0-alpha.1 安装包](https://github.com/lelelelelelelelelelelelele/held-ledger/releases/tag/v0.1.0-alpha.1) 中的 `.dmg` → 双击打开 → 将「持有.app」拖入「应用程序」→ 打开「持有」。无需安装 Node.js、克隆仓库或运行 npm 命令。`Source code` 是开发用源码，不是安装包。
 
 安装包未签名 / 未公证；若 macOS 阻止打开，可在「系统设置 → 隐私与安全性」处理提示。
+
+### Windows 下载安装与启动
+
+Windows 安装包尚未加入已有的 v0.1.0-alpha.1 Release。候选包由本地交付；合并后手动运行 Actions 可下载 Windows 构建产物，之后经授权发布的版本可从 [GitHub Releases](https://github.com/lelelelelelelelelelelelele/held-ledger/releases) 下载 `Held-Ledger-版本-windows-x64-setup.exe`。
+
+双击安装包，完成当前用户安装后，从开始菜单或桌面打开「持有」。无需安装 Node.js 或运行 npm。当前为未签名 Alpha 包，Windows 可能显示来源或信誉提示；本机测试不代表已通过所有设备的 SmartScreen 检查。
+
+默认安装路径为 `%LOCALAPPDATA%\Programs\held-ledger\持有.exe`。台账目录见上方表格；在资源管理器地址栏粘贴路径即可打开。安装包只包含合成示例数据；自己的台账请在「我的 → 导入 JSON 恢复」导入，导入会覆盖当前台账。卸载保留台账数据。没有旧名称目录自动迁移。
 
 ## Storage and Limits
 
@@ -94,7 +103,7 @@ BYOK（Bring Your Own Key）用于「智能添加」：输入一句购买描述�
 
 以下命令供开发和自行构建使用，不是普通用户的安装步骤。
 
-### 从源码启动（Mac）
+### 从源码启动（Mac / Windows）
 
 准备 Git、Node.js 和 npm。当前依赖中的 Electron 要求 Node.js `>=22.12.0`；本机文档核对环境为 Node.js `24.16.0`。
 
@@ -119,6 +128,19 @@ npm run test:packaged
 构建成功后打开 `dist/持有-0.1.0-alpha.1-arm64.dmg`，将「持有.app」拖入「应用程序」，再从「应用程序」启动。构建目录中的 App 位于 `dist/mac-arm64/持有.app`。
 
 上述路径是构建输出位置，不代表仓库已附带安装包。若 macOS 阻止打开，确认来源后在「系统设置 → 隐私与安全性」处理系统提示。
+
+### 构建和验证 Windows 安装包
+
+在 Windows x64 上完成 `npm ci` 后运行：
+
+```powershell
+npm run test:p1
+npm run build:windows -- --publish never
+npm run test:packaged
+npm run test:installed
+```
+
+输出：`dist/Held-Ledger-0.1.0-alpha.1-windows-x64-setup.exe`；解包应用：`dist/win-unpacked/持有.exe`。`test:installed` 要求未安装「持有」的干净 Windows 用户（CI runner 满足此条件），检测到已有安装时拒绝替换；使用临时安装目录和独立数据目录，验证静默安装、启动、完整进程重启、合成图片、编辑、删除撤销、筛选、提醒和跨目录 JSON 往返。测试目录留在系统临时目录用于检查。公开 CI 不接收真实台账。
 
 ### 桌面浏览器预览
 
@@ -215,6 +237,6 @@ heldledger
 
 ## 自动发布
 
-GitHub Actions 工作流位于 `.github/workflows/release.yml`。将 `package.json` 与 lockfile 版本一起更新后，推送同版本的 `v*` 标签，例如 `v0.1.0-alpha.1`，会自动测试、构建 Mac arm64 DMG、计算 SHA-256 并发布 GitHub Release。含连字符的版本标为预发布。发布说明来自 `docs/RELEASE_NOTES.md`。
+GitHub Actions 工作流位于 `.github/workflows/release.yml`。将 `package.json` 与 lockfile 版本一起更新后，推送同版本的 `v*` 标签，例如 `v0.1.0-alpha.1`，会分别在 Mac arm64 和 Windows x64 runner 测试、构建 DMG 与 NSIS EXE。两个平台全部成功后，由唯一的 release job 汇总 SHA-256 并创建 GitHub Release。含连字符的版本标为预发布。发布说明来自 `docs/RELEASE_NOTES.md`。
 
 手动运行工作流只生成可下载的构建产物，不创建 Release。构建或测试失败不会发布。此流程是安装包自动发布，不包含 App 内自动更新。

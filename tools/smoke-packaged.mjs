@@ -8,7 +8,7 @@ import { dirname, resolve } from 'node:path';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const executablePath = process.env.PACKAGED_APP_EXECUTABLE
   ? resolve(process.env.PACKAGED_APP_EXECUTABLE)
-  : resolve(root, 'dist/mac-arm64/持有.app/Contents/MacOS/持有');
+  : resolve(root, process.platform === 'win32' ? 'dist/win-unpacked/持有.exe' : 'dist/mac-arm64/持有.app/Contents/MacOS/持有');
 
 if (!existsSync(executablePath)) {
   throw new Error(`Packaged app executable not found: ${executablePath}`);

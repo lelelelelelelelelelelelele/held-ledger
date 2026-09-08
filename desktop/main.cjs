@@ -1,4 +1,5 @@
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const { app, BrowserWindow, shell } = require('electron');
 
 const isDev = !app.isPackaged;
@@ -32,7 +33,7 @@ function createMainWindow() {
   });
 
   win.webContents.on('will-navigate', (event, url) => {
-    const demoUrl = new URL(`file://${path.join(__dirname, '..', 'demo', 'index.html')}`);
+    const demoUrl = pathToFileURL(path.join(__dirname, '..', 'demo', 'index.html'));
     const nextUrl = new URL(url);
     if (nextUrl.protocol !== 'file:' || nextUrl.pathname !== demoUrl.pathname) {
       event.preventDefault();
