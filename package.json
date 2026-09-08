@@ -1,6 +1,6 @@
 {
   "name": "held-ledger",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.1",
   "description": "Held Ledger（持有）：local-first 的个人资产台账桌面应用。",
   "main": "desktop/main.cjs",
   "scripts": {

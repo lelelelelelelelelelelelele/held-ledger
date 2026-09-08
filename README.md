@@ -2,7 +2,7 @@
 
 Held Ledger 是一个 local-first 的个人资产台账与轻量记账工具，当前已经包含可运行 demo 和 macOS 桌面打包配置。
 
-当前桌面版名称为「持有」，版本为 `0.1.0-alpha.0`（Alpha）。
+当前桌面版名称为「持有」，版本为 `0.1.0-alpha.1`（Alpha）。
 
 ## 启动应用与本地数据
 
@@ -55,7 +55,7 @@ BYOK（Bring Your Own Key）用于「智能添加」：输入一句购买描述�
 
 | 平台 | 状态 | 安装方式 |
 | --- | --- | --- |
-| macOS Apple Silicon（M 系列） | Alpha；已有历史打包和启动验证 | 按下方说明从源码启动，或构建 DMG 安装；未签名 / 未公证 |
+| macOS Apple Silicon（M 系列） | Alpha（Apple Silicon） | 通过下方 Release 入口下载 DMG 后安装 |
 | Intel Mac | Ongoing（开发中） | 暂未提供已验证的安装方式 |
 | Windows | Ongoing（开发中） | 暂未提供安装包 |
 | Linux | Ongoing（开发中） | 暂未提供安装包 |
@@ -63,35 +63,13 @@ BYOK（Bring Your Own Key）用于「智能添加」：输入一句购买描述�
 
 其他平台的 Ongoing 为项目状态标记，不代表已完成兼容验证或承诺发布日期。
 
-### macOS Apple Silicon：从源码启动
+### Mac 下载安装
 
-准备 Git、Node.js 和 npm。当前依赖中的 Electron 要求 Node.js `>=22.12.0`；本机文档核对环境为 Node.js `24.16.0`。
+安装包入口：[GitHub Releases](https://github.com/lelelelelelelelelelelelele/held-ledger/releases)。
 
-```sh
-git clone https://github.com/lelelelelelelelelelelelele/held-ledger.git
-cd held-ledger
-npm ci
-npm run desktop
-```
+下载 [v0.1.0-alpha.1 安装包](https://github.com/lelelelelelelelelelelelele/held-ledger/releases/tag/v0.1.0-alpha.1) 中的 `.dmg` → 双击打开 → 将「持有.app」拖入「应用程序」→ 打开「持有」。无需安装 Node.js、克隆仓库或运行 npm 命令。`Source code` 是开发用源码，不是安装包。
 
-已有本地仓库时，在项目根目录执行 `npm ci` 和 `npm run desktop` 即可。
-
-### macOS Apple Silicon：构建并安装
-
-在 Mac 上完成依赖安装后运行：
-
-```sh
-npm run build:desktop
-npm run test:packaged
-```
-
-构建成功后打开 `dist/持有-0.1.0-alpha.0-arm64.dmg`，将「持有.app」拖入「应用程序」，再从「应用程序」启动。构建目录中的 App 位于 `dist/mac-arm64/持有.app`。
-
-上述路径是构建输出位置，不代表仓库已附带安装包。若 macOS 阻止打开，确认来源后在「系统设置 → 隐私与安全性」处理系统提示。
-
-### 桌面浏览器预览
-
-也可在桌面浏览器中直接打开克隆目录中的 `demo/index.html`。浏览器预览的数据与桌面 App 独立，不会自动读取 App 中的台账。
+安装包未签名 / 未公证；若 macOS 阻止打开，可在「系统设置 → 隐私与安全性」处理提示。
 
 ## Storage and Limits
 
@@ -112,7 +90,42 @@ npm run test:packaged
 - `docs/demo/open-source-demos.md`：可参考的开源项目与 demo 方向
 - `reports/promo/`：基于真实截图生成的 release 宣发图
 
-## Desktop Package
+## 开发者：源码运行与打包
+
+以下命令供开发和自行构建使用，不是普通用户的安装步骤。
+
+### 从源码启动（Mac）
+
+准备 Git、Node.js 和 npm。当前依赖中的 Electron 要求 Node.js `>=22.12.0`；本机文档核对环境为 Node.js `24.16.0`。
+
+```sh
+git clone https://github.com/lelelelelelelelelelelelele/held-ledger.git
+cd held-ledger
+npm ci
+npm run desktop
+```
+
+已有本地仓库时，在项目根目录执行 `npm ci` 和 `npm run desktop` 即可。
+
+### 构建安装包（Mac）
+
+在 Mac 上完成依赖安装后运行：
+
+```sh
+npm run build:desktop
+npm run test:packaged
+```
+
+构建成功后打开 `dist/持有-0.1.0-alpha.1-arm64.dmg`，将「持有.app」拖入「应用程序」，再从「应用程序」启动。构建目录中的 App 位于 `dist/mac-arm64/持有.app`。
+
+上述路径是构建输出位置，不代表仓库已附带安装包。若 macOS 阻止打开，确认来源后在「系统设置 → 隐私与安全性」处理系统提示。
+
+### 桌面浏览器预览
+
+也可在桌面浏览器中直接打开克隆目录中的 `demo/index.html`。浏览器预览的数据与桌面 App 独立，不会自动读取 App 中的台账。
+
+
+### 验证命令
 
 本地开发运行桌面 App：
 
@@ -166,7 +179,7 @@ npm run build:promo
 构建成功后的输出路径：
 
 - `dist/mac-arm64/持有.app`
-- `dist/持有-0.1.0-alpha.0-arm64.dmg`
+- `dist/持有-0.1.0-alpha.1-arm64.dmg`
 
 注意：Alpha 包仍未签名/公证，外发前仍需要 Apple Developer ID 签名和 notarization。
 
@@ -199,3 +212,9 @@ heldledger
 ## License
 
 [ISC](LICENSE)
+
+## 自动发布
+
+GitHub Actions 工作流位于 `.github/workflows/release.yml`。将 `package.json` 与 lockfile 版本一起更新后，推送同版本的 `v*` 标签，例如 `v0.1.0-alpha.1`，会自动测试、构建 Mac arm64 DMG、计算 SHA-256 并发布 GitHub Release。含连字符的版本标为预发布。发布说明来自 `docs/RELEASE_NOTES.md`。
+
+手动运行工作流只生成可下载的构建产物，不创建 Release。构建或测试失败不会发布。此流程是安装包自动发布，不包含 App 内自动更新。
