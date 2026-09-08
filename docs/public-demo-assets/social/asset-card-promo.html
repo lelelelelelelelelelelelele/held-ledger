@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Held Ledger asset card promotion</title>
+  <style>
+    :root {
+      --forest: #103d2d;
+      --forest-deep: #09291e;
+      --paper: #f2f3e9;
+      --card: #fffef8;
+      --ink: #10271d;
+      --muted: #69786f;
+      --line: #d8ded5;
+      --jade: #2d8a62;
+      --mint: #c9f3d5;
+      --lime: #c7f36a;
+      --amber: #f4a93c;
+      --amber-soft: #fff0cf;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 1280px; height: 640px; margin: 0; overflow: hidden; }
+    body {
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "PingFang SC", "Microsoft YaHei UI", "Noto Sans SC", sans-serif;
+    }
+    .canvas {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        radial-gradient(circle at 89% 14%, rgba(45, 138, 98, .12), transparent 24%),
+        linear-gradient(105deg, #edf1e6, #f8f6ee);
+    }
+    .canvas::before {
+      content: "";
+      position: absolute;
+      inset: 24px auto 24px 24px;
+      width: 438px;
+      border-radius: 30px;
+      background:
+        radial-gradient(circle at 12% 7%, rgba(199, 243, 106, .12), transparent 28%),
+        var(--forest);
+      box-shadow: 0 26px 60px -38px rgba(9, 41, 30, .55);
+    }
+    .canvas::after {
+      content: "HOLD / 005";
+      position: absolute;
+      right: -35px;
+      bottom: 124px;
+      color: rgba(16, 61, 45, .07);
+      font: 800 92px/1 ui-monospace, "SFMono-Regular", monospace;
+      letter-spacing: -.08em;
+      transform: rotate(-90deg);
+    }
+    .intro {
+      position: relative;
+      z-index: 3;
+      width: 438px;
+      height: 100%;
+      padding: 55px 42px 42px 65px;
+      color: #f8fbf5;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-size: 18px;
+      font-weight: 750;
+    }
+    .brandmark {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(255, 255, 255, .22);
+      border-radius: 11px;
+      color: var(--lime);
+      background: rgba(255, 255, 255, .08);
+      font-weight: 800;
+    }
+    h1 {
+      margin: 120px 0 0;
+      font-size: 48px;
+      line-height: 1.28;
+      letter-spacing: -.035em;
+      font-weight: 750;
+    }
+    .boundary {
+      position: absolute;
+      left: 65px;
+      bottom: 57px;
+      color: #9fb8aa;
+      font: 650 9px/1.55 ui-monospace, "SFMono-Regular", monospace;
+      letter-spacing: .045em;
+    }
+    .boundary b {
+      display: block;
+      color: #c7d8cd;
+      font-weight: 700;
+    }
+    .asset-card {
+      position: absolute;
+      z-index: 2;
+      overflow: hidden;
+      border: 1px solid rgba(16, 39, 29, .12);
+      border-radius: 24px;
+      background: var(--card);
+      box-shadow: 0 34px 58px -34px rgba(13, 54, 39, .48);
+    }
+    .asset-card .photo {
+      position: relative;
+      overflow: hidden;
+      background: #dfe5dc;
+    }
+    .asset-card .photo::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 50%, rgba(8, 32, 22, .18));
+    }
+    .asset-card img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+    .status {
+      position: absolute;
+      z-index: 1;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: #245e45;
+      background: rgba(255, 255, 250, .92);
+      box-shadow: 0 7px 16px rgba(10, 34, 24, .12);
+      font-size: 10px;
+      line-height: 1;
+      font-weight: 750;
+    }
+    .status i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--jade);
+    }
+    .body { padding: 19px 20px 20px; }
+    .kind {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #61746a;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .kind i {
+      display: grid;
+      place-items: center;
+      width: 25px;
+      height: 25px;
+      border-radius: 8px;
+      color: #1e7652;
+      background: #ddf1e2;
+      font-style: normal;
+    }
+    .name {
+      margin-top: 13px;
+      font-size: 24px;
+      line-height: 1.1;
+      letter-spacing: -.035em;
+      font-weight: 800;
+    }
+    .sub {
+      margin-top: 8px;
+      color: #7b8880;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+    .daily {
+      margin-top: 17px;
+      color: var(--forest);
+      font: 780 37px/1 ui-monospace, "SFMono-Regular", monospace;
+      letter-spacing: -.08em;
+    }
+    .daily small {
+      margin-left: 5px;
+      color: #7d8981;
+      font: 650 13px/1 "PingFang SC", sans-serif;
+      letter-spacing: 0;
+    }
+    .foot {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 16px;
+      color: #76847c;
+      font-size: 10px;
+    }
+    .spark {
+      flex: 1;
+      height: 18px;
+    }
+    .spark path {
+      fill: none;
+      stroke: var(--jade);
+      stroke-width: 2.3;
+      stroke-linecap: round;
+    }
+    .laptop {
+      left: 505px;
+      top: 58px;
+      width: 326px;
+      height: 524px;
+      transform: rotate(-2.2deg);
+    }
+    .laptop .photo { height: 214px; }
+    .camera {
+      left: 866px;
+      top: 42px;
+      width: 262px;
+      height: 332px;
+      transform: rotate(2.8deg);
+    }
+    .camera .photo { height: 145px; }
+    .camera .body { padding: 15px 17px; }
+    .camera .kind i { width: 21px; height: 21px; }
+    .camera .name { margin-top: 9px; font-size: 18px; }
+    .camera .sub { margin-top: 5px; font-size: 10px; }
+    .camera .daily { margin-top: 12px; font-size: 25px; }
+    .camera .daily small { font-size: 10px; }
+    .bike {
+      left: 852px;
+      top: 397px;
+      display: grid;
+      grid-template-columns: 143px 1fr;
+      width: 348px;
+      height: 178px;
+      transform: rotate(-1.4deg);
+    }
+    .bike .photo { height: 100%; }
+    .bike .body { padding: 18px 17px; }
+    .bike .kind i { width: 21px; height: 21px; }
+    .bike .name { margin-top: 9px; font-size: 18px; }
+    .bike .sub { margin-top: 5px; font-size: 10px; }
+    .bike .daily { margin-top: 13px; font-size: 25px; }
+    .bike .daily small { font-size: 10px; }
+    .reminder {
+      position: absolute;
+      z-index: 4;
+      left: 1081px;
+      top: 294px;
+      width: 153px;
+      padding: 14px 15px 13px;
+      border: 1px solid #efce91;
+      border-radius: 16px;
+      color: #7e510b;
+      background: var(--amber-soft);
+      box-shadow: 0 20px 32px -25px rgba(104, 69, 10, .42);
+      transform: rotate(5deg);
+    }
+    .reminder label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      font-weight: 750;
+    }
+    .reminder strong {
+      display: block;
+      margin-top: 7px;
+      font: 750 28px/1 ui-monospace, "SFMono-Regular", monospace;
+      letter-spacing: -.06em;
+    }
+    .reminder small {
+      display: block;
+      margin-top: 5px;
+      color: #9c6a1c;
+      font-size: 9px;
+    }
+  </style>
+</head>
+<body>
+  <main class="canvas" aria-label="Held Ledger asset-card promotion using synthetic demo data">
+    <section class="intro">
+      <div class="brand"><span class="brandmark">持</span><span>持有 · 个人物品管理</span></div>
+      <h1>给自己的物品<br>建个档案</h1>
+      <div class="boundary"><b>PUBLIC SOURCE ALPHA · SYNTHETIC DATA ONLY</b>非投资跟踪 · 无云同步 · 未提供签名安装包</div>
+    </section>
+
+    <article class="asset-card laptop">
+      <div class="photo"><img src="../thumbnails/laptop.jpg" alt="Synthetic laptop example"><span class="status"><i></i>服役中</span></div>
+      <div class="body">
+        <div class="kind"><i>▱</i>实物资产 · 数码</div>
+        <div class="name">演示笔记本</div>
+        <div class="sub">购入 ¥6,999 · 已用 180 天</div>
+        <div class="daily">¥38.88<small>/ 天</small></div>
+        <div class="foot"><span>剩余 2,740 天</span><svg class="spark" viewBox="0 0 120 18"><path d="M2 3c20 2 24 8 40 10s25 1 39 2 24-1 37 0"/></svg></div>
+      </div>
+    </article>
+
+    <article class="asset-card camera">
+      <div class="photo"><img src="../thumbnails/camera.jpg" alt="Synthetic camera example"><span class="status"><i></i>服役中</span></div>
+      <div class="body">
+        <div class="kind"><i>○</i>实物资产</div>
+        <div class="name">旅行相机</div>
+        <div class="sub">购入 ¥4,599 · 已用 365 天</div>
+        <div class="daily">¥12.60<small>/ 天</small></div>
+      </div>
+    </article>
+
+    <article class="asset-card bike">
+      <div class="photo"><img src="../thumbnails/bike.jpg" alt="Synthetic bicycle example"><span class="status"><i></i>服役中</span></div>
+      <div class="body">
+        <div class="kind"><i>⌁</i>实物资产 · 交通</div>
+        <div class="name">通勤自行车</div>
+        <div class="sub">购入 ¥2,800 · 已用 120 天</div>
+        <div class="daily">¥23.33<small>/ 天</small></div>
+      </div>
+    </article>
+
+    <aside class="reminder"><label><span>演示礼品卡</span><span>临期</span></label><strong>14 天</strong><small>当前余额 ¥120 · 去处理</small></aside>
+  </main>
+</body>
+</html>

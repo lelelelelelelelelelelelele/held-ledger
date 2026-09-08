@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Held Ledger product preview</title>
+  <style>
+    :root {
+      --forest: #0d3527;
+      --forest-deep: #071f17;
+      --paper: #f3f3e9;
+      --mint: #c7f36a;
+      --jade: #2f8d64;
+      --amber: #f3a53b;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 1280px; height: 640px; margin: 0; overflow: hidden; }
+    body {
+      color: #f9fbf6;
+      background: var(--forest);
+      font-family: "PingFang SC", "Microsoft YaHei UI", "Noto Sans SC", sans-serif;
+    }
+    .canvas {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(199, 243, 106, .12), transparent 27%),
+        linear-gradient(118deg, var(--forest) 0%, var(--forest-deep) 100%);
+    }
+    .canvas::before {
+      content: "";
+      position: absolute;
+      left: 753px;
+      top: -74px;
+      width: 476px;
+      height: 760px;
+      border-radius: 220px 0 0 220px;
+      background: var(--mint);
+      transform: rotate(7deg);
+      opacity: .94;
+    }
+    .copy {
+      position: relative;
+      z-index: 2;
+      width: 690px;
+      height: 100%;
+      padding: 57px 0 0 72px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-size: 18px;
+      font-weight: 760;
+    }
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 11px;
+      color: var(--mint);
+      background: rgba(255, 255, 255, .07);
+      font-weight: 800;
+    }
+    .eyebrow {
+      margin-top: 58px;
+      color: var(--mint);
+      font: 750 11px/1 ui-monospace, "SFMono-Regular", monospace;
+      letter-spacing: .18em;
+    }
+    h1 {
+      max-width: 620px;
+      margin: 18px 0 0;
+      font-size: 70px;
+      line-height: .99;
+      letter-spacing: -.075em;
+      font-weight: 850;
+    }
+    .lede {
+      width: 540px;
+      margin: 25px 0 0;
+      color: #c8d8cf;
+      font-size: 17px;
+      line-height: 1.68;
+    }
+    .tags {
+      display: flex;
+      gap: 9px;
+      margin-top: 29px;
+    }
+    .tag {
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, .17);
+      border-radius: 999px;
+      color: #e5eee8;
+      background: rgba(255, 255, 255, .055);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .boundary {
+      position: absolute;
+      left: 72px;
+      bottom: 49px;
+      color: #8fa99a;
+      font: 650 9px/1.55 ui-monospace, "SFMono-Regular", monospace;
+      letter-spacing: .04em;
+    }
+    .boundary b {
+      margin-right: 16px;
+      color: #c2d4c9;
+      font-weight: 700;
+    }
+    .product {
+      position: absolute;
+      z-index: 3;
+      left: 822px;
+      top: 23px;
+      width: 350px;
+      height: 594px;
+      overflow: hidden;
+      border: 8px solid #10251c;
+      border-radius: 30px;
+      background: #eef1e9;
+      box-shadow: 0 40px 72px -28px rgba(0, 0, 0, .52);
+      transform: rotate(3.2deg);
+    }
+    .product img {
+      display: block;
+      width: 100%;
+      height: auto;
+      transform: translateY(-1px);
+    }
+    .proof {
+      position: absolute;
+      z-index: 5;
+      left: 724px;
+      top: 407px;
+      width: 205px;
+      padding: 17px 18px;
+      border: 1px solid rgba(16, 39, 29, .12);
+      border-radius: 18px;
+      color: #173b2b;
+      background: rgba(255, 254, 248, .96);
+      box-shadow: 0 24px 42px -29px rgba(4, 27, 17, .58);
+      transform: rotate(-3deg);
+    }
+    .proof label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #4a6a59;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .proof label i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--jade);
+    }
+    .proof strong {
+      display: block;
+      margin-top: 9px;
+      font: 780 27px/1 ui-monospace, "SFMono-Regular", monospace;
+      letter-spacing: -.065em;
+    }
+    .proof small {
+      display: block;
+      margin-top: 6px;
+      color: #79867e;
+      font-size: 9px;
+    }
+    .alpha {
+      position: absolute;
+      z-index: 5;
+      right: 37px;
+      top: 54px;
+      padding: 8px 10px;
+      border-radius: 9px;
+      color: #71470a;
+      background: #ffe9bd;
+      box-shadow: 0 12px 24px -18px rgba(68, 42, 4, .4);
+      font: 750 9px/1 ui-monospace, "SFMono-Regular", monospace;
+      transform: rotate(4deg);
+    }
+  </style>
+</head>
+<body>
+  <main class="canvas" aria-label="Held Ledger product preview using a public synthetic-data screenshot">
+    <section class="copy">
+      <div class="brand"><span class="mark">持</span><span>Held Ledger · 持有</span></div>
+      <div class="eyebrow">YOUR THINGS · ONE LOCAL LEDGER</div>
+      <h1>东西不少，<br>心里有数。</h1>
+      <p class="lede">把实物、权益与订阅放进一个本机台账。打开就能看见价值、状态，以及下一件需要处理的事。</p>
+      <div class="tags"><span class="tag">本机保存</span><span class="tag">无需账户</span><span class="tag">到期提醒</span></div>
+      <div class="boundary"><b>PUBLIC SOURCE ALPHA · SYNTHETIC DATA ONLY</b>非投资跟踪 · 无云同步 · 未提供签名安装包</div>
+    </section>
+    <div class="product"><img src="../overview.png" alt="Held Ledger overview with synthetic demo data"></div>
+    <aside class="proof"><label><i></i>一处看清</label><strong>¥10,320</strong><small>5 项合成资产 · 本机演示</small></aside>
+    <div class="alpha">ALPHA · PUBLIC DEMO</div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Held Ledger card system preview</title>
+  <style>
+    :root {
+      --ink: #10271d;
+      --forest: #103d2d;
+      --paper: #f4f3e9;
+      --white: #fffef8;
+      --muted: #6e7b73;
+      --line: #d8ded5;
+      --lime: #c7f36a;
+      --mint: #d8f0df;
+      --jade: #2c815d;
+      --amber: #e99a2f;
+      --amber-soft: #ffedc8;
+      --lilac: #e7dff0;
+      --lilac-ink: #6d5479;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 1280px; height: 640px; margin: 0; overflow: hidden; }
+    body {
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "PingFang SC", "Microsoft YaHei UI", "Noto Sans SC", sans-serif;
+    }
+    .canvas {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 100% 0, rgba(44, 129, 93, .11), transparent 28%),
+        var(--paper);
+    }
+    .masthead {
+      position: absolute;
+      left: 66px;
+      right: 64px;
+      top: 48px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .eyebrow {
+      color: var(--jade);
+      font: 750 11px/1 ui-monospace, "SFMono-Regular", monospace;
+      letter-spacing: .16em;
+    }
+    h1 {
+      margin: 13px 0 0;
+      font-size: 42px;
+      line-height: 1.08;
+      letter-spacing: -.055em;
+      font-weight: 850;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #285643;
+      font-size: 15px;
+      font-weight: 750;
+    }
+    .brandmark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      color: var(--lime);
+      background: var(--forest);
+    }
+    .summary {
+      position: absolute;
+      left: 66px;
+      top: 185px;
+      width: 510px;
+      height: 369px;
+      padding: 35px 38px;
+      overflow: hidden;
+      border-radius: 30px;
+      color: #f7faf5;
+      background:
+        radial-gradient(circle at 90% 6%, rgba(199, 243, 106, .17), transparent 32%),
+        var(--forest);
+      box-shadow: 0 30px 60px -42px rgba(9, 41, 30, .58);
+    }
+    .summary::after {
+      content: "";
+      position: absolute;
+      right: -74px;
+      bottom: -129px;
+      width: 310px;
+      height: 310px;
+      border: 1px solid rgba(199, 243, 106, .2);
+      border-radius: 50%;
+      box-shadow: 0 0 0 42px rgba(199, 243, 106, .045), 0 0 0 84px rgba(199, 243, 106, .025);
+    }
+    .summary-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #bfdbca;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .summary-head span:last-child {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 999px;
+      color: var(--lime);
+      background: rgba(255, 255, 255, .07);
+      font-size: 10px;
+    }
+    .amount {
+      margin-top: 24px;
+      font: 780 64px/1 ui-monospace, "SFMono-Regular", monospace;
+      letter-spacing: -.09em;
+    }
+    .amount small {
+      margin-right: 4px;
+      color: #92ad9e;
+      font-size: 28px;
+    }
+    .note {
+      margin-top: 10px;
+      color: #9db4a7;
+      font-size: 12px;
+    }
+    .bar {
+      position: relative;
+      z-index: 1;
+      height: 11px;
+      margin-top: 34px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .1);
+      overflow: hidden;
+    }
+    .bar i {
+      display: block;
+      width: 86%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--lime);
+    }
+    .legend {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      gap: 24px;
+      margin-top: 21px;
+      color: #c2d3c9;
+      font-size: 11px;
+    }
+    .legend span {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .legend i {
+      width: 8px;
+      height: 8px;
+      border-radius: 3px;
+      background: var(--lime);
+    }
+    .legend span:nth-child(2) i { background: var(--amber); }
+    .legend span:nth-child(3) i { background: #a789b6; }
+    .categories {
+      position: absolute;
+      left: 610px;
+      right: 64px;
+      top: 185px;
+      bottom: 86px;
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 17px;
+    }
+    .category {
+      position: relative;
+      overflow: hidden;
+      padding: 25px 26px;
+      border: 1px solid rgba(16, 39, 29, .1);
+      border-radius: 24px;
+      background: var(--white);
+      box-shadow: 0 24px 46px -38px rgba(15, 51, 36, .55);
+    }
+    .category::after {
+      content: "";
+      position: absolute;
+      right: -48px;
+      bottom: -68px;
+      width: 170px;
+      height: 170px;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      opacity: .09;
+    }
+    .physical { grid-row: span 2; color: #1b5c42; background: linear-gradient(150deg, #d9f1df, #f6f7ed 72%); }
+    .ticket { color: #8d5b11; background: linear-gradient(145deg, #ffedc8, #fffaf0); }
+    .member { color: var(--lilac-ink); background: linear-gradient(145deg, var(--lilac), #fbf8fc); }
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .icon {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 15px;
+      color: #fff;
+      background: var(--jade);
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .ticket .icon { background: var(--amber); }
+    .member .icon { background: var(--lilac-ink); }
+    .status {
+      padding: 6px 8px;
+      border-radius: 999px;
+      color: currentColor;
+      background: rgba(255, 255, 255, .62);
+      font-size: 9px;
+      font-weight: 750;
+    }
+    .kind {
+      margin-top: 28px;
+      font-size: 20px;
+      font-weight: 820;
+    }
+    .detail {
+      margin-top: 8px;
+      color: rgba(16, 39, 29, .56);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .value {
+      position: absolute;
+      left: 26px;
+      bottom: 52px;
+      font: 780 36px/1 ui-monospace, "SFMono-Regular", monospace;
+      letter-spacing: -.07em;
+    }
+    .ticket .value, .member .value {
+      bottom: 17px;
+      font-size: 23px;
+    }
+    .meta {
+      position: absolute;
+      left: 26px;
+      bottom: 25px;
+      color: rgba(16, 39, 29, .52);
+      font-size: 10px;
+    }
+    .ticket .meta, .member .meta { display: none; }
+    .ticket .kind, .member .kind {
+      margin-top: 15px;
+      font-size: 16px;
+    }
+    .ticket .detail, .member .detail {
+      margin-top: 4px;
+      font-size: 9px;
+    }
+    .footer {
+      position: absolute;
+      left: 66px;
+      right: 64px;
+      bottom: 40px;
+      display: flex;
+      justify-content: space-between;
+      color: #748179;
+      font: 650 9px/1 ui-monospace, "SFMono-Regular", monospace;
+      letter-spacing: .035em;
+    }
+    .footer b { color: #436b58; }
+  </style>
+</head>
+<body>
+  <main class="canvas" aria-label="Held Ledger category-card preview using synthetic demo data">
+    <header class="masthead">
+      <div><div class="eyebrow">ONE LEDGER · THREE KINDS OF HOLDING</div><h1>价值、状态、提醒，<br>一眼归位。</h1></div>
+      <div class="brand"><span class="brandmark">持</span><span>Held Ledger · 持有</span></div>
+    </header>
+
+    <section class="summary">
+      <div class="summary-head"><span>资产总览</span><span>本机台账</span></div>
+      <div class="amount"><small>¥</small>10,320</div>
+      <div class="note">含非现金估值 · 合成产品演示</div>
+      <div class="bar"><i></i></div>
+      <div class="legend"><span><i></i>服役中 3</span><span><i></i>临期 1</span><span><i></i>会员 1</span></div>
+    </section>
+
+    <section class="categories">
+      <article class="category physical">
+        <div class="topline"><span class="icon">□</span><span class="status">服役中</span></div>
+        <div class="kind">实物资产</div>
+        <div class="detail">数码、相机与通勤工具<br>按生命周期持续记录</div>
+        <div class="value">¥10,200</div>
+        <div class="meta">3 项 · 价值更新</div>
+      </article>
+      <article class="category ticket">
+        <div class="topline"><span class="icon">◇</span><span class="status">临期 14 天</span></div>
+        <div class="kind">权益票券</div>
+        <div class="detail">余额与有效期</div>
+        <div class="value">¥120</div>
+      </article>
+      <article class="category member">
+        <div class="topline"><span class="icon">＋</span><span class="status">待续订</span></div>
+        <div class="kind">会员订阅</div>
+        <div class="detail">到期前主动提醒</div>
+        <div class="value">0 项</div>
+      </article>
+    </section>
+
+    <footer class="footer"><b>PUBLIC SOURCE ALPHA · SYNTHETIC DATA ONLY</b><span>非投资跟踪 · 无云同步 · 未提供签名安装包</span></footer>
+  </main>
+</body>
+</html>
