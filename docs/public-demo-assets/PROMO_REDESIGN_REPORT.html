@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Held Ledger 宣传图改进报告</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #10271d;
+      --forest: #103d2d;
+      --paper: #f5f4eb;
+      --card: #fffef9;
+      --muted: #65746b;
+      --line: #d9ded6;
+      --lime: #c7f36a;
+      --jade: #2d855f;
+      --amber: #efa33b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "PingFang SC", "Microsoft YaHei UI", "Noto Sans SC", sans-serif;
+      line-height: 1.65;
+    }
+    .hero {
+      padding: 72px 7vw 66px;
+      color: #f8faf5;
+      background:
+        radial-gradient(circle at 86% 0, rgba(199, 243, 106, .16), transparent 30%),
+        var(--forest);
+    }
+    .eyebrow {
+      color: var(--lime);
+      font: 750 12px/1 ui-monospace, monospace;
+      letter-spacing: .16em;
+    }
+    h1 {
+      max-width: 1160px;
+      margin: 22px 0 16px;
+      font-size: clamp(42px, 5.3vw, 68px);
+      line-height: 1.03;
+      letter-spacing: -.06em;
+    }
+    .hero p {
+      max-width: 850px;
+      margin: 0;
+      color: #c9dacf;
+      font-size: 18px;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(130px, 1fr));
+      gap: 12px;
+      max-width: 900px;
+      margin-top: 34px;
+    }
+    .metric {
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, .13);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .055);
+    }
+    .metric strong {
+      display: block;
+      color: var(--lime);
+      font: 750 24px/1 ui-monospace, monospace;
+    }
+    .metric span {
+      display: block;
+      margin-top: 8px;
+      color: #c1d2c7;
+      font-size: 12px;
+    }
+    main {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 58px 0 80px;
+    }
+    h2 {
+      margin: 58px 0 20px;
+      font-size: 32px;
+      line-height: 1.2;
+      letter-spacing: -.04em;
+    }
+    h3 {
+      margin: 0 0 15px;
+      font-size: 23px;
+      letter-spacing: -.025em;
+    }
+    p { color: var(--muted); }
+    .verdict {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 22px;
+      align-items: start;
+      padding: 24px;
+      border: 1px solid #cbd9cf;
+      border-radius: 20px;
+      background: #edf5ec;
+    }
+    .pass {
+      padding: 13px 16px;
+      border-radius: 12px;
+      color: var(--forest);
+      background: var(--lime);
+      text-align: center;
+      font-weight: 800;
+    }
+    .verdict p { margin: 0; color: #385747; }
+    .comparison {
+      margin-top: 30px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--card);
+      box-shadow: 0 24px 50px -44px rgba(10, 42, 29, .65);
+    }
+    .images {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    figure { margin: 0; }
+    figure img {
+      display: block;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+    }
+    figcaption {
+      margin-top: 9px;
+      color: #738078;
+      font-size: 12px;
+    }
+    .comparison p { margin-bottom: 0; }
+    .changes {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .change {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--card);
+    }
+    .change h3 { font-size: 18px; }
+    ul, ol { margin: 0; padding-left: 1.25em; }
+    li { margin: 8px 0; color: #52645a; }
+    code {
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: #1e6045;
+      background: #e6efe7;
+      font-family: ui-monospace, monospace;
+    }
+    .validation {
+      padding: 24px;
+      border-left: 5px solid var(--jade);
+      border-radius: 0 18px 18px 0;
+      background: #edf2eb;
+    }
+    .next li::marker { color: var(--amber); font-weight: 800; }
+    footer {
+      padding: 28px 7vw;
+      color: #8ba095;
+      background: #0c2d21;
+      font: 650 11px/1.5 ui-monospace, monospace;
+    }
+    @media (max-width: 760px) {
+      .metrics, .images, .changes { grid-template-columns: 1fr; }
+      .verdict { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="eyebrow">PROMO REDESIGN · ACCEPTANCE REPORT</div>
+    <h1>让资产卡片成为宣传图的主角。</h1>
+    <p>三张原图完整保留，三张新版完成替换。新版吸收高对比、产品主体化和清晰数据层级，但保留 Held Ledger 自己的品牌语言。</p>
+    <div class="metrics">
+      <div class="metric"><strong>3</strong><span>原始宣传图已归档</span></div>
+      <div class="metric"><strong>3</strong><span>当前宣传图已生成</span></div>
+      <div class="metric"><strong>1280×640</strong><span>统一输出尺寸</span></div>
+      <div class="metric"><strong>PASS</strong><span>渲染与目检通过</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="verdict">
+      <div class="pass">改进完成</div>
+      <p>新版将“深森林绿 + 酸性青柠 + 资产卡片 + 日均成本”确立为视觉识别点。技术边界仍完整保留，但已降到页脚和小标签，不再抢占主卖点。</p>
+    </section>
+
+    <h2>原来的宣传图与当前宣传图</h2>
+
+    <article class="comparison">
+      <h3>1. 产品封面</h3>
+      <div class="images">
+        <figure><img src="social/original/held-ledger-social-preview.png" alt="原产品封面"><figcaption>原来的宣传图：浅色项目介绍 + 倾斜手机模型</figcaption></figure>
+        <figure><img src="social/held-ledger-social-preview.png" alt="当前产品封面"><figcaption>当前宣传图：高对比文案 + 放大的真实合成数据界面</figcaption></figure>
+      </div>
+      <p>新版以“东西不少，心里有数”作为用户入口，让真实总览截图而不是设备外壳成为视觉证据。</p>
+    </article>
+
+    <article class="comparison">
+      <h3>2. 分类卡片总览</h3>
+      <div class="images">
+        <figure><img src="social/original/held-ledger-social-preview-cards.png" alt="原分类卡片图"><figcaption>原来的宣传图：等权重的小卡片阵列</figcaption></figure>
+        <figure><img src="social/held-ledger-social-preview-cards.png" alt="当前分类卡片图"><figcaption>当前宣传图：总览主卡 + 不对称分类层级</figcaption></figure>
+      </div>
+      <p>总资产净值成为高对比视觉锚点，实物、权益和会员不再被平均摆放，画面阅读顺序更明确。</p>
+    </article>
+
+    <article class="comparison">
+      <h3>3. 资产卡片主视觉</h3>
+      <div class="images">
+        <figure><img src="social/original/held-ledger-asset-card-promo.png" alt="原资产卡片图"><figcaption>原来的宣传图：三张近似等大的照片卡片</figcaption></figure>
+        <figure><img src="social/held-ledger-asset-card-promo.png" alt="当前资产卡片图"><figcaption>当前宣传图：大主卡 + 两张辅助卡 + 临期提醒</figcaption></figure>
+      </div>
+      <p>新版把 <code>¥ / 天</code>、持有天数和生命周期推到第一层级，让卡片不只是好看，更能解释产品为什么值得使用。</p>
+    </article>
+
+    <h2>修改了哪些内容</h2>
+    <section class="changes">
+      <article class="change"><h3>视觉系统</h3><ul><li>建立深森林绿、暖纸色和酸性青柠的高对比组合。</li><li>标题改为粗体无衬线，重要数字统一使用等宽字体。</li><li>删除无功能的网格、装饰圆环和平均宫格。</li></ul></article>
+      <article class="change"><h3>构图层级</h3><ul><li>产品封面直接放大公开合成数据截图。</li><li>分类图使用“总览主卡 > 实物 > 权益/会员”的层级。</li><li>卡片图以一张主卡承担主要注意力。</li></ul></article>
+      <article class="change"><h3>文案</h3><ul><li>用用户语言代替开发状态说明。</li><li>主标题改为“东西不少，心里有数”。</li><li>卡片采用已确认文案：品牌“持有 · 个人物品管理”，主标题“给自己的物品建个档案”。移除副标题、英文眉题和重复的日均成本卖点框，让物品卡片说明功能。</li></ul></article>
+      <article class="change"><h3>可维护性</h3><ul><li>新增统一的 Playwright 生成脚本。</li><li>新增 <code>npm run build:social-previews</code>。</li><li>原始 PNG 放入 <code>social/original/</code>，可以持续对照。</li></ul></article>
+    </section>
+
+    <h2>验证结果</h2>
+    <section class="validation">
+      <ul>
+        <li><code>npm run build:social-previews</code> 通过。</li>
+        <li>三张新版 PNG 均为 <code>1280 × 640</code>。</li>
+        <li>实际渲染目检未发现文字重叠、裁切错误或资源加载失败。</li>
+        <li>只使用公开合成数据和已记录来源的公开缩略图。</li>
+        <li>Public Source Alpha、Synthetic Data Only、非投资跟踪、无云同步和未签名边界仍在画面中。</li>
+      </ul>
+    </section>
+
+    <h2>可能的下一步建议</h2>
+    <ol class="next">
+      <li><strong>补齐社交尺寸：</strong>派生 1200×1200 方图和 1080×1440 竖图，不直接裁切横图。</li>
+      <li><strong>让产品 UI 跟上宣传图：</strong>提高总览卡和资产卡的对比度、图片占比与数字层级。</li>
+      <li><strong>沿用已确认的卡片文案：</strong>后续尺寸适配保留“给自己的物品建个档案”，避免重新加入口号和重复说明。</li>
+      <li><strong>替换品牌可见素材：</strong><code>gift-card.jpg</code> 仅保留作上传调试，公开营销继续避免使用。</li>
+      <li><strong>建立导出预设：</strong>为 GitHub Open Graph、公众号和小红书设置各自文字安全区。</li>
+    </ol>
+  </main>
+
+  <footer>HELD LEDGER · PUBLIC SOURCE ALPHA · SYNTHETIC DATA ONLY</footer>
+</body>
+</html>

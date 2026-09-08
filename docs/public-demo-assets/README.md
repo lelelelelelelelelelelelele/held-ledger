@@ -7,7 +7,9 @@ This folder contains only reproducible public-demo media. It exists so another d
 - `overview.png`, `assets.png`, `smart-add.png`: screenshots generated from the built-in five-item synthetic seed.
 - `assets-with-public-thumbnails.png`: the same card-grid view after the five public thumbnail files below are uploaded through a fresh temporary app profile.
 - `thumbnails/`: public stock thumbnails for the synthetic laptop, camera, bicycle, gift-card, and membership examples.
-- `social/`: three social-preview PNGs and their editable HTML sources. `asset-card-promo.html` is the data-rich promotional composition.
+- `social/`: three redesigned social-preview PNGs and their editable HTML sources. `asset-card-promo.html` is the asset-card-led promotional composition.
+- `social/original/`: the three pre-redesign PNGs, retained for visual comparison.
+- `PROMO_REDESIGN_REPORT.md` and `PROMO_REDESIGN_REPORT.html`: source and browser-readable before/after report.
 
 ## Thumbnail provenance
 
@@ -29,9 +31,10 @@ The [Unsplash License](https://unsplash.com/license) permits free commercial and
 npm ci
 node tools/capture-public-previews.mjs
 node tools/capture-thumbnail-card-preview.mjs
+npm run build:social-previews
 ```
 
-Both scripts create fresh temporary Electron profiles. They do not read an existing IndexedDB database, user-uploaded photo, JSON backup, API key, or internal report.
+The first two scripts create fresh temporary Electron profiles. They do not read an existing IndexedDB database, user-uploaded photo, JSON backup, API key, or internal report. `build:social-previews` renders the three editable local HTML compositions using only files in this public media pack.
 
 ## Scope boundary
 

@@ -5,6 +5,7 @@
   "main": "desktop/main.cjs",
   "scripts": {
     "desktop": "electron .",
+    "build:social-previews": "node tools/capture-social-previews.mjs",
     "build:desktop": "electron-builder --mac dmg",
     "pack:desktop": "electron-builder --mac dir",
     "test": "npm run test:p1",
