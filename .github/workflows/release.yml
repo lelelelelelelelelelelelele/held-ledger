@@ -36,6 +36,8 @@ jobs:
       - name: Checksums
         run: |
           cd dist
+          version=$(node -p "require('../package.json').version")
+          mv -- *.dmg "Held-Ledger-${version}-arm64.dmg"
           shasum -a 256 *.dmg > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
