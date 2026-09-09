@@ -7,12 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="持有" />
-<link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <title>持有 · 个人资产台账</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Sans:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
 /* ============================================================
    Held Ledger（持有）— 个人资产管理 demo
@@ -421,32 +417,11 @@ main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;p
   <main id="main"><div id="screen"></div></main>
   <nav class="tabbar" id="tabbar"></nav>
 </div>
+<script src="native.js"></script>
 <script>
 "use strict";
 const TODAY=new Date().toISOString().slice(0,10);
 function isoOffset(days){const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);}
-
-/* ---------- IndexedDB 持久化层 ---------- */
-// Legacy storage key retained so existing local data survives the Held Ledger rename.
-const DB_NAME='youshu_ledger_seeded_v4';
-const DB_VER=2;
-const ASSET_STORE='assets';
-const CONFIG_STORE='config';
-function openDB(){return new Promise((ok,fail)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(ASSET_STORE))db.createObjectStore(ASSET_STORE,{keyPath:'id'});if(!db.objectStoreNames.contains(CONFIG_STORE))db.createObjectStore(CONFIG_STORE,{keyPath:'id'});};r.onsuccess=e=>ok(e.target.result);r.onerror=e=>fail(e.target.error);});}
-async function dbGetAll(){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(ASSET_STORE,'readonly');const st=tx.objectStore(ASSET_STORE);const req=getAll_compat(st);req.onsuccess=e=>ok(e.target.result);req.onerror=e=>fail(e.target.error);});}
-async function dbPutAll(assets){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(ASSET_STORE,'readwrite');const st=tx.objectStore(ASSET_STORE);st.clear();assets.forEach(a=>st.put(a));tx.oncomplete=()=>ok();tx.onerror=e=>fail(e.target.error);});}
-async function dbGetConfig(id){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(CONFIG_STORE,'readonly');const req=tx.objectStore(CONFIG_STORE).get(id);req.onsuccess=e=>ok(e.target.result&&e.target.result.value);req.onerror=e=>fail(e.target.error);});}
-async function dbPutConfig(id,value){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(CONFIG_STORE,'readwrite');tx.objectStore(CONFIG_STORE).put({id,value});tx.oncomplete=()=>ok();tx.onerror=e=>fail(e.target.error);});}
-async function dbDeleteConfig(id){const db=await openDB();return new Promise((ok,fail)=>{const tx=db.transaction(CONFIG_STORE,'readwrite');tx.objectStore(CONFIG_STORE).delete(id);tx.oncomplete=()=>ok();tx.onerror=e=>fail(e.target.error);});}
-/* getAll 兼容（Safari 早期版本不支持 IDBObjectStore.getAll） */
-function getAll_compat(store){if(store.getAll)return store.getAll();return new Promise((ok,fail)=>{const r=store.openCursor();const out=[];r.onsuccess=e=>{const c=e.target.result;if(c){out.push(c.value);c.continue();}else ok(out);};r.onerror=e=>fail(e.target.error);});}
-
-/* 500ms 防抖写入（借鉴 Focus Flow） */
-let _saveTimer=null;
-function debouncedSave(){
-  if(_saveTimer)clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(()=>dbPutAll(ASSETS).catch(e=>console.warn('[DB] save failed',e)),500);
-}
 
 const ICON={
   home:'<path d="M4 11.4 12 4.5l8 6.9"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/>',
@@ -541,8 +516,9 @@ function heldText(a){const d=daysHeld(a);if(d>=365){return (d/365).toFixed(1)+' 
 function cloneAssets(assets){return assets.map(a=>JSON.parse(JSON.stringify(a)));}
 function exportableAssets(){return cloneAssets(ASSETS).map(a=>{if(a.photo&&/^data:image\/svg/i.test(a.photo))delete a.photo;return a;});}
 function validateImportAssets(input){
-  const payload=Array.isArray(input)?input:(input&&input.assets);
-  if(!Array.isArray(payload)||!payload.length)throw new Error('JSON 中没有可导入的 assets 数组');
+  if(!input||input.schema!=='held-ledger-export'||input.version!==1)throw new Error('请选择 version 1 的持有 JSON 备份');
+  const payload=input.assets;
+  if(!Array.isArray(payload))throw new Error('JSON 中没有可导入的 assets 数组');
   const ids=new Set();
   return payload.map((raw,i)=>{
     const a=raw&&typeof raw==='object'?JSON.parse(JSON.stringify(raw)):null;
@@ -977,9 +953,7 @@ function viewAssetDetail(){
   const pin=document.getElementById('assetPhoto');
   if(pin)pin.addEventListener('change',ev=>{
     const f=ev.target.files&&ev.target.files[0];if(!f)return;
-    const rd=new FileReader();
-    rd.onload=async()=>{a.photo=await makeThumb(rd.result);a.photoSource='user_upload';a.photoUpdated=TODAY;saveAssets();showStamp('已更新照片');viewAssetDetail();};
-    rd.readAsDataURL(f);
+    persistEdit(async()=>{a.photo=await makeThumb(await readImage(f));a.photoSource='user_upload';a.photoUpdated=TODAY;await saveAssets();showStamp('已更新照片');viewAssetDetail();});
   });
 }
 
@@ -1102,25 +1076,9 @@ function applyEdit(){const a=ASSETS.find(x=>x.id===S.currentAsset);const inp=doc
 
 /* ---------- BYOK + 自然语言添加（OpenAI 兼容：小米 MiMo / 自定义接口） ---------- */
 let BYOK_CACHE=null;
-function localByok(){try{return JSON.parse(localStorage.getItem('byok_v1')||'{}');}catch(e){return {};}}
-function loadByok(){if(BYOK_CACHE&&Object.keys(BYOK_CACHE).length)return BYOK_CACHE;BYOK_CACHE=localByok();return BYOK_CACHE;}
-function saveByok(o){
-  BYOK_CACHE=o||{};
-  try{localStorage.setItem('byok_v1',JSON.stringify(BYOK_CACHE));}catch(e){}
-  const hasConfig=!!(BYOK_CACHE.key||BYOK_CACHE.base||BYOK_CACHE.model||BYOK_CACHE.provider);
-  (hasConfig?dbPutConfig('byok_v1',BYOK_CACHE):dbDeleteConfig('byok_v1')).catch(e=>console.warn('[DB] BYOK save failed',e));
-}
-async function hydrateByok(){
-  try{
-    const stored=await dbGetConfig('byok_v1');
-    const local=localByok();
-    BYOK_CACHE=(stored&&Object.keys(stored).length)?stored:local;
-    if(BYOK_CACHE&&Object.keys(BYOK_CACHE).length&&!stored)dbPutConfig('byok_v1',BYOK_CACHE).catch(()=>{});
-  }catch(e){
-    console.warn('[DB] BYOK load failed',e);
-    BYOK_CACHE=localByok();
-  }
-}
+function loadByok(){return BYOK_CACHE||{};}
+function saveByok(o){BYOK_CACHE=o||{};return dbPutConfig('byok_v1',BYOK_CACHE);}
+async function hydrateByok(){BYOK_CACHE=await dbGetConfig('byok_v1')||{};}
 function byokReady(){const b=loadByok();return !!(b.key&&b.base);}
 const BYOK_PRESETS={
   xiaomi:{label:'小米 MiMo',base:'https://token-plan-cn.xiaomimimo.com/v1',model:'mimo-v2.5'},
@@ -1136,11 +1094,9 @@ async function llmExtract(text, image){
     '{"name":"物品名（简洁）","category":"数码|家居|交通|权益|会员|现金|其他 之一","price":购入价数字,"est_value":当前估值数字,"bought_date":"YYYY-MM-DD","note":""}。'+
     '把相对日期（上个月/上月/去年X月/前年/今年X月/X月X日）按今天解析为 YYYY-MM-DD。若文字或图片中出现购买/下单日期，务必用它作为 bought_date，否则才用今天。缺失字段给合理默认或空字符串/0。只返回 JSON，不要解释。';
   const userContent = image ? [{type:'text',text:text||'识别图片里的这件资产'},{type:'image_url',image_url:{url:image}}] : text;
-  const res=await fetch(url,{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+(b.key||'')},
-    body:JSON.stringify({model:b.model||BYOK_PRESETS.xiaomi.model,temperature:byokTemperature(b),response_format:{type:'json_object'},
-      messages:[{role:'system',content:sys},{role:'user',content:userContent}]})});
-  if(!res.ok){let t='';try{t=await res.text();}catch(e){}throw new Error('HTTP '+res.status+(t?' '+t.slice(0,100):''));}
-  const data=await res.json();
+  await pendingWrite;
+  const data=await invoke('chat',{body:{model:b.model||BYOK_PRESETS.xiaomi.model,temperature:byokTemperature(b),response_format:{type:'json_object'},
+    messages:[{role:'system',content:sys},{role:'user',content:userContent}]}});
   let c=(data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content)||'';
   let obj=null;try{obj=JSON.parse(c);}catch(e){const m=c.match(/\{[\s\S]*\}/);if(m)try{obj=JSON.parse(m[0]);}catch(_){}}
   if(!obj)throw new Error('未返回有效 JSON');
@@ -1242,38 +1198,26 @@ function addAssetFromNL(r){
   ASSETS.unshift(a);
   S.nl=null;S.currentAsset=id;saveAssets();showStamp('已添加');setTimeout(()=>route('asset-detail'),440);
 }
-function exportData(){
+async function exportData(){
   const payload={schema:'held-ledger-export',version:1,exportedAt:new Date().toISOString(),assets:exportableAssets()};
-  window.__lastExportPayload=payload;
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download='held-ledger-backup-'+TODAY+'.json';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-  showStamp('已导出');
+  try{if(await invoke('export_backup',{payload}))showStamp('已导出');}
+  catch(e){alert('导出失败：'+e);}
 }
 function handleImportFile(ev){
   const f=ev.target.files&&ev.target.files[0];if(!f)return;
-  const rd=new FileReader();
-  rd.onload=async()=>{
+  persistEdit(async()=>{
     try{
-      const imported=validateImportAssets(JSON.parse(rd.result));
+      const imported=validateImportAssets(JSON.parse(await f.text()));
       if(!confirm('导入 '+imported.length+' 项资产并覆盖本机当前数据？'))return;
+      await dbPutAll(imported);
       ASSETS=imported;
-      await dbPutAll(ASSETS);
       ensureThumbs();
       S.currentAsset=null;S.edit=null;S.cat='全部';S.status='全部';
       showStamp('已导入');
       route('overview');
     }catch(e){showStamp('导入失败');alert('导入失败：'+(e.message||e));}
     ev.target.value='';
-  };
-  rd.onerror=()=>{showStamp('导入失败');ev.target.value='';};
-  rd.readAsText(f);
+  });
 }
 function viewByok(){
   appbar('智能添加 · 接入 API',{back:'me'});
@@ -1287,12 +1231,12 @@ function viewByok(){
     '<div class="section-label">服务商</div>'+
     '<div class="chips" style="padding-top:0">'+presets+'</div>'+
     '<div class="block" style="padding:14px 16px;margin-top:6px">'+
-      '<div class="byok-note">自然语言添加会把"昨天买了一个 399 元的背包"这类话，调用大模型（OpenAI 兼容接口）解析成结构化资产；不填则用本地规则解析。<br/>· 小米 MiMo 已默认 <b>国内区 token-plan-cn + mimo-v2.5</b>：<b>只需粘贴 token</b> 保存即可。<br/>· 浏览器直连小米常被 CORS 拦 → 想在浏览器里真用 AI：跑 <code>node demo/mimo-proxy.mjs</code>，把上面 Base URL 改成 <code>http://localhost:8787/v1</code> 即可。<br/>· 其他 OpenAI-compatible 服务商可选「自定义」，Base URL 填到 <b>/v1</b>。</div>'+
+      '<div class="byok-note">自然语言添加会把"昨天买了一个 399 元的背包"这类话，调用大模型（OpenAI 兼容接口）解析成结构化资产；不填则用本地规则解析。<br/>· 小米 MiMo 已默认 <b>国内区 token-plan-cn + mimo-v2.5</b>：<b>只需粘贴 token</b> 保存即可。<br/>· 请求由本机直接发送到你配置的服务商，无需额外代理。<br/>· 其他 OpenAI-compatible 服务商可选「自定义」，Base URL 填到 <b>/v1</b>。</div>'+
       '<label class="byok-l">Base URL（到 /v1 即可）</label><input id="byokBase" class="byok-in" placeholder="https://token-plan-cn.xiaomimimo.com/v1" value="'+(baseV.replace(/"/g,'&quot;'))+'"/>'+
       '<label class="byok-l">API Key（粘贴你的 token）</label><input id="byokKey" class="byok-in" type="password" placeholder="粘贴小米 token…" value="'+(keyV.replace(/"/g,'&quot;'))+'"/>'+
       '<label class="byok-l">模型</label><input id="byokModel" class="byok-in" placeholder="mimo-v2.5" value="'+(modelV.replace(/"/g,'&quot;'))+'"/>'+
       '<div style="display:flex;gap:8px;margin-top:13px"><button class="nl-go" style="flex:1" data-act="byok-save">保存并启用</button><button class="nl-cancel" data-act="byok-clear">清除</button></div>'+
-      '<div class="byok-warn">⚠ 演示用途：密钥仅存在本机浏览器（localStorage），由浏览器直连服务商。部分服务商未开放浏览器跨域（CORS），直连可能失败——届时会自动回退到本地解析。生产环境请改为经你自己的后端代理，切勿在前端暴露密钥。</div>'+
+      '<div class="byok-warn">密钥保存在当前用户的本机台账数据库中（未加密），不包含在 JSON 备份内。智能解析由本机直接请求你配置的服务商，输入的文字或图片会发送给该服务商。</div>'+
     '</div>'+
     '<div class="section-label">状态</div><div class="block"><div class="me-row"><div class="ic">'+svg('shield')+'</div><div class="t">'+(byokReady()?'已接入 · '+(b.model||'')+' @ '+(b.base||''):'未接入 · 使用本地解析')+'</div></div></div>'+
     '<div style="height:8px"></div>'
@@ -1338,7 +1282,7 @@ document.getElementById('app').addEventListener('change',e=>{
 document.getElementById('app').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='editInput'){e.preventDefault();applyEdit();return;}if(e.key!=='Enter'&&e.key!==' ')return;const t=e.target.closest('[data-act][tabindex]');if(!t)return;e.preventDefault();t.click();});
 
 /* --- 持久化：所有修改 ASSETS 的地方都调用 saveAssets --- */
-function saveAssets(){debouncedSave();}
+function saveAssets(){return dbPutAll(ASSETS);}
 
 /* 智能添加 ID 序列：启动时根据已有 nl* 资产初始化，避免重启后从 nl1 复用导致覆盖 */
 function initNlSeq(){
@@ -1354,19 +1298,18 @@ function nextNlId(){
   return 'nl'+(nlSeq++);
 }
 
-/* --- boot：从 IndexedDB 加载，首次用默认数据 --- */
+/* --- boot：从 SQLite 加载，首次用默认数据 --- */
 (async function boot(){
   const h=(location.hash||'').replace('#','');
   if(h&&VIEWS[h])S.screen=h;
   try{
     await hydrateByok();
     const saved=await dbGetAll();
-    if(saved&&saved.length){ASSETS=saved;}else{ASSETS=cloneAssets(DEFAULT_ASSETS);await dbPutAll(ASSETS);}
-  }catch(e){console.warn('[boot] IndexedDB load failed, using defaults',e);ASSETS=cloneAssets(DEFAULT_ASSETS);}
+    if(saved!==null){ASSETS=saved;}else{ASSETS=cloneAssets(DEFAULT_ASSETS);await dbPutAll(ASSETS);}
+  }catch(e){document.getElementById('app').textContent='无法读取本地台账，请检查数据目录与磁盘空间后重新启动。';return;}
   ensureThumbs();
   initNlSeq();
-  /* 注册 Service Worker */
-  if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+  window.ledgerReady=true;
   route(S.screen);
 })();
 </script>

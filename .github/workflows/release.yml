@@ -9,69 +9,65 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 jobs:
-  mac:
-    runs-on: macos-15
-    timeout-minutes: 30
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows-x64
+            arch: x64
+            bundle: nsis
+          - os: macos-15
+            platform: mac-arm64
+            arch: arm64
+            bundle: dmg
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
       - name: Validate version and architecture
         env:
           REF_TYPE: ${{ github.ref_type }}
           REF_NAME: ${{ github.ref_name }}
-        run: |
-          node -e 'if(process.arch!=="arm64")throw Error("Expected arm64 runner");if(process.env.REF_TYPE==="tag"&&process.env.REF_NAME!=="v"+require("./package.json").version)throw Error("Tag/version mismatch")'
+          EXPECTED_ARCH: ${{ matrix.arch }}
+        run: node tools/validate-release.mjs
       - run: npm ci
-      - run: npm run test:p1
-      - name: Build DMG
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-        run: npm run build:desktop -- --publish never
-      - run: npm run test:packaged
-      - name: Checksums
+      - run: cargo fmt --manifest-path src-tauri/Cargo.toml --check
+      - run: cargo test --manifest-path src-tauri/Cargo.toml --locked
+      - name: Build native installer
+        run: npm run build:desktop -- --bundles ${{ matrix.bundle }} -- --locked
+      - name: Windows native and installed app tests
+        if: runner.os == 'Windows'
         run: |
-          cd dist
-          version=$(node -p "require('../package.json').version")
-          mv -- *.dmg "Held-Ledger-${version}-arm64.dmg"
-          shasum -a 256 *.dmg > SHA256SUMS.txt
+          npm run test:native
+          node tools/test-installed.mjs
+      - name: Mac packaged startup and persistence smoke
+        if: runner.os == 'macOS'
+        run: node tools/test-mac.mjs
+      - name: Collect installers and checksums
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+          PLATFORM: ${{ matrix.platform }}
+        run: node tools/collect-installer.mjs
       - uses: actions/upload-artifact@v4
         with:
-          name: mac-arm64-installer
-          path: |
-            dist/*.dmg
-            dist/SHA256SUMS.txt
-          if-no-files-found: error
-  windows:
-    runs-on: windows-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-      - name: Validate version and architecture
-        env:
-          REF_TYPE: ${{ github.ref_type }}
-          REF_NAME: ${{ github.ref_name }}
-        run: node -e 'if(process.arch!=="x64")throw Error("Expected x64 runner");if(process.env.REF_TYPE==="tag"&&process.env.REF_NAME!=="v"+require("./package.json").version)throw Error("Tag/version mismatch")'
-      - run: npm ci
-      - run: npm run test:p1
-      - name: Build Windows installer
-        run: npm run build:windows -- --publish never
-      - run: npm run test:packaged
-      - run: npm run test:installed
-      - uses: actions/upload-artifact@v4
-        with:
-          name: windows-x64-installer
-          path: dist/*-setup.exe
+          name: ${{ matrix.platform }}-installer
+          path: dist/*
           if-no-files-found: error
   release:
-    if: github.ref_type == 'tag'
-    needs: [mac, windows]
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: [build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
