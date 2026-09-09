@@ -90,7 +90,24 @@ try {
   await page.locator('[data-act="nl-go"]').click();
   await page.locator('[data-act="nl-confirm"]').first().waitFor();
   assert.equal(await page.locator('#nlName').inputValue(), 'Mock 相机');
-  const payload = await page.evaluate(() => ({ schema: 'held-ledger-export', version: 1, assets: exportableAssets() }));
+  await page.evaluate(async()=>{
+    const original=ASSETS;
+    const canvas=document.createElement('canvas');canvas.width=8;canvas.height=8;
+    canvas.getContext('2d').fillRect(0,0,8,8);
+    const embedded=canvas.toDataURL('image/png');
+    const blob=URL.createObjectURL(await new Promise(resolve=>canvas.toBlob(resolve)));
+    try{
+      ASSETS=[{id:'embedded',name:'Embedded',photo:embedded},{id:'blob',name:'Blob',photo:blob}];
+      const backup=await prepareBackup();
+      if(backup.assets[0].photo!==embedded||!backup.assets[1].photo.startsWith('data:image/jpeg;base64,'))throw Error('Images were not embedded');
+      if(ASSETS[1].photo!==blob)throw Error('Export mutated live ledger');
+      ASSETS=[{id:'missing',name:'Missing photo',photo:'thumbs/does-not-exist.jpg'}];
+      let rejected=false;
+      try{await prepareBackup();}catch(e){rejected=e.message.includes('Missing photo');}
+      if(!rejected)throw Error('Missing photo silently exported');
+    }finally{ASSETS=original;URL.revokeObjectURL(blob);}
+  });
+  const payload = await page.evaluate(() => prepareBackup());
   assert.ok(!JSON.stringify(payload).includes('synthetic-token'));
   const exportedPath = join(root, 'synthetic-export.json');
   await writeFile(exportedPath, JSON.stringify(payload));

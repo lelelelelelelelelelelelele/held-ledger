@@ -514,7 +514,19 @@ function daysHeld(a){return a.bought?Math.max(1,daysBetween(a.bought,TODAY)):0;}
 function dailyCost(a){return (a.price&&a.bought)?a.price/daysHeld(a):0;}
 function heldText(a){const d=daysHeld(a);if(d>=365){return (d/365).toFixed(1)+' 年';}return d+' 天';}
 function cloneAssets(assets){return assets.map(a=>JSON.parse(JSON.stringify(a)));}
-function exportableAssets(){return cloneAssets(ASSETS).map(a=>{if(a.photo&&/^data:image\/svg/i.test(a.photo))delete a.photo;return a;});}
+function exportableAssets(){return cloneAssets(ASSETS).map(a=>{if(a.photoSource==='generated_placeholder')delete a.photo;return a;});}
+async function prepareBackup(){
+  await Promise.all([...pendingEdits]);
+  const assets=exportableAssets();
+  const missing=[];
+  for(const a of assets){
+    if(!a.photo||/^data:image\//i.test(a.photo))continue;
+    a.photo=await makeThumb(a.photo);
+    if(!/^data:image\//i.test(a.photo))missing.push(a.name);
+  }
+  if(missing.length)throw new Error('以下资产的图片无法读取：'+missing.join('、')+'。请先在资产详情中重新添加照片，再导出完整备份。');
+  return {schema:'held-ledger-export',version:1,exportedAt:new Date().toISOString(),assets};
+}
 function validateImportAssets(input){
   if(!input||input.schema!=='held-ledger-export'||input.version!==1)throw new Error('请选择 version 1 的持有 JSON 备份');
   const payload=input.assets;
@@ -1199,8 +1211,7 @@ function addAssetFromNL(r){
   S.nl=null;S.currentAsset=id;saveAssets();showStamp('已添加');setTimeout(()=>route('asset-detail'),440);
 }
 async function exportData(){
-  const payload={schema:'held-ledger-export',version:1,exportedAt:new Date().toISOString(),assets:exportableAssets()};
-  try{if(await invoke('export_backup',{payload}))showStamp('已导出');}
+  try{const payload=await prepareBackup();if(await invoke('export_backup',{payload}))showStamp('已导出（含图片）');}
   catch(e){alert('导出失败：'+e);}
 }
 function handleImportFile(ev){
