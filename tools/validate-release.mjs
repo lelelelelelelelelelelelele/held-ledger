@@ -1,0 +1,11 @@
+import { readFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
+const p = JSON.parse(readFileSync('package.json'));
+const c = JSON.parse(readFileSync('src-tauri/tauri.conf.json'));
+const cargo = readFileSync('src-tauri/Cargo.toml', 'utf8');
+assert.equal(p.version, c.version);
+assert.match(cargo, new RegExp('version = "' + p.version.replaceAll('.', '\\.') + '"'));
+if (process.env.EXPECTED_ARCH) assert.equal(process.arch, process.env.EXPECTED_ARCH);
+if (process.env.REF_TYPE === 'tag') assert.equal(process.env.REF_NAME, 'v' + p.version);
+assert.ok(!Object.keys(p.devDependencies).some(d => d.includes('electron')));
+console.log('Version, architecture and native dependency contract passed');

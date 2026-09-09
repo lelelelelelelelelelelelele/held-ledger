@@ -1,0 +1,17 @@
+import { readFile, readdir, mkdir, copyFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+const bundle = process.env.BUNDLE;
+const platform = process.env.PLATFORM;
+if (!['nsis', 'dmg'].includes(bundle) || !['windows-x64', 'mac-arm64'].includes(platform)) throw Error('Explicit bundle/platform required');
+const directory = join('src-tauri/target/release/bundle', bundle);
+const extension = bundle === 'nsis' ? '.exe' : '.dmg';
+const files = (await readdir(directory)).filter(f => f.endsWith(extension));
+if (files.length !== 1) throw Error('Expected exactly one installer');
+const { version } = JSON.parse(await readFile('package.json'));
+const name = `Held-Ledger-${version}-${platform}${bundle === 'nsis' ? '-setup' : ''}${extension}`;
+await mkdir('dist', { recursive: true });
+await copyFile(join(directory, files[0]), join('dist', name));
+const sha = createHash('sha256').update(await readFile(join('dist', name))).digest('hex');
+await writeFile(join('dist', `${platform}-SHA256SUMS.txt`), `${sha}  ${name}\n`);
+console.log(JSON.stringify({ name, sha }));

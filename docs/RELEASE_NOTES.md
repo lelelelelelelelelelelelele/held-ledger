@@ -1,12 +1,11 @@
-持有的 macOS Apple Silicon 安装版。
+持有：Tauri 2 + Rust 的 macOS Apple Silicon / Windows x64 桌面版。
 
-下载下方 `.dmg`，打开后将「持有.app」拖入「应用程序」即可运行，无需 Node.js 或终端命令。`SHA256SUMS.txt` 可用于校验下载文件。
+Mac 下载 DMG 后拖入「应用程序」；Windows 下载 setup.exe 安装。普通用户无需 Node.js 或 npm。Windows 使用系统 WebView2，缺少时安装器会联网补装。
 
-- 个人物品、权益和会员台账，含到期提醒、JSON 备份与恢复。
-- BYOK 文字 / 图片智能添加（图片需要兼容的视觉模型）。
-- 包含智能添加 ID 冲突修复与新版公开宣传素材。
-- 安装包由 GitHub Actions 构建，并在发布前完成应用测试和打包启动测试。
+- 复用台账界面、分类筛选、到期提醒、智能添加、编辑、删除撤销。
+- SQLite 事务持久化，正常关窗等待保存，空台账重启保持为空。
+- 原生 JSON 保存对话框；version 1 备份导入恢复，无旧目录自动迁移。
+- BYOK 由 Rust 直接请求服务商；Key 留在本机配置，不写入台账 JSON 备份。
+- 所有平台构建和检查通过后统一发布。SHA256SUMS.txt 用于下载校验。
 
-当前为 Alpha，未使用 Apple Developer ID 签名或公证；macOS 可能要求在「系统设置 → 隐私与安全性」允许打开。Windows、Linux 和移动端安装包仍在开发中。
-
-包内仅包含合成演示台账。真实数据保存在本机，不随安装包分发；BYOK 会向所选服务商发送本次录入内容。升级前可在「我的」导出 JSON 备份。
+Alpha 包未签名 / 未公证。Mac 的 CI 包启动 smoke 不代替完整人工交互验收。安装包只含合成示例；真实台账不会随包分发。升级或换实现前请先导出备份。
