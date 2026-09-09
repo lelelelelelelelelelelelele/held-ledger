@@ -12,15 +12,17 @@ export async function launch(dataDir, executablePath = process.env.HELD_LEDGER_E
   await new Promise(r => listener.close(r));
   const child = spawn(executablePath, [], {
     env: { ...process.env, HELD_LEDGER_DATA_DIR: resolve(dataDir), WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port}` },
-    stdio: 'ignore',
+    stdio: ['ignore', 'ignore', process.env.CI === 'true' ? 'inherit' : 'ignore'],
   });
+  await new Promise((resolve, reject) => { child.once('spawn', resolve); child.once('error', reject); });
   let browser;
+  let connectionError = '';
   const deadline = Date.now() + 30000;
   while (Date.now() < deadline) {
     if (child.exitCode !== null) throw Error(`Native process exited ${child.exitCode} before startup`);
-    try { browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`); break; } catch { await delay(150); }
+    try { browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`, { timeout: 2000 }); break; } catch (error) { connectionError = error.message; await delay(150); }
   }
-  if (!browser) { child.kill(); throw Error('WebView2 debugging endpoint did not start'); }
+  if (!browser) { child.kill(); throw Error('WebView2 debugging endpoint did not start: ' + connectionError); }
   let page;
   while (Date.now() < deadline) {
     page = browser.contexts().flatMap(c => c.pages()).find(p => /tauri\.localhost|tauri:\/\//.test(p.url()));
