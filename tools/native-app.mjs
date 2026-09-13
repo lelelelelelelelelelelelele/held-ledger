@@ -1,17 +1,31 @@
 import { chromium } from 'playwright';
 import { spawn, execFileSync } from 'node:child_process';
 import { createServer } from 'node:net';
+import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 
+let launchSequence = 0;
+
 export async function launch(dataDir, executablePath = process.env.HELD_LEDGER_EXE || resolve('src-tauri/target/release/held-ledger.exe')) {
   if (process.platform !== 'win32') throw Error('WebView2 native integration tests require Windows');
+  // WebView2 keeps its browser process alive briefly after WM_CLOSE. Reusing
+  // one profile can therefore attach the next app instance to the old browser
+  // process, whose CDP port is already gone. Give every launch an isolated
+  // profile; the ledger itself still persists through HELD_LEDGER_DATA_DIR.
+  const webviewDataDir = resolve(dataDir, `.webview-${process.pid}-${++launchSequence}`);
+  await mkdir(webviewDataDir, { recursive: true });
   const listener = createServer();
   await new Promise(r => listener.listen(0, '127.0.0.1', r));
   const port = listener.address().port;
   await new Promise(r => listener.close(r));
   const child = spawn(executablePath, [], {
-    env: { ...process.env, HELD_LEDGER_DATA_DIR: resolve(dataDir), WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port}` },
+    env: {
+      ...process.env,
+      HELD_LEDGER_DATA_DIR: resolve(dataDir),
+      WEBVIEW2_USER_DATA_FOLDER: webviewDataDir,
+      HELD_LEDGER_TEST_WEBVIEW_ARGS: `--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --remote-debugging-port=${port}`,
+    },
     stdio: ['ignore', 'ignore', process.env.CI === 'true' ? 'inherit' : 'ignore'],
   });
   await new Promise((resolve, reject) => { child.once('spawn', resolve); child.once('error', reject); });
