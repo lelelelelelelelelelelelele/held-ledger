@@ -1018,7 +1018,15 @@ function viewMe(){
 
 /* ---------- Router ---------- */
 const VIEWS={overview:viewOverview,assets:viewAssets,action:viewAction,todos:viewTodos,me:viewMe,'asset-detail':viewAssetDetail,invest:viewInvest,byok:viewByok};
-function route(name){S.screen=name;if(name!=='asset-detail')S.edit=null;(VIEWS[name]||viewOverview)();renderTabs();if(history.replaceState)history.replaceState(null,'','#'+name);}
+let pendingRouteTimer=null;
+function scheduleRoute(name,delay){
+  if(pendingRouteTimer)clearTimeout(pendingRouteTimer);
+  pendingRouteTimer=setTimeout(()=>{pendingRouteTimer=null;route(name);},delay);
+}
+function route(name){
+  if(pendingRouteTimer){clearTimeout(pendingRouteTimer);pendingRouteTimer=null;}
+  S.screen=name;if(name!=='asset-detail')S.edit=null;(VIEWS[name]||viewOverview)();renderTabs();if(history.replaceState)history.replaceState(null,'','#'+name);
+}
 window.gotoScreen=function(name){if(name==='asset-detail')S.currentAsset='mac';route(name);};
 window.gotoAsset=function(id){S.currentAsset=id;S.edit=null;route('asset-detail');};
 window.fillAdd=function(){route('action');};
@@ -1196,7 +1204,7 @@ function addAssetFromNL(r){
   else if(c.group==='cash'){a.value=value;a.meta=[['账户',a.name],['当前余额',money(value)]];}
   else {a.value=value;a.meta=[['当前价值',money(value)],['录入方式',r._src||'手动']];if(r.note)a.meta.push(['备注',r.note]);}
   ASSETS.unshift(a);
-  S.nl=null;S.currentAsset=id;saveAssets();showStamp('已添加');setTimeout(()=>route('asset-detail'),440);
+  S.nl=null;S.currentAsset=id;saveAssets();showStamp('已添加');scheduleRoute('asset-detail',440);
 }
 async function exportData(){
   const payload={schema:'held-ledger-export',version:1,exportedAt:new Date().toISOString(),assets:exportableAssets()};
@@ -1270,9 +1278,9 @@ document.getElementById('app').addEventListener('click',e=>{
   else if(act==='nl-confirm'){const draft=readNLDraft();if(draft)addAssetFromNL(draft);}
   else if(act==='nl-reset'){S.nl=null;viewAction();}
   else if(act==='byok-preset'){const p=BYOK_PRESETS[arg]||BYOK_PRESETS.xiaomi;const cur=loadByok();saveByok({provider:arg,base:p.base||cur.base||'',model:p.model||cur.model||'',key:cur.key||''});viewByok();}
-  else if(act==='byok-save'){const base=(document.getElementById('byokBase').value||'').trim();const key=(document.getElementById('byokKey').value||'').trim();const cur=loadByok();const provider=BYOK_PRESETS[cur.provider]?cur.provider:(base?'custom':'xiaomi');const preset=BYOK_PRESETS[provider]||BYOK_PRESETS.xiaomi;const model=(document.getElementById('byokModel').value||'').trim()||preset.model||BYOK_PRESETS.xiaomi.model;saveByok({provider,base,key,model});showStamp(key&&base?'已启用 AI':'已保存');setTimeout(()=>route('me'),440);}
+  else if(act==='byok-save'){const base=(document.getElementById('byokBase').value||'').trim();const key=(document.getElementById('byokKey').value||'').trim();const cur=loadByok();const provider=BYOK_PRESETS[cur.provider]?cur.provider:(base?'custom':'xiaomi');const preset=BYOK_PRESETS[provider]||BYOK_PRESETS.xiaomi;const model=(document.getElementById('byokModel').value||'').trim()||preset.model||BYOK_PRESETS.xiaomi.model;saveByok({provider,base,key,model});showStamp(key&&base?'已启用 AI':'已保存');scheduleRoute('me',440);}
   else if(act==='byok-clear'){saveByok({});showStamp('已清除');viewByok();}
-  else if(act==='reset-data'){if(confirm('确定要恢复初始化资产数据吗？这会覆盖本机当前修改。')){ASSETS=cloneAssets(DEFAULT_ASSETS);dbPutAll(ASSETS);ensureThumbs();showStamp('已恢复');setTimeout(()=>route('overview'),400);}}
+  else if(act==='reset-data'){if(confirm('确定要恢复初始化资产数据吗？这会覆盖本机当前修改。')){ASSETS=cloneAssets(DEFAULT_ASSETS);dbPutAll(ASSETS);ensureThumbs();showStamp('已恢复');scheduleRoute('overview',400);}}
   else if(act==='pickphoto'){const i=document.getElementById('assetPhoto');if(i)i.click();}
   else if(act==='noop')showStamp('演示中暂未开放');
 });
