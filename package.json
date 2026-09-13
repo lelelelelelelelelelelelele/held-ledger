@@ -8,7 +8,8 @@
     "build:windows": "tauri build --bundles nsis",
     "build:mac": "tauri build --bundles dmg",
     "test": "cargo test --manifest-path src-tauri/Cargo.toml",
-    "test:native": "node tools/test-native.mjs"
+    "test:native": "node tools/test-native.mjs",
+    "test:generic-editor": "node tools/test-generic-editor.mjs"
   },
   "keywords": [],
   "author": "",

@@ -68,9 +68,12 @@ Actions 为 Windows x64 和 Mac arm64 分别执行版本检查、Rust 测试、T
 
 ## 源码结构
 
-- `demo/index.html`：界面、资产业务计算、图片缩略与导入校验。
-- `demo/native.js`：持久化队列和正常退出协调。
+- `demo/index.html`：页面骨架与应用挂载点。
+- `demo/styles.css`：界面样式。
+- `demo/domain.js`：资产数据、通用计算和导入校验。
+- `demo/app.js`：视图渲染与交互编排。
+- `demo/storage.js`：持久化队列和正常退出协调。
 - `src-tauri/src/store.rs`：SQLite 存储及输入一致性检查。
 - `src-tauri/src/main.rs`：窗口、数据目录锁、原生导出、BYOK 网络能力。
 - `tools/`：原生与安装测试、发布版本检查、安装包收集。
-- `docs/`、`reports/`：产品说明及历史研究记录。历史报告是当时实现的证据，不代表当前 Tauri 回归结果。
+- `docs/`、`reports/`：产品说明及历史研究记录；`docs/product-debates.md` 记录可扩展性等仍需产品验证的议题。历史报告是当时实现的证据，不代表当前 Tauri 回归结果。

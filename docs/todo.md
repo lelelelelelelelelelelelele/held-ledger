@@ -32,6 +32,7 @@
 ### P0 Before Open Source Alpha
 
 - [x] 修复智能添加资产 ID 在重启后从 `nl1` 重新计数的问题，避免 IndexedDB 中同 ID 旧资产覆盖新资产
+- [x] 从空台账完成真实 UI 验证：用户可自行新建、编辑、删除撤销和重启恢复任意命名的里程类资产，不依赖预置“国泰里程”
 
 重新发布前需再次运行验证命令。已增加回归测试 `npm run test:regression-smart-add-id-collision`。
 
