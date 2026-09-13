@@ -124,6 +124,11 @@ fn main() {
             .disable_drag_drop_handler();
             #[cfg(target_os = "windows")]
             let builder = builder.data_directory(data.join("webview"));
+            #[cfg(target_os = "windows")]
+            let builder = match std::env::var("HELD_LEDGER_TEST_WEBVIEW_ARGS") {
+                Ok(args) if !args.trim().is_empty() => builder.additional_browser_args(&args),
+                _ => builder,
+            };
             let window = builder.build()?;
             let close_window = window.clone();
             window.on_window_event(move |event| {
